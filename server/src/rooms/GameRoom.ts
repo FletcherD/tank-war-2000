@@ -13,7 +13,6 @@ export class Player extends Schema {
   @type("number") x: number;
   @type("number") y: number;
   @type("number") tick: number;
-
   inputQueue: InputData[] = [];
 }
 
@@ -23,7 +22,7 @@ export class MyRoomState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();
 }
 
-export class Part3Room extends Room<MyRoomState> {
+export class GameRoom extends Room<MyRoomState> {
   state = new MyRoomState();
   fixedTimeStep = 1000 / 60;
 
@@ -40,12 +39,18 @@ export class Part3Room extends Room<MyRoomState> {
       player.inputQueue.push(input);
     });
 
+    let elapsedTime = 0;
     this.setSimulationInterval((deltaTime) => {
-      this.update(deltaTime);
+      elapsedTime += deltaTime;
+
+      while (elapsedTime >= this.fixedTimeStep) {
+        elapsedTime -= this.fixedTimeStep;
+        this.fixedTick(this.fixedTimeStep);
+      }
     });
   }
 
-  update(deltaTime: number) {
+  fixedTick(timeStep: number) {
     const velocity = 2;
 
     this.state.players.forEach(player => {

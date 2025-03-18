@@ -1,11 +1,12 @@
 /**
  * ---------------------------
- * Phaser + Colyseus - Part 3.
+ * Phaser + Colyseus - Part 4.
  * ---------------------------
  * - Connecting with the room
  * - Sending inputs at the user's framerate
  * - Update other player's positions WITH interpolation (for other players)
  * - Client-predicted input for local (current) player
+ * - Fixed tickrate on both client and server
  */
 
 import Phaser from "phaser";
@@ -13,9 +14,9 @@ import { Room, Client, getStateCallbacks } from "colyseus.js";
 import { BACKEND_URL } from "../backend";
 
 // Import the state type from server-side code
-import type { MyRoomState } from "../../../server/src/rooms/Part3Room";
+import type { MyRoomState } from "../../../server/src/rooms/GameRoom";
 
-export class Part3Scene extends Phaser.Scene {
+export class GameScene extends Phaser.Scene {
     room: Room<MyRoomState>;
 
     currentPlayer: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
@@ -33,10 +34,16 @@ export class Part3Scene extends Phaser.Scene {
         right: false,
         up: false,
         down: false,
+        tick: undefined,
     };
 
+    elapsedTime = 0;
+    fixedTimeStep = 1000 / 60;
+
+    currentTick: number = 0;
+
     constructor() {
-        super({ key: "part3" });
+        super({ key: "game" });
     }
 
     async create() {
@@ -105,7 +112,7 @@ export class Part3Scene extends Phaser.Scene {
         const client = new Client(BACKEND_URL);
 
         try {
-            this.room = await client.joinOrCreate("part3_room", {});
+            this.room = await client.joinOrCreate("game", {});
 
             // connection successful!
             connectionStatusText.destroy();
@@ -121,13 +128,28 @@ export class Part3Scene extends Phaser.Scene {
         // skip loop if not connected yet.
         if (!this.currentPlayer) { return; }
 
+        this.elapsedTime += delta;
+        while (this.elapsedTime >= this.fixedTimeStep) {
+            this.elapsedTime -= this.fixedTimeStep;
+            this.fixedTick(time, this.fixedTimeStep);
+        }
+
         this.debugFPS.text = `Frame rate: ${this.game.loop.actualFps}`;
+    }
+
+    fixedTick(time, delta) {
+        this.currentTick++;
+
+        // const currentPlayerRemote = this.room.state.players.get(this.room.sessionId);
+        // const ticksBehind = this.currentTick - currentPlayerRemote.tick;
+        // console.log({ ticksBehind });
 
         const velocity = 2;
         this.inputPayload.left = this.cursorKeys.left.isDown;
         this.inputPayload.right = this.cursorKeys.right.isDown;
         this.inputPayload.up = this.cursorKeys.up.isDown;
         this.inputPayload.down = this.cursorKeys.down.isDown;
+        this.inputPayload.tick = this.currentTick;
         this.room.send(0, this.inputPayload);
 
         if (this.inputPayload.left) {
