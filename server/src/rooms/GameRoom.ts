@@ -1,15 +1,8 @@
 import { Room, Client } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
+import { Player, InputData } from "../../../game/Player";
 
-export interface InputData {
-  left: false;
-  right: false;
-  up: false;
-  down: false;
-  tick: number;
-}
-
-export class Player extends Schema {
+export class PlayerState extends Schema {
   @type("number") x: number;
   @type("number") y: number;
   @type("number") tick: number;
@@ -19,7 +12,7 @@ export class Player extends Schema {
 export class MyRoomState extends Schema {
   @type("number") mapWidth: number;
   @type("number") mapHeight: number;
-  @type({ map: Player }) players = new MapSchema<Player>();
+  @type({ map: PlayerState }) players = new MapSchema<PlayerState>();
 }
 
 export class GameRoom extends Room<MyRoomState> {
@@ -58,19 +51,11 @@ export class GameRoom extends Room<MyRoomState> {
 
       // dequeue player inputs
       while (input = player.inputQueue.shift()) {
-        if (input.left) {
-          player.x -= velocity;
-
-        } else if (input.right) {
-          player.x += velocity;
-        }
-
-        if (input.up) {
-          player.y -= velocity;
-
-        } else if (input.down) {
-          player.y += velocity;
-        }
+        // Use the shared Player class to handle movement
+        const playerMovement = new Player(player.x, player.y);
+        playerMovement.applyInput(input, velocity);
+        player.x = playerMovement.x;
+        player.y = playerMovement.y;
 
         player.tick = input.tick;
       }
@@ -80,7 +65,7 @@ export class GameRoom extends Room<MyRoomState> {
   onJoin (client: Client, options: any) {
     console.log(client.sessionId, "joined!");
 
-    const player = new Player();
+    const player = new PlayerState();
     player.x = Math.random() * this.state.mapWidth;
     player.y = Math.random() * this.state.mapHeight;
 

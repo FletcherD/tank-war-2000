@@ -15,6 +15,7 @@ import { BACKEND_URL } from "../backend";
 
 // Import the state type from server-side code
 import type { MyRoomState } from "../../../server/src/rooms/GameRoom";
+import { Player, InputData } from "../../../game/Player";
 
 export class GameScene extends Phaser.Scene {
     room: Room<MyRoomState>;
@@ -29,12 +30,12 @@ export class GameScene extends Phaser.Scene {
 
     cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
 
-    inputPayload = {
+    inputPayload: InputData = {
         left: false,
         right: false,
         up: false,
         down: false,
-        tick: undefined,
+        tick: 0,
     };
 
     elapsedTime = 0;
@@ -152,19 +153,11 @@ export class GameScene extends Phaser.Scene {
         this.inputPayload.tick = this.currentTick;
         this.room.send(0, this.inputPayload);
 
-        if (this.inputPayload.left) {
-            this.currentPlayer.x -= velocity;
-
-        } else if (this.inputPayload.right) {
-            this.currentPlayer.x += velocity;
-        }
-
-        if (this.inputPayload.up) {
-            this.currentPlayer.y -= velocity;
-
-        } else if (this.inputPayload.down) {
-            this.currentPlayer.y += velocity;
-        }
+        // Use the shared Player class to handle movement
+        const playerMovement = new Player(this.currentPlayer.x, this.currentPlayer.y);
+        playerMovement.applyInput(this.inputPayload, velocity);
+        this.currentPlayer.x = playerMovement.x;
+        this.currentPlayer.y = playerMovement.y;
 
         this.localRef.x = this.currentPlayer.x;
         this.localRef.y = this.currentPlayer.y;
