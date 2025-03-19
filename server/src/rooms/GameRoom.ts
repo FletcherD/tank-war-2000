@@ -5,6 +5,7 @@ import { Player, InputData } from "../../../game/Player";
 export class PlayerState extends Schema {
   @type("number") x: number;
   @type("number") y: number;
+  @type("number") rotation: number;
   @type("number") tick: number;
   inputQueue: InputData[] = [];
 }
@@ -52,10 +53,11 @@ export class GameRoom extends Room<MyRoomState> {
       // dequeue player inputs
       while (input = player.inputQueue.shift()) {
         // Use the shared Player class to handle movement
-        const playerMovement = new Player(player.x, player.y);
+        const playerMovement = new Player(player.x, player.y, player.rotation);
         playerMovement.applyInput(input, velocity);
         player.x = playerMovement.x;
         player.y = playerMovement.y;
+        player.rotation = playerMovement.rotation;
 
         player.tick = input.tick;
       }
@@ -68,6 +70,7 @@ export class GameRoom extends Room<MyRoomState> {
     const player = new PlayerState();
     player.x = Math.random() * this.state.mapWidth;
     player.y = Math.random() * this.state.mapHeight;
+    player.rotation = 0;
 
     this.state.players.set(client.sessionId, player);
   }

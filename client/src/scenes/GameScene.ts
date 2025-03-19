@@ -57,7 +57,7 @@ export class GameScene extends Phaser.Scene {
         const $ = getStateCallbacks(this.room);
 
         $(this.room.state).players.onAdd((player, sessionId) => {
-            const entity = this.physics.add.image(player.x, player.y, 'ship_0001');
+            const entity = this.physics.add.image(player.x, player.y, 'tank');
             this.playerEntities[sessionId] = entity;
 
             // is current player
@@ -73,6 +73,7 @@ export class GameScene extends Phaser.Scene {
                 $(player).onChange(() => {
                     this.remoteRef.x = player.x;
                     this.remoteRef.y = player.y;
+                    // We don't update the rotation of remoteRef since it's just a debug rectangle
                 });
 
             } else {
@@ -83,6 +84,7 @@ export class GameScene extends Phaser.Scene {
                     //
                     entity.setData('serverX', player.x);
                     entity.setData('serverY', player.y);
+                    entity.setData('serverRotation', player.rotation);
                 });
 
             }
@@ -154,10 +156,15 @@ export class GameScene extends Phaser.Scene {
         this.room.send(0, this.inputPayload);
 
         // Use the shared Player class to handle movement
-        const playerMovement = new Player(this.currentPlayer.x, this.currentPlayer.y);
+        const playerMovement = new Player(
+            this.currentPlayer.x, 
+            this.currentPlayer.y, 
+            this.currentPlayer.rotation
+        );
         playerMovement.applyInput(this.inputPayload, velocity);
         this.currentPlayer.x = playerMovement.x;
         this.currentPlayer.y = playerMovement.y;
+        this.currentPlayer.rotation = playerMovement.rotation;
 
         this.localRef.x = this.currentPlayer.x;
         this.localRef.y = this.currentPlayer.y;
@@ -170,10 +177,13 @@ export class GameScene extends Phaser.Scene {
             }
 
             const entity = this.playerEntities[sessionId];
-            const { serverX, serverY } = entity.data.values;
+            const { serverX, serverY, serverRotation } = entity.data.values;
 
             entity.x = Phaser.Math.Linear(entity.x, serverX, 0.2);
             entity.y = Phaser.Math.Linear(entity.y, serverY, 0.2);
+            if (serverRotation !== undefined) {
+                entity.rotation = serverRotation;
+            }
         }
 
     }
