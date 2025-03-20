@@ -27,6 +27,7 @@ export class Tank extends Phaser.Physics.Matter.Sprite
       tick: 0,
   };
   speed: number = 0;
+  controlAngle: number = 0;
 
   constructor (scene: Phaser.Scene, x: number, y: number)
   {
@@ -51,10 +52,11 @@ export class Tank extends Phaser.Physics.Matter.Sprite
   
       // Rotate left/right - in Matter we need to set the angle property
       if (this.currentInput.left) {
-        this.setAngle(this.angle - Phaser.Math.RadToDeg(rotationSpeed) * delta);
+        this.controlAngle -= rotationSpeed * delta;
       } else if (this.currentInput.right) {
-        this.setAngle(this.angle + Phaser.Math.RadToDeg(rotationSpeed) * delta);
+        this.controlAngle += rotationSpeed * delta;
       }
+      this.setRotation(this.controlAngle);
 
       // Get current velocity and calculate speed
       const velocity = this.body.velocity as Phaser.Math.Vector2;
