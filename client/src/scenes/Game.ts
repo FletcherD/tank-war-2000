@@ -34,10 +34,7 @@ export class Tank extends Phaser.Physics.Matter.Sprite
       super(scene.matter.world, x, y, 'tank');
       scene.add.existing(this);
       // Set up player physics body
-      this.setCircle(16);
-      this.setFrictionAir(0.05);
-      this.setBounce(0.5);
-      this.setFriction(0.005);
+      this.setCircle(14);
       
       // Set collision category and what it collides with
       this.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
@@ -46,9 +43,9 @@ export class Tank extends Phaser.Physics.Matter.Sprite
 
   preUpdate(time: number, delta: number)
   {
-      const acceleration = 0.005; // Reduced for Matter physics
-      const rotationSpeed = 0.003; // radians per update
-      const maxSpeed = 3; // Reduced for Matter physics
+      const acceleration = 0.005; // meters / msec^2
+      const rotationSpeed = 0.003; // radians / msec
+      const maxSpeed = 2; // meters / msec
   
       // Rotate left/right - in Matter we need to set the angle property
       if (this.currentInput.left) {
