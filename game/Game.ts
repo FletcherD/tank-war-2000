@@ -36,8 +36,8 @@ export class Tank extends Phaser.GameObjects.Image
       this.body.setImmovable(false);  // Dynamic body that can be moved
       
       // Set collision category and what it collides with
-      this.body.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
-      this.body.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER]);
+      //this.body.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
+      //this.body.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER]);
   }
 
   preUpdate(time: number, delta: number)
@@ -70,17 +70,21 @@ export class Wall extends Phaser.GameObjects.Image
   {
       super(scene, x, y, 'wall');
       scene.add.existing(this);
-      scene.physics.add.existing(this);
+      scene.physics.add.existing(this, true);
+      this.body.setCircle(16);
       
-      this.body.setCollisionCategory(COLLISION_CATEGORIES.WALL);
-      this.body.setCollidesWith([COLLISION_CATEGORIES.PLAYER]);
+      //this.body.setCollisionCategory(COLLISION_CATEGORIES.WALL);
+      //this.body.setCollidesWith([COLLISION_CATEGORIES.PLAYER]);
   }
 }
 
 
 export class GameScene extends Phaser.Scene {
     playerEntities: { [sessionId: string]: Tank } = {};
-    walls: Phaser.Physics.Arcade.StaticGroup;
+    colliderGroupStatic: Phaser.Physics.Arcade.StaticGroup;
+    colliderGroupDynamic: Phaser.Physics.Arcade.Group;
+
+    wall: Wall;
 
     elapsedTime = 0;
     fixedTimeStep = 1000 / 60;
@@ -95,17 +99,8 @@ export class GameScene extends Phaser.Scene {
     addPlayer(x: number, y: number, sessionId: string): Tank  {
       const entity = new Tank(this, x, y); 
       this.playerEntities[sessionId] = entity;
+      this.colliderGroupDynamic.add(entity);
 
-      this.physics.add.collider(
-        Object.values(this.playerEntities), 
-        this.walls
-      );
-
-      // Enable collisions between players
-      this.physics.add.collider(
-        Object.values(this.playerEntities), 
-        Object.values(this.playerEntities)
-      );
       return entity;
     }
 
@@ -125,11 +120,14 @@ export class GameScene extends Phaser.Scene {
         this.physics.world.defaults.debugShowBody = true;
 
         // Create a static group for walls
-        this.walls = this.physics.add.staticGroup();
+        this.colliderGroupStatic = this.physics.add.staticGroup();
+        this.colliderGroupDynamic = this.physics.add.group();
         
         // Add a wall
-        const wall = new Wall(this, 100, 100);
-        this.walls.add(wall);
+        this.wall = new Wall(this, 100, 100);
+        this.colliderGroupStatic.add(this.wall);
+
+        this.physics.world.addCollider(this.colliderGroupDynamic, this.colliderGroupStatic);
         
         // Enable collisions between players and walls
 
