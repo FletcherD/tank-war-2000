@@ -25,6 +25,7 @@ export class Tank extends Phaser.GameObjects.Image
       down: false,
       tick: 0,
   };
+  speed: number = 0;
 
   constructor (scene: Phaser.Scene, x: number, y: number)
   {
@@ -34,6 +35,8 @@ export class Tank extends Phaser.GameObjects.Image
       // Set up player physics body
       this.body.setCircle(16);
       this.body.setImmovable(false);  // Dynamic body that can be moved
+      this.body.setBounce(0.5);       // Add bounce for sliding effect
+      this.body.setFriction(0,0);
       
       // Set collision category and what it collides with
       //this.body.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
@@ -42,8 +45,10 @@ export class Tank extends Phaser.GameObjects.Image
 
   preUpdate(time: number, delta: number)
   {
-      const velocity = 128;
+      const acceleration = 3; // Rate of acceleration
+      const friction = 2; // Deceleration factor
       const rotationSpeed = 0.05; // radians per update
+      const maxSpeed = 128;
   
       // Rotate left/right
       if (this.currentInput.left) {
@@ -51,16 +56,26 @@ export class Tank extends Phaser.GameObjects.Image
       } else if (this.currentInput.right) {
         this.rotation += rotationSpeed;
       }
+
+      this.speed = this.body.velocity.length();
       
-      // Move forward/backward based on current rotation
+      // Apply acceleration when moving forward
       if (this.currentInput.up) {
-        const x = Math.cos(this.rotation) * velocity;
-        const y = Math.sin(this.rotation) * velocity;
-        this.body.setVelocity(x, y);
+        this.speed += acceleration;
+        if (this.speed > maxSpeed) {
+          this.speed = maxSpeed;
+        }
       } else {
-        this.body.setVelocity(0, 0);
+        if (this.currentInput.down) {
+          this.speed -= acceleration;
+        }
+        this.speed -= friction;
+        if (this.speed < 0) {
+          this.speed = 0;
+        }
       }
 
+      this.body.setVelocity(this.speed * Math.cos(this.rotation), this.speed * Math.sin(this.rotation));
   }
 }
 
