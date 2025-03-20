@@ -18,7 +18,11 @@ const config: Phaser.Types.Core.GameConfig = {
     backgroundColor: '#b6d53c',
     parent: 'phaser-example',
     physics: {
-        default: "arcade"
+        default: "matter",
+        matter: {
+            debug: true,
+            gravity: { y: 0 }
+        }
     },
     pixelArt: true,
     scene: [SceneSelector, ClientGameScene],

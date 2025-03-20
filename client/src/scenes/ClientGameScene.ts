@@ -39,6 +39,7 @@ export class ClientGameScene extends GameScene {
 
     async create() {
         console.log("ClientGameScene create");
+        
         await super.create();
 
         this.cursorKeys = this.input.keyboard.createCursorKeys();
@@ -140,38 +141,37 @@ export class ClientGameScene extends GameScene {
         this.room.send(0, this.inputPayload);
 
         this.currentPlayer.currentInput = this.inputPayload;
+        
+        // Update debug references
+        this.localRef.x = this.currentPlayer.x;
+        this.localRef.y = this.currentPlayer.y;
 
-        // Use the shared Player class to handle movement
-        // const playerMovement = new Player(
-        //     this.currentPlayer.x, 
-        //     this.currentPlayer.y, 
-        //     this.currentPlayer.rotation
-        // );
-        // playerMovement.applyInput(this.inputPayload, velocity);
-        // this.currentPlayer.x = playerMovement.x;
-        // this.currentPlayer.y = playerMovement.y;
-        // this.currentPlayer.rotation = playerMovement.rotation;
+        // Apply interpolation to other players
+        for (let sessionId in this.playerEntities) {
+            // Skip the current player
+            if (sessionId === this.room.sessionId) {
+                continue;
+            }
 
-        // this.localRef.x = this.currentPlayer.x;
-        // this.localRef.y = this.currentPlayer.y;
+            const entity = this.playerEntities[sessionId];
+            const { serverX, serverY, serverRotation } = entity.data.values;
 
-        // for (let sessionId in this.playerEntities) {
-        //     // interpolate all player entities
-        //     // (except the current player)
-        //     if (sessionId === this.room.sessionId) {
-        //         continue;
-        //     }
-
-        //     const entity = this.playerEntities[sessionId];
-        //     const { serverX, serverY, serverRotation } = entity.data.values;
-
-        //     entity.x = Phaser.Math.Linear(entity.x, serverX, 0.2);
-        //     entity.y = Phaser.Math.Linear(entity.y, serverY, 0.2);
-        //     if (serverRotation !== undefined) {
-        //         entity.rotation = serverRotation;
-        //     }
-        // }
-
+            // if (serverX !== undefined && serverY !== undefined) {
+            //     // Smoothly interpolate position for Matter physics
+            //     const currentPos = new Phaser.Math.Vector2(entity.x, entity.y);
+            //     const targetPos = new Phaser.Math.Vector2(serverX, serverY);
+                
+            //     // Linear interpolation
+            //     currentPos.lerp(targetPos, 0.2);
+                
+            //     // Update position
+            //     entity.setPosition(currentPos.x, currentPos.y);
+                
+            //     if (serverRotation !== undefined) {
+            //         entity.setRotation(serverRotation);
+            //     }
+            // }
+        }
     }
 
 }

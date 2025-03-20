@@ -17,7 +17,7 @@ export interface InputData {
   tick: number;
 }
 
-export class Tank extends Phaser.GameObjects.Image
+export class Tank extends Phaser.Physics.Matter.Sprite
 {
   currentInput: InputData = {
       left: false,
@@ -30,75 +30,70 @@ export class Tank extends Phaser.GameObjects.Image
 
   constructor (scene: Phaser.Scene, x: number, y: number)
   {
-      super(scene, x, y, 'tank');
+      super(scene.matter.world, x, y, 'tank');
       scene.add.existing(this);
-      scene.physics.add.existing(this);
       // Set up player physics body
-      this.body.setCircle(16);
-      this.body.setImmovable(false);  // Dynamic body that can be moved
-      this.body.setBounce(0.5);       // Add bounce for sliding effect
-      this.body.setFriction(0,0);
+      this.setCircle(16);
+      this.setFrictionAir(0.05);
+      this.setBounce(0.5);
+      this.setFriction(0.005);
       
       // Set collision category and what it collides with
-      //this.body.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
-      //this.body.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER]);
+      this.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
+      this.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER]);
   }
 
   preUpdate(time: number, delta: number)
   {
-      const acceleration = 3; // Rate of acceleration
-      const friction = 2; // Deceleration factor
-      const rotationSpeed = 0.05; // radians per update
-      const maxSpeed = 128;
+      const acceleration = 0.005; // Reduced for Matter physics
+      const rotationSpeed = 0.003; // radians per update
+      const maxSpeed = 3; // Reduced for Matter physics
   
-      // Rotate left/right
+      // Rotate left/right - in Matter we need to set the angle property
       if (this.currentInput.left) {
-        this.rotation -= rotationSpeed;
+        this.setAngle(this.angle - Phaser.Math.RadToDeg(rotationSpeed) * delta);
       } else if (this.currentInput.right) {
-        this.rotation += rotationSpeed;
+        this.setAngle(this.angle + Phaser.Math.RadToDeg(rotationSpeed) * delta);
       }
 
-      this.speed = this.body.velocity.length();
+      // Get current velocity and calculate speed
+      const velocity = this.body.velocity as Phaser.Math.Vector2;
+      this.speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
       
-      // Apply acceleration when moving forward
+      // Apply forces when moving forward/backward
       if (this.currentInput.up) {
-        this.speed += acceleration;
+        this.speed += acceleration * delta;
         if (this.speed > maxSpeed) {
           this.speed = maxSpeed;
         }
       } else {
-        if (this.currentInput.down) {
-          this.speed -= acceleration;
-        }
-        this.speed -= friction;
+        this.speed -= acceleration * delta;
         if (this.speed < 0) {
           this.speed = 0;
         }
       }
 
-      this.body.setVelocity(this.speed * Math.cos(this.rotation), this.speed * Math.sin(this.rotation));
+      this.setVelocity(this.speed * Math.cos(this.rotation), this.speed * Math.sin(this.rotation));
   }
 }
 
-export class Wall extends Phaser.GameObjects.Image
+export class Wall extends Phaser.Physics.Matter.Image
 {
   constructor (scene: GameScene, x: number, y: number)
   {
-      super(scene, x, y, 'wall');
+      super(scene.matter.world, x, y, 'wall');
       scene.add.existing(this);
-      scene.physics.add.existing(this, true);
-      this.body.setCircle(16);
+      this.setStatic(true);
       
-      //this.body.setCollisionCategory(COLLISION_CATEGORIES.WALL);
-      //this.body.setCollidesWith([COLLISION_CATEGORIES.PLAYER]);
+      this.setCollisionCategory(COLLISION_CATEGORIES.WALL);
+      this.setCollidesWith([COLLISION_CATEGORIES.PLAYER, COLLISION_CATEGORIES.PROJECTILE]);
   }
 }
 
 
 export class GameScene extends Phaser.Scene {
     playerEntities: { [sessionId: string]: Tank } = {};
-    colliderGroupStatic: Phaser.Physics.Arcade.StaticGroup;
-    colliderGroupDynamic: Phaser.Physics.Arcade.Group;
+    matter: Phaser.Physics.Matter.MatterPhysics;
 
     wall: Wall;
 
@@ -115,7 +110,6 @@ export class GameScene extends Phaser.Scene {
     addPlayer(x: number, y: number, sessionId: string): Tank  {
       const entity = new Tank(this, x, y); 
       this.playerEntities[sessionId] = entity;
-      this.colliderGroupDynamic.add(entity);
 
       return entity;
     }
@@ -130,33 +124,17 @@ export class GameScene extends Phaser.Scene {
 
     async create() {
       console.log("GameScene create");
-        // Enable Matter physics
-        this.physics.world.setBoundsCollision(true, true, true, true);
-        this.physics.enableUpdate();
-        this.physics.world.defaults.debugShowBody = true;
-
-        // Create a static group for walls
-        this.colliderGroupStatic = this.physics.add.staticGroup();
-        this.colliderGroupDynamic = this.physics.add.group();
+        // Set world bounds
+        this.matter.world.setBounds(0, 0, 800, 600);
         
         // Add a wall
         this.wall = new Wall(this, 100, 100);
-        this.colliderGroupStatic.add(this.wall);
-
-        // Set up collision with callback
-        const collider = this.physics.world.addCollider(
-            this.colliderGroupDynamic, 
-            this.colliderGroupStatic
-        );
         
-        // Add collision callback
-        collider.collideCallback = this.handleTankWallCollision;
-        collider.callbackContext = this;
+        // Enable collisions between players and walls through collision categories
         
-        // Enable collisions between players and walls
+        // Set up collision event handler
+        this.matter.world.on('collisionstart', this.handleCollision, this);
 
-        // this.cameras.main.startFollow(this.ship, true, 0.2, 0.2);
-        // this.cameras.main.setZoom(1);
         this.cameras.main.setBounds(0, 0, 800, 600);
     }
 
@@ -176,33 +154,56 @@ export class GameScene extends Phaser.Scene {
      * Handles collision between tank and wall
      * Prints debug information about the collision
      */
-    handleTankWallCollision(gameObject1: any, gameObject2: any) {
-        // One object is Tank and one is Wall - determine which is which
-        let tank: Tank, wall: Wall;
+    handleCollision(event: Phaser.Physics.Matter.Events.CollisionStartEvent) {
+        // Get colliding pairs
+        const pairs = event.pairs;
         
-        if (gameObject1 instanceof Tank) {
-            tank = gameObject1;
-            wall = gameObject2 as Wall;
-        } else {
-            tank = gameObject2 as Tank;
-            wall = gameObject1 as Wall;
+        // Process each collision pair
+        for (let i = 0; i < pairs.length; i++) {
+            const pair = pairs[i];
+            
+            // Matter.js collision objects contain game objects in their gameObject property
+            const bodyA = pair.bodyA;
+            const bodyB = pair.bodyB;
+            
+            // Check if both bodies have gameObjects associated with them
+            if (bodyA.gameObject && bodyB.gameObject) {
+                // One object is Tank and one is Wall - determine which is which
+                let tank: Tank | null = null;
+                let wall: Wall | null = null;
+                
+                if (bodyA.gameObject instanceof Tank) {
+                    tank = bodyA.gameObject as Tank;
+                } else if (bodyA.gameObject instanceof Wall) {
+                    wall = bodyA.gameObject as Wall;
+                }
+                
+                if (bodyB.gameObject instanceof Tank) {
+                    tank = bodyB.gameObject as Tank;
+                } else if (bodyB.gameObject instanceof Wall) {
+                    wall = bodyB.gameObject as Wall;
+                }
+                
+                // If we have a tank-wall collision, log information
+                if (tank && wall) {
+                    console.log('Tank-Wall Collision Detected:');
+                    console.log('- Tank position:', tank.x, tank.y);
+                    console.log('- Wall position:', wall.x, wall.y);
+                    console.log('- Tank velocity:', tank.body.velocity.x, tank.body.velocity.y);
+                    console.log('- Tank speed:', tank.speed);
+                    console.log('- Collision angle (degrees):', 
+                        Phaser.Math.RadToDeg(
+                            Phaser.Math.Angle.Between(
+                                tank.x, 
+                                tank.y, 
+                                wall.x, 
+                                wall.y
+                            )
+                        )
+                    );
+                    console.log('- Tank rotation (degrees):', Phaser.Math.RadToDeg(tank.rotation));
+                }
+            }
         }
-        
-        console.log('Tank-Wall Collision Detected:');
-        console.log('- Tank position:', tank.x, tank.y);
-        console.log('- Wall position:', wall.x, wall.y);
-        console.log('- Tank velocity:', tank.body.velocity.x, tank.body.velocity.y);
-        console.log('- Tank speed:', tank.speed);
-        console.log('- Collision angle (degrees):', 
-            Phaser.Math.RadToDeg(
-                Phaser.Math.Angle.Between(
-                    tank.x, 
-                    tank.y, 
-                    wall.x, 
-                    wall.y
-                )
-            )
-        );
-        console.log('- Tank rotation (degrees):', Phaser.Math.RadToDeg(tank.rotation));
     }
 }
