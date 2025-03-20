@@ -12,8 +12,18 @@
 import Phaser from "phaser";
 import { Room, Client, getStateCallbacks } from "colyseus.js";
 
+// Physics collision category constants
+export const COLLISION_CATEGORIES = {
+  NONE: 0,            // 0000 (0 in binary)
+  WALL: 0x0001,       // 0001 (1 in binary)
+  PLAYER: 0x0002,     // 0010 (2 in binary)
+  PROJECTILE: 0x0004, // 0100 (4 in binary)
+  PICKUP: 0x0008      // 1000 (8 in binary)
+};
+
 export class GameScene extends Phaser.Scene {
     playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
+    walls: Phaser.Physics.Arcade.StaticGroup;
 
     elapsedTime = 0;
     fixedTimeStep = 1000 / 60;
@@ -27,6 +37,15 @@ export class GameScene extends Phaser.Scene {
     addPlayer(x: number, y: number, sessionId: string)  {
       const entity = this.physics.add.image(x, y, 'tank');
       entity.setCircle(16);
+      
+      // Set up player physics body
+      entity.body.setCollideWorldBounds(true);
+      entity.body.setImmovable(false);  // Dynamic body that can be moved
+      
+      // Set collision category and what it collides with
+      entity.body.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
+      entity.body.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER]);
+      
       this.playerEntities[sessionId] = entity;
     }
 
@@ -39,11 +58,33 @@ export class GameScene extends Phaser.Scene {
     }
 
     async create() {
+        // Enable Matter physics
         this.physics.world.setBoundsCollision(true, true, true, true);
         this.physics.enableUpdate();
         this.physics.world.defaults.debugShowBody = true;
 
-        const wall = this.physics.add.staticImage(100,100, 'wall');
+        // Create a static group for walls
+        this.walls = this.physics.add.staticGroup();
+        
+        // Add a wall
+        const wall = this.walls.create(100, 100, 'wall');
+        
+        // Set up wall physics body
+        wall.body.setCollisionCategory(COLLISION_CATEGORIES.WALL);
+        wall.body.setCollidesWith([COLLISION_CATEGORIES.PLAYER]);
+        wall.body.setImmovable(true);  // Static body that cannot be moved
+
+        // Enable collisions between players and walls
+        this.physics.add.collider(
+          Object.values(this.playerEntities), 
+          this.walls
+        );
+
+        // Enable collisions between players
+        this.physics.add.collider(
+          Object.values(this.playerEntities), 
+          Object.values(this.playerEntities)
+        );
 
         // this.cameras.main.startFollow(this.ship, true, 0.2, 0.2);
         // this.cameras.main.setZoom(1);
@@ -117,6 +158,9 @@ export class GameScene extends Phaser.Scene {
         } else {
           this.currentPlayer.setVelocity(0, 0);
         }
+        
+        // Update collisions - this will be handled automatically by the physics engine
+        // since we've set up collision categories and colliders in create()
 
         // Use the shared Player class to handle movement
         // const playerMovement = new Player(
