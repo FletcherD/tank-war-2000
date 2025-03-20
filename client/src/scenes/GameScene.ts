@@ -15,13 +15,12 @@ import { BACKEND_URL } from "../backend";
 
 // Import the state type from server-side code
 import type { MyRoomState } from "../../../server/src/rooms/GameRoom";
-import { Player, InputData } from "../../../game/Player";
+import { GameScene, InputData, Tank } from "../../../game/Game";
 
-export class GameScene extends Phaser.Scene {
+export class ClientGameScene extends GameScene {
     room: Room<MyRoomState>;
 
-    currentPlayer: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
-    playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
+    currentPlayer: Tank;
 
     debugFPS: Phaser.GameObjects.Text;
 
@@ -38,16 +37,10 @@ export class GameScene extends Phaser.Scene {
         tick: 0,
     };
 
-    elapsedTime = 0;
-    fixedTimeStep = 1000 / 60;
-
-    currentTick: number = 0;
-
-    constructor() {
-        super({ key: "game" });
-    }
-
     async create() {
+        console.log("ClientGameScene create");
+        await super.create();
+
         this.cursorKeys = this.input.keyboard.createCursorKeys();
         this.debugFPS = this.add.text(4, 4, "", { color: "#ff0000", });
 
@@ -56,17 +49,8 @@ export class GameScene extends Phaser.Scene {
 
         const $ = getStateCallbacks(this.room);
 
-        this.physics.world.setBoundsCollision(true, true, true, true);
-        this.physics.enableUpdate();
-
         $(this.room.state).players.onAdd((player, sessionId) => {
-            const entity = this.physics.add.image(player.x, player.y, 'tank');
-            entity.setCircle(16);
-            this.playerEntities[sessionId] = entity;
-
-            const wall = this.physics.add.staticImage(100,100, 'wall');
-            this.physics.add.collider(entity, wall);
-
+            const entity = this.addPlayer(player.x, player.y, sessionId);
 
             // is current player
             if (sessionId === this.room.sessionId) {
@@ -101,16 +85,8 @@ export class GameScene extends Phaser.Scene {
 
         // remove local reference when entity is removed from the server
         $(this.room.state).players.onRemove((player, sessionId) => {
-            const entity = this.playerEntities[sessionId];
-            if (entity) {
-                entity.destroy();
-                delete this.playerEntities[sessionId]
-            }
+            this.removePlayer(sessionId);
         });
-
-        // this.cameras.main.startFollow(this.ship, true, 0.2, 0.2);
-        // this.cameras.main.setZoom(1);
-        this.cameras.main.setBounds(0, 0, 800, 600);
     }
 
     async connect() {
@@ -142,13 +118,14 @@ export class GameScene extends Phaser.Scene {
         this.elapsedTime += delta;
         while (this.elapsedTime >= this.fixedTimeStep) {
             this.elapsedTime -= this.fixedTimeStep;
+            this.applyInput();
             this.fixedTick(time, this.fixedTimeStep);
         }
 
         this.debugFPS.text = `Frame rate: ${this.game.loop.actualFps}`;
     }
 
-    fixedTick(time, delta) {
+    applyInput() {
         this.currentTick++;
 
         // const currentPlayerRemote = this.room.state.players.get(this.room.sessionId);
@@ -162,24 +139,7 @@ export class GameScene extends Phaser.Scene {
         this.inputPayload.tick = this.currentTick;
         this.room.send(0, this.inputPayload);
 
-        const velocity = 128;
-        const rotationSpeed = 0.05; // radians per update
-    
-        // Rotate left/right
-        if (this.inputPayload.left) {
-          this.currentPlayer.rotation -= rotationSpeed;
-        } else if (this.inputPayload.right) {
-          this.currentPlayer.rotation += rotationSpeed;
-        }
-        
-        // Move forward/backward based on current rotation
-        if (this.inputPayload.up) {
-          const x = Math.cos(this.currentPlayer.rotation) * velocity;
-          const y = Math.sin(this.currentPlayer.rotation) * velocity;
-          this.currentPlayer.setVelocity(x, y);
-        } else {
-          this.currentPlayer.setVelocity(0, 0);
-        }
+        this.currentPlayer.currentInput = this.inputPayload;
 
         // Use the shared Player class to handle movement
         // const playerMovement = new Player(

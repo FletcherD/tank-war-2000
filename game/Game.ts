@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 
 // Physics collision category constants
 export const COLLISION_CATEGORIES = {
@@ -9,32 +8,63 @@ export const COLLISION_CATEGORIES = {
   PICKUP: 0x0008      // 1000 (8 in binary)
 };
 
-class Tank extends Phaser.Physics.Arcade.Image
-{
-    constructor (scene: Phaser.Scene, x: number, y: number)
-    {
-        super(scene, x, y, 'tank');
-        this.setCircle(16);
-        scene.add.existing(this);
-        scene.physics.add.existing(this);
-        // Set up player physics body
-        this.setCollideWorldBounds(true);
-        this.setImmovable(false);  // Dynamic body that can be moved
-        
-        // Set collision category and what it collides with
-        this.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
-        this.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER]);
-    }
-
-    update(time: number, delta: number)
-    {
-        super.update(time, delta);
-
-        this.rotation += 0.01;
-    }
+export interface InputData {
+  left: boolean;
+  right: boolean;
+  up: boolean;
+  down: boolean;
+  tick: number;
 }
 
-class Wall extends Phaser.Physics.Arcade.Image
+export class Tank extends Phaser.GameObjects.Image
+{
+  currentInput: InputData = {
+      left: false,
+      right: false,
+      up: false,
+      down: false,
+      tick: 0,
+  };
+
+  constructor (scene: Phaser.Scene, x: number, y: number)
+  {
+      super(scene, x, y, 'tank');
+      scene.add.existing(this);
+      scene.physics.add.existing(this);
+      // Set up player physics body
+      this.body.setCircle(16);
+      this.body.setImmovable(false);  // Dynamic body that can be moved
+      
+      // Set collision category and what it collides with
+      this.body.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
+      this.body.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER]);
+  }
+
+  preUpdate(time: number, delta: number)
+  {
+      const velocity = 128;
+      const rotationSpeed = 0.05; // radians per update
+  
+      // Rotate left/right
+      if (this.currentInput.left) {
+        this.rotation -= rotationSpeed;
+      } else if (this.currentInput.right) {
+        this.rotation += rotationSpeed;
+      }
+      
+      // Move forward/backward based on current rotation
+      if (this.currentInput.up) {
+        const x = Math.cos(this.rotation) * velocity;
+        const y = Math.sin(this.rotation) * velocity;
+        this.body.setVelocity(x, y);
+      } else {
+        this.body.setVelocity(0, 0);
+      }
+
+  }
+}
+
+export class Wall extends Phaser.Physics.Arcade.Image
 {
   constructor (scene: GameScene, x: number, y: number)
   {
@@ -59,12 +89,14 @@ export class GameScene extends Phaser.Scene {
     currentTick: number = 0;
 
     constructor() {
+      console.log("GameScene constructor");
         super({ key: "game" });
     }
 
-    addPlayer(x: number, y: number, sessionId: string)  {
+    addPlayer(x: number, y: number, sessionId: string): Tank  {
       const entity = new Tank(this, x, y); 
       this.playerEntities[sessionId] = entity;
+      return entity;
     }
 
     removePlayer(sessionId: string) {
@@ -76,6 +108,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     async create() {
+      console.log("GameScene create");
         // Enable Matter physics
         this.physics.world.setBoundsCollision(true, true, true, true);
         this.physics.enableUpdate();
