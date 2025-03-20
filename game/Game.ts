@@ -1,5 +1,3 @@
-
-// Physics collision category constants
 export const COLLISION_CATEGORIES = {
   NONE: 0,            // 0000 (0 in binary)
   WALL: 0x0001,       // 0001 (1 in binary)
@@ -142,7 +140,15 @@ export class GameScene extends Phaser.Scene {
         this.wall = new Wall(this, 100, 100);
         this.colliderGroupStatic.add(this.wall);
 
-        this.physics.world.addCollider(this.colliderGroupDynamic, this.colliderGroupStatic);
+        // Set up collision with callback
+        const collider = this.physics.world.addCollider(
+            this.colliderGroupDynamic, 
+            this.colliderGroupStatic
+        );
+        
+        // Add collision callback
+        collider.collideCallback = this.handleTankWallCollision;
+        collider.callbackContext = this;
         
         // Enable collisions between players and walls
 
@@ -163,4 +169,37 @@ export class GameScene extends Phaser.Scene {
         this.currentTick++;
     }
 
+    /**
+     * Handles collision between tank and wall
+     * Prints debug information about the collision
+     */
+    handleTankWallCollision(gameObject1: any, gameObject2: any) {
+        // One object is Tank and one is Wall - determine which is which
+        let tank: Tank, wall: Wall;
+        
+        if (gameObject1 instanceof Tank) {
+            tank = gameObject1;
+            wall = gameObject2 as Wall;
+        } else {
+            tank = gameObject2 as Tank;
+            wall = gameObject1 as Wall;
+        }
+        
+        console.log('Tank-Wall Collision Detected:');
+        console.log('- Tank position:', tank.x, tank.y);
+        console.log('- Wall position:', wall.x, wall.y);
+        console.log('- Tank velocity:', tank.body.velocity.x, tank.body.velocity.y);
+        console.log('- Tank speed:', tank.speed);
+        console.log('- Collision angle (degrees):', 
+            Phaser.Math.RadToDeg(
+                Phaser.Math.Angle.Between(
+                    tank.x, 
+                    tank.y, 
+                    wall.x, 
+                    wall.y
+                )
+            )
+        );
+        console.log('- Tank rotation (degrees):', Phaser.Math.RadToDeg(tank.rotation));
+    }
 }
