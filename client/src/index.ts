@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 
 import { SceneSelector } from "./scenes/SceneSelector";
-import { ClientGameScene } from "./scenes/GameScene";
+import { ClientGameScene } from "./scenes/ClientGameScene";
 
 import { BACKEND_HTTP_URL } from "./backend";
 

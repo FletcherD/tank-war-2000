@@ -15,7 +15,7 @@ import { BACKEND_URL } from "../backend";
 
 // Import the state type from server-side code
 import type { MyRoomState } from "../../../server/src/rooms/GameRoom";
-import { GameScene, InputData, Tank } from "../../../game/Game";
+import { GameScene, InputData, Tank } from "./Game";
 
 export class ClientGameScene extends GameScene {
     room: Room<MyRoomState>;

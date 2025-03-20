@@ -1,3 +1,6 @@
+
+import Phaser from "phaser";
+
 export const COLLISION_CATEGORIES = {
   NONE: 0,            // 0000 (0 in binary)
   WALL: 0x0001,       // 0001 (1 in binary)
