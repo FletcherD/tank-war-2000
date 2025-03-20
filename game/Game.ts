@@ -64,14 +64,13 @@ export class Tank extends Phaser.GameObjects.Image
   }
 }
 
-export class Wall extends Phaser.Physics.Arcade.Image
+export class Wall extends Phaser.GameObjects.Image
 {
   constructor (scene: GameScene, x: number, y: number)
   {
       super(scene, x, y, 'wall');
       scene.add.existing(this);
       scene.physics.add.existing(this);
-      scene.walls.add(this);
       
       this.body.setCollisionCategory(COLLISION_CATEGORIES.WALL);
       this.body.setCollidesWith([COLLISION_CATEGORIES.PLAYER]);
@@ -96,6 +95,17 @@ export class GameScene extends Phaser.Scene {
     addPlayer(x: number, y: number, sessionId: string): Tank  {
       const entity = new Tank(this, x, y); 
       this.playerEntities[sessionId] = entity;
+
+      this.physics.add.collider(
+        Object.values(this.playerEntities), 
+        this.walls
+      );
+
+      // Enable collisions between players
+      this.physics.add.collider(
+        Object.values(this.playerEntities), 
+        Object.values(this.playerEntities)
+      );
       return entity;
     }
 
@@ -118,19 +128,10 @@ export class GameScene extends Phaser.Scene {
         this.walls = this.physics.add.staticGroup();
         
         // Add a wall
-        new Wall(this, 100, 100);
+        const wall = new Wall(this, 100, 100);
+        this.walls.add(wall);
         
         // Enable collisions between players and walls
-        this.physics.add.collider(
-          Object.values(this.playerEntities), 
-          this.walls
-        );
-
-        // Enable collisions between players
-        this.physics.add.collider(
-          Object.values(this.playerEntities), 
-          Object.values(this.playerEntities)
-        );
 
         // this.cameras.main.startFollow(this.ship, true, 0.2, 0.2);
         // this.cameras.main.setZoom(1);
