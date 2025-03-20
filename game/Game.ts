@@ -11,32 +11,9 @@
 
 import Phaser from "phaser";
 import { Room, Client, getStateCallbacks } from "colyseus.js";
-import { BACKEND_URL } from "../backend";
-
-// Import the state type from server-side code
-import type { MyRoomState } from "../../../server/src/rooms/GameRoom";
-import { Player, InputData } from "../../../game/Player";
 
 export class GameScene extends Phaser.Scene {
-    room: Room<MyRoomState>;
-
-    currentPlayer: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
     playerEntities: { [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody } = {};
-
-    debugFPS: Phaser.GameObjects.Text;
-
-    localRef: Phaser.GameObjects.Rectangle;
-    remoteRef: Phaser.GameObjects.Rectangle;
-
-    cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
-
-    inputPayload: InputData = {
-        left: false,
-        right: false,
-        up: false,
-        down: false,
-        tick: 0,
-    };
 
     elapsedTime = 0;
     fixedTimeStep = 1000 / 60;
@@ -47,66 +24,26 @@ export class GameScene extends Phaser.Scene {
         super({ key: "game" });
     }
 
+    addPlayer(x: number, y: number, sessionId: string)  {
+      const entity = this.physics.add.image(x, y, 'tank');
+      entity.setCircle(16);
+      this.playerEntities[sessionId] = entity;
+    }
+
+    removePlayer(sessionId: string) {
+      const entity = this.playerEntities[sessionId];
+      if (entity) {
+        entity.destroy();
+        delete this.playerEntities[sessionId]
+      }
+    }
+
     async create() {
-        this.cursorKeys = this.input.keyboard.createCursorKeys();
-        this.debugFPS = this.add.text(4, 4, "", { color: "#ff0000", });
-
-        // connect with the room
-        await this.connect();
-
-        const $ = getStateCallbacks(this.room);
-
         this.physics.world.setBoundsCollision(true, true, true, true);
         this.physics.enableUpdate();
+        this.physics.world.defaults.debugShowBody = true;
 
-        $(this.room.state).players.onAdd((player, sessionId) => {
-            const entity = this.physics.add.image(player.x, player.y, 'tank');
-            entity.setCircle(16);
-            this.playerEntities[sessionId] = entity;
-
-            const wall = this.physics.add.staticImage(100,100, 'wall');
-            this.physics.add.collider(entity, wall);
-
-
-            // is current player
-            if (sessionId === this.room.sessionId) {
-                this.currentPlayer = entity;
-
-                this.localRef = this.add.rectangle(0, 0, entity.width, entity.height);
-                this.localRef.setStrokeStyle(1, 0x00ff00);
-
-                this.remoteRef = this.add.rectangle(0, 0, entity.width, entity.height);
-                this.remoteRef.setStrokeStyle(1, 0xff0000);
-
-                $(player).onChange(() => {
-                    this.remoteRef.x = player.x;
-                    this.remoteRef.y = player.y;
-                    // We don't update the rotation of remoteRef since it's just a debug rectangle
-                });
-
-            } else {
-                // listening for server updates
-                $(player).onChange(() => {
-                    //
-                    // we're going to LERP the positions during the render loop.
-                    //
-                    entity.setData('serverX', player.x);
-                    entity.setData('serverY', player.y);
-                    entity.setData('serverRotation', player.rotation);
-                });
-
-            }
-
-        });
-
-        // remove local reference when entity is removed from the server
-        $(this.room.state).players.onRemove((player, sessionId) => {
-            const entity = this.playerEntities[sessionId];
-            if (entity) {
-                entity.destroy();
-                delete this.playerEntities[sessionId]
-            }
-        });
+        const wall = this.physics.add.staticImage(100,100, 'wall');
 
         // this.cameras.main.startFollow(this.ship, true, 0.2, 0.2);
         // this.cameras.main.setZoom(1);
