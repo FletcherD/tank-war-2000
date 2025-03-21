@@ -163,9 +163,15 @@ export class GameScene extends Phaser.Scene {
         // Read and add tile properties from tilesetData to the tileset
         const tileProperties = {};
         // Loop through all tiles in the tileset data
-        for (const tileKey in tilesetData.tiles) {
-            const props = tilesetData.tiles[tileKey].properties || [];
-            tileProperties[tileKey] = props;
+        console.log(`Processing tileset data with ${tilesetData.tiles ? tilesetData.tiles.length : 0} tiles`);
+        
+        if (tilesetData.tiles) {
+            for (const tileKey in tilesetData.tiles) {
+                if (tilesetData.tiles[tileKey] && tilesetData.tiles[tileKey].properties) {
+                    const props = tilesetData.tiles[tileKey].properties || [];
+                    tileProperties[tileKey] = props;
+                }
+            }
         }
 
         // Prepare two map arrays for two layers
@@ -198,10 +204,12 @@ export class GameScene extends Phaser.Scene {
                 const tileId = tileValue.toString();
                 let layerValue = 0; // Default to layer 0                
                 // Check tile properties to determine layer
-                const layerProp = tileProperties[tileIndex].find(p => p.name === "layer");
-                if (layerProp) {
-                    layerValue = layerProp.value;
-                }     
+                if (tileProperties[tileIndex]) {
+                    const layerProp = tileProperties[tileIndex].find(p => p.name === "layer");
+                    if (layerProp) {
+                        layerValue = layerProp.value;
+                    }
+                }
                 
                 
                 // Add to the appropriate layer
@@ -263,7 +271,14 @@ export class GameScene extends Phaser.Scene {
             for (let x = 0; x < mapDataLayer1[y].length; x++) {
                 const tileIndex = mapDataLayer1[y][x];
                 if (tileIndex !== -1) {
-                    this.decorationLayer.putTileAt(tileIndex, x, y);
+                    try {
+                        // Make sure the tile index is valid for the tileset
+                        if (tileIndex < this.tileset.total) {
+                            this.decorationLayer.putTileAt(tileIndex, x, y);
+                        }
+                    } catch (error) {
+                        console.error(`Failed to place tile at (${x},${y}) with index ${tileIndex}: ${error.message}`);
+                    }
                 }
             }
         }
@@ -362,7 +377,7 @@ export class GameScene extends Phaser.Scene {
                   const tileIndex = tile.index.toString();
                   const tileProperties = this.tileset.tileProperties[tileIndex];
                   
-                  if (tileProperties) {
+                  if (tileProperties && Array.isArray(tileProperties)) {
                       const isAffectedByNeighbors = tileProperties.find(prop => 
                           prop.name === "isAffectedByNeighbors" && prop.value === true);
                       
@@ -397,8 +412,9 @@ export class GameScene extends Phaser.Scene {
             const collisionTileIds = new Set<number>();
             
             if (tilesetData.tiles) {
+                // Process tile collision properties safely
                 for (const tile of tilesetData.tiles) {
-                    if (tile.properties) {
+                    if (tile && tile.properties && Array.isArray(tile.properties)) {
                         const hasCollision = tile.properties.find(prop => 
                             prop.name === "hasCollision" && prop.value === true);
                         
@@ -407,7 +423,7 @@ export class GameScene extends Phaser.Scene {
                             prop.name === "layer");
                         const layer = layerProp ? layerProp.value : 0;
                         
-                        if (hasCollision && layer === 0) {
+                        if (hasCollision && layer === 0 && tile.id !== undefined) {
                             collisionTileIds.add(parseInt(tile.id));
                         }
                     }
