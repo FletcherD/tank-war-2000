@@ -159,7 +159,15 @@ export class GameScene extends Phaser.Scene {
         const tilesetData = this.cache.json.get('tilesetData');
         
         console.log("Loading tileset:", tilesetData.name);
-        
+
+        // Read and add tile properties from tilesetData to the tileset
+        const tileProperties = {};
+        // Loop through all tiles in the tileset data
+        for (const tileKey in tilesetData.tiles) {
+            const props = tilesetData.tiles[tileKey].properties || [];
+            tileProperties[tileKey] = props;
+        }
+
         // Prepare two map arrays for two layers
         const mapDataLayer0 = [];
         const mapDataLayer1 = [];
@@ -185,22 +193,16 @@ export class GameScene extends Phaser.Scene {
                 const tileValue = mapData.mapdata[index];
                 
                 if (tileValue === 0) continue; // Skip empty tiles
+                const tileIndex = tileValue * 64;
                 
                 const tileId = tileValue.toString();
-                let layerValue = 0; // Default to layer 0
-                
+                let layerValue = 0; // Default to layer 0                
                 // Check tile properties to determine layer
-                if (tilesetData.tiles) {
-                    const tileData = tilesetData.tiles.find(t => t.id === tileId);
-                    if (tileData && tileData.properties) {
-                        const layerProp = tileData.properties.find(p => p.name === "layer");
-                        if (layerProp) {
-                            layerValue = layerProp.value;
-                        }
-                    }
-                }
+                const layerProp = tileProperties[tileIndex].find(p => p.name === "layer");
+                if (layerProp) {
+                    layerValue = layerProp.value;
+                }     
                 
-                const tileIndex = tileValue * 64;
                 
                 // Add to the appropriate layer
                 if (layerValue === 0) {
@@ -237,18 +239,8 @@ export class GameScene extends Phaser.Scene {
             0,                 // Margin around the tileset
             0                  // Spacing between tiles
         );
-        
-        // Read and add tile properties from tilesetData to the tileset
-        if (tilesetData.tiles) {
-            const tileProperties = {};
-            
-            // Loop through all tiles in the tileset data
-            for (const tileKey in tilesetData.tiles) {
-                const props = tilesetData.tiles[tileKey].properties || [];
-                tileProperties[tileKey] = props;
-            }
-            this.tileset.tileProperties = tileProperties;
-        }
+      
+        this.tileset.tileProperties = tileProperties;
         
         // Create both layers using the tileset
         this.groundLayer = this.map.createLayer(0, this.tileset, 0, 0);
