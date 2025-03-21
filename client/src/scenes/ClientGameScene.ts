@@ -63,6 +63,8 @@ export class ClientGameScene extends GameScene {
                 this.remoteRef = this.add.rectangle(0, 0, entity.width, entity.height);
                 this.remoteRef.setStrokeStyle(1, 0xff0000);
 
+                this.cameras.main.startFollow(entity);
+
                 $(player).onChange(() => {
                     this.remoteRef.x = player.x;
                     this.remoteRef.y = player.y;
