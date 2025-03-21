@@ -154,33 +154,47 @@ export class GameScene extends Phaser.Scene {
     }
     
     createTilemap() {
-        // Get the map data from cache
+        // Get the map data and tileset data from cache
         const mapData = this.cache.json.get('mapData');
+        const tilesetData = this.cache.json.get('tilesetData');
+        
+        console.log("Loading tileset:", tilesetData.name);
         
         // Convert the 1D array into 2D array for tilemap format
-        // Each tile is expanded to a 2x2 block to allow terrain drawing later
         const mapDataArray = [];
         for (let y = 0; y < mapData.size[1]; y++) {
             const row = [];
             for (let x = 0; x < mapData.size[0]; x++) {
                 const index = y * mapData.size[0] + x;
                 const tileIndex = mapData.mapdata[index] * 32;
-                row.push(tileIndex);
-                row.push(tileIndex);
+                const tileData = tilesetData.tiles[tileIndex];
+                row.push(tileData.id);
+                row.push(tileData.id);
             }
             mapDataArray.push(row);
             mapDataArray.push(row);
         }
+
+        // Get tileset properties from tileset.json
+        const tileWidth = tilesetData.tileheight || 32;
+        const tileHeight = tilesetData.tileheight || 32;
         
-        // Create the tilemap with 32x32 tile size using the data
+        // Create the tilemap using the data
         this.map = this.make.tilemap({
             data: mapDataArray,
-            tileWidth: 16, 
-            tileHeight: 16
+            tileWidth: tileWidth, 
+            tileHeight: tileHeight
         });
         
-        // Add the tileset image we loaded in the preloader (first param is name used in the map, second is the key in the cache)
-        this.tileset = this.map.addTilesetImage('tileset');
+        // Add the tileset image using properties from tileset.json
+        this.tileset = this.map.addTilesetImage(
+            'tileset',         // In-game name for the tileset
+            'tileset',         // Key of the image in the cache
+            tileWidth,         // Width of each tile
+            tileHeight,        // Height of each tile
+            0,            // Margin around the tileset
+            0            // Spacing between tiles
+        );
         
         // Create a layer using the tileset
         this.groundLayer = this.map.createLayer(0, this.tileset, 0, 0);
@@ -190,10 +204,32 @@ export class GameScene extends Phaser.Scene {
             return;
         }
         
-        // Set collision for walls (tile index 1)
-        this.map.setCollision(0);
+        // Find tiles with collision from tileset data
+        const collisionTileIds = [];
+        if (tilesetData.tiles) {
+            for (const tile of tilesetData.tiles) {
+                if (tile.properties) {
+                    const hasCollision = tile.properties.find(prop => 
+                        prop.name === "hasCollision" && prop.value === true);
+                    
+                    if (hasCollision) {
+                        collisionTileIds.push(parseInt(tile.id));
+                    }
+                }
+            }
+        }
         
-        // Create Matter physics bodies for the collision tiles (walls)
+        // Set collision for tiles that have the hasCollision property
+        if (collisionTileIds.length > 0) {
+            console.log(`Setting collision for tile IDs: ${collisionTileIds.join(', ')}`);
+            this.map.setCollision(collisionTileIds);
+        } else {
+            // Fallback - set collision for tile index 1 (walls)
+            console.log("No collision tiles found in tileset data, falling back to index 1");
+            this.map.setCollision(1);
+        }
+        
+        // Create Matter physics bodies for the collision tiles
         this.createMatterBodiesForTilemap();
     }
     
@@ -204,8 +240,33 @@ export class GameScene extends Phaser.Scene {
         }
         
         try {
-            // Get all tiles that have collision enabled
-            const collisionTiles = this.groundLayer.filterTiles(tile => tile.index === 0);
+            // Get tileset data to check for collision properties
+            const tilesetData = this.cache.json.get('tilesetData');
+            
+            // Find tile IDs that should have collision based on tileset data
+            const collisionTileIds = new Set<number>();
+            
+            if (tilesetData.tiles) {
+                for (const tile of tilesetData.tiles) {
+                    if (tile.properties) {
+                        const hasCollision = tile.properties.find(prop => 
+                            prop.name === "hasCollision" && prop.value === true);
+                        
+                        if (hasCollision) {
+                            collisionTileIds.add(parseInt(tile.id));
+                        }
+                    }
+                }
+            }
+            
+            // Filter tiles that have collision enabled
+            let collisionTiles;
+            if (collisionTileIds.size > 0) {
+                collisionTiles = this.groundLayer.filterTiles(tile => collisionTileIds.has(tile.index));
+            } else {
+                // Fallback to tile index 1 (walls)
+                collisionTiles = this.groundLayer.filterTiles(tile => tile.index === 1);
+            }
             
             console.log(`Creating physics bodies for ${collisionTiles.length} wall tiles`);
             
@@ -219,6 +280,10 @@ export class GameScene extends Phaser.Scene {
                     isStatic: true,
                     label: 'wall'
                 });
+                
+                // Set collision category for this wall
+                this.matter.body.setCollisionCategory(body, COLLISION_CATEGORIES.WALL);
+                this.matter.body.setCollidesWith(body, [COLLISION_CATEGORIES.PLAYER, COLLISION_CATEGORIES.PROJECTILE]);
             });
         } catch (error) {
             console.error("Error creating matter bodies:", error);

@@ -2097,6 +2097,16 @@
          "type":"Forest"
         }, 
         {
+         "id":512,
+         "properties":[
+                {
+                 "name":"isAffectedByNeighbors",
+                 "type":"bool",
+                 "value":false
+                }],
+         "type":"Grass"
+        }, 
+        {
          "id":224,
          "properties":[
                 {
@@ -2407,6 +2417,9 @@
          "type":"Ruins"
         }, 
         {
+         "id":444
+        }, 
+        {
          "id":255,
          "properties":[
                 {
@@ -2415,16 +2428,6 @@
                  "value":true
                 }],
          "type":"Ruins"
-        }, 
-        {
-         "id":512,
-         "properties":[
-                {
-                 "name":"isAffectedByNeighbors",
-                 "type":"bool",
-                 "value":false
-                }],
-         "type":"Grass"
         }, 
         {
          "id":33
@@ -3082,9 +3085,6 @@
         }, 
         {
          "id":443
-        }, 
-        {
-         "id":444
         }, 
         {
          "id":445
