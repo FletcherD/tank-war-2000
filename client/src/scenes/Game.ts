@@ -99,6 +99,7 @@ export class GameScene extends Phaser.Scene {
     map: Phaser.Tilemaps.Tilemap;
     tileset: Phaser.Tilemaps.Tileset;
     groundLayer: Phaser.Tilemaps.TilemapLayer;
+    decorationLayer: Phaser.Tilemaps.TilemapLayer;
 
     elapsedTime = 0;
     fixedTimeStep = 1000 / 60;
@@ -159,27 +160,70 @@ export class GameScene extends Phaser.Scene {
         
         console.log("Loading tileset:", tilesetData.name);
         
-        // Convert the 1D array into 2D array for tilemap format
-        const mapDataArray = [];
+        // Prepare two map arrays for two layers
+        const mapDataLayer0 = [];
+        const mapDataLayer1 = [];
+        
+        // Initialize both layers with empty tiles
         for (let y = 0; y < mapData.size[1]; y++) {
-            const row = [];
+            const row0 = [];
+            const row1 = [];
+            for (let x = 0; x < mapData.size[0]; x++) {
+                row0.push(-1); // -1 means no tile
+                row1.push(-1);
+            }
+            mapDataLayer0.push(row0);
+            mapDataLayer0.push(row0.slice()); // Duplicate each row for the doubled resolution
+            mapDataLayer1.push(row1);
+            mapDataLayer1.push(row1.slice()); // Duplicate each row for the doubled resolution
+        }
+        
+        // Fill the layers based on tile properties
+        for (let y = 0; y < mapData.size[1]; y++) {
             for (let x = 0; x < mapData.size[0]; x++) {
                 const index = y * mapData.size[0] + x;
-                const tileIndex = mapData.mapdata[index] * 64;
-                row.push(tileIndex);
-                row.push(tileIndex);
+                const tileValue = mapData.mapdata[index];
+                
+                if (tileValue === 0) continue; // Skip empty tiles
+                
+                const tileId = tileValue.toString();
+                let layerValue = 0; // Default to layer 0
+                
+                // Check tile properties to determine layer
+                if (tilesetData.tiles) {
+                    const tileData = tilesetData.tiles.find(t => t.id === tileId);
+                    if (tileData && tileData.properties) {
+                        const layerProp = tileData.properties.find(p => p.name === "layer");
+                        if (layerProp) {
+                            layerValue = layerProp.value;
+                        }
+                    }
+                }
+                
+                const tileIndex = tileValue * 64;
+                
+                // Add to the appropriate layer
+                if (layerValue === 0) {
+                    mapDataLayer0[y*2][x*2] = tileIndex;
+                    mapDataLayer0[y*2][(x*2)+1] = tileIndex;
+                    mapDataLayer0[(y*2)+1][x*2] = tileIndex;
+                    mapDataLayer0[(y*2)+1][(x*2)+1] = tileIndex;
+                } else {
+                    mapDataLayer1[y*2][x*2] = tileIndex;
+                    mapDataLayer1[y*2][(x*2)+1] = tileIndex;
+                    mapDataLayer1[(y*2)+1][x*2] = tileIndex;
+                    mapDataLayer1[(y*2)+1][(x*2)+1] = tileIndex;
+                }
             }
-            mapDataArray.push(row);
-            mapDataArray.push(row);
         }
 
         // Get tileset properties from tileset.json
         const tileWidth = tilesetData.tileheight;
         const tileHeight = tilesetData.tileheight;
         
-        // Create the tilemap using the data
+        // Create the tilemap using the data for layer 0
         this.map = this.make.tilemap({
-            data: mapDataArray,
+            data: mapDataLayer0,
             tileWidth: tileWidth, 
             tileHeight: tileHeight
         });
@@ -190,8 +234,8 @@ export class GameScene extends Phaser.Scene {
             'tileset',         // Key of the image in the cache
             tileWidth,         // Width of each tile
             tileHeight,        // Height of each tile
-            0,            // Margin around the tileset
-            0            // Spacing between tiles
+            0,                 // Margin around the tileset
+            0                  // Spacing between tiles
         );
         
         // Read and add tile properties from tilesetData to the tileset
@@ -206,13 +250,34 @@ export class GameScene extends Phaser.Scene {
             this.tileset.tileProperties = tileProperties;
         }
         
-        // Create a layer using the tileset
+        // Create both layers using the tileset
         this.groundLayer = this.map.createLayer(0, this.tileset, 0, 0);
         
         if (!this.groundLayer) {
             console.error("Failed to create ground layer");
             return;
         }
+        
+        // Create the decoration layer (layer 1) and add the tileset data
+        this.decorationLayer = this.map.createBlankLayer('decoration', this.tileset, 0, 0);
+        
+        if (!this.decorationLayer) {
+            console.error("Failed to create decoration layer");
+            return;
+        }
+        
+        // Fill the decoration layer with the layer 1 data
+        for (let y = 0; y < mapDataLayer1.length; y++) {
+            for (let x = 0; x < mapDataLayer1[y].length; x++) {
+                const tileIndex = mapDataLayer1[y][x];
+                if (tileIndex !== -1) {
+                    this.decorationLayer.putTileAt(tileIndex, x, y);
+                }
+            }
+        }
+        
+        // Ensure the decoration layer is drawn on top
+        this.decorationLayer.setDepth(1);
         
         // Find tiles with collision from tileset data
         const collisionTileIds = [];
@@ -239,74 +304,91 @@ export class GameScene extends Phaser.Scene {
         this.applyWangTiles();
     }
 
+    getTileBitmask(layer: Phaser.Tilemaps.TilemapLayer, x: number, y: number): number {
+      if (!layer) return 0;
+
+      const isTileSameType = (idA: number, idB: number): boolean => {
+        return Math.floor(idA/64) === Math.floor(idB/64);
+      }
+      
+      const centerTile = layer.getTileAt(x, y);
+      if (!centerTile) return 0;
+      
+      // Check all 8 neighbors
+      const neighbors = [
+        {dx: -1, dy: 0}, // left
+        {dx: -1, dy: 1}, // top-left
+        {dx: 0, dy: 1},  // top
+        {dx: 1, dy: 1},  // top-right
+        {dx: 1, dy: 0},  // right
+        {dx: 1, dy: -1}, // bottom-right
+        {dx: 0, dy: -1},  // bottom
+        {dx: -1, dy: -1}, // bottom-left
+      ];
+      
+      let wang = [];
+      for (const {dx, dy} of neighbors) {
+          const neighborTile = layer.getTileAt(x + dx, y + dy);
+          const result = neighborTile && isTileSameType(neighborTile.index, centerTile.index);
+          wang.push(result);
+      }
+
+      let cornerMask = 0;
+      cornerMask |= (wang[0] && wang[1] && wang[2] ? 0x01 : 0);
+      cornerMask |= (wang[2] && wang[3] && wang[4] ? 0x02 : 0);
+      cornerMask |= (wang[4] && wang[5] && wang[6] ? 0x04 : 0);
+      cornerMask |= (wang[6] && wang[7] && wang[0] ? 0x08 : 0);
+      
+      return cornerMask;
+  }
+
     applyWangTiles() {
       // Create a bitmask indicating which of the 4 corner tiles match the center tile
       // Returns a bitmask where each bit represents a neighbor (clockwise from top-left):
       // 0x01: top-left, 0x02: top-right, 0x04: bottom-right, 0x08: bottom-left
-      const isTileSameType = (idA: number, idB: number): boolean => {
-        return Math.floor(idA/64) === Math.floor(idB/64);
-      }
 
-      const getTileBitmask = (x: number, y: number): number => {
-          if (!this.groundLayer) return 0;
-          
-          const centerTile = this.groundLayer.getTileAt(x, y);
-          if (!centerTile) return 0;
-          
-          // Check all 8 neighbors
-          const neighbors = [
-            {dx: -1, dy: 0}, // left
-            {dx: -1, dy: 1}, // top-left
-            {dx: 0, dy: 1},  // top
-            {dx: 1, dy: 1},  // top-right
-            {dx: 1, dy: 0},  // right
-            {dx: 1, dy: -1}, // bottom-right
-            {dx: 0, dy: -1},  // bottom
-            {dx: -1, dy: -1}, // bottom-left
-          ];
-          
-          let wang = [];
-          for (const {dx, dy} of neighbors) {
-              const neighborTile = this.groundLayer.getTileAt(x + dx, y + dy);
-              const result = neighborTile && isTileSameType(neighborTile.index, centerTile.index);
-              wang.push(result);
-          }
 
-          let cornerMask = 0;
-          cornerMask |= (wang[0] && wang[1] && wang[2] ? 0x01 : 0);
-          cornerMask |= (wang[2] && wang[3] && wang[4] ? 0x02 : 0);
-          cornerMask |= (wang[4] && wang[5] && wang[6] ? 0x04 : 0);
-          cornerMask |= (wang[6] && wang[7] && wang[0] ? 0x08 : 0);
-          
-          return cornerMask;
-      }
-
-      // Get tileset data to check for collision properties
+      // Get tileset data
       const tilesetData = this.cache.json.get('tilesetData');
 
+      // Apply Wang tiles to ground layer
+      this.applyWangTilesToLayer(this.groundLayer);
+      
+      // Apply Wang tiles to decoration layer
+      this.applyWangTilesToLayer(this.decorationLayer);
+    }
+    
+    // Helper method to apply Wang tiles to a specific layer
+    applyWangTilesToLayer(layer: Phaser.Tilemaps.TilemapLayer) {
+      if (!layer) return;
+      
       // For each tile in the layer, get its bitmask and update its index
-      for (let y = 0; y < this.groundLayer.height; y++) {
-          for (let x = 0; x < this.groundLayer.width; x++) {
-              const tile = this.groundLayer.getTileAt(x, y);
+      for (let y = 0; y < layer.height; y++) {
+          for (let x = 0; x < layer.width; x++) {
+              const tile = layer.getTileAt(x, y);
               if (tile) {
-                  const tileProperties = this.tileset.tileProperties[tile.index];
-                  const isAffectedByNeighbors = tileProperties.find(prop => 
-                      prop.name === "isAffectedByNeighbors" && prop.value === true);
+                  const tileIndex = tile.index.toString();
+                  const tileProperties = this.tileset.tileProperties[tileIndex];
                   
-                  if (isAffectedByNeighbors) {
-                      const bitmask = getTileBitmask(x, y);
-                      tile.index = tile.index + bitmask;
-                      // Alternate terrain variation based on offset so 2x2 tiles display correctly
-                      if (x%2) {
-                          tile.index += 16;
-                      }
-                      if (y%2) {
-                          tile.index += 32;
+                  if (tileProperties) {
+                      const isAffectedByNeighbors = tileProperties.find(prop => 
+                          prop.name === "isAffectedByNeighbors" && prop.value === true);
+                      
+                      if (isAffectedByNeighbors) {
+                          const bitmask = this.getTileBitmask(layer, x, y);
+                          tile.index = tile.index + bitmask;
+                          // Alternate terrain variation based on offset so 2x2 tiles display correctly
+                          if (x%2) {
+                              tile.index += 16;
+                          }
+                          if (y%2) {
+                              tile.index += 32;
+                          }
                       }
                   }
               }
           }
-      }      
+      }
     }
     
     createMatterBodiesForTilemap() {
@@ -328,7 +410,12 @@ export class GameScene extends Phaser.Scene {
                         const hasCollision = tile.properties.find(prop => 
                             prop.name === "hasCollision" && prop.value === true);
                         
-                        if (hasCollision) {
+                        // Only add to collision if in layer 0 (ground layer)
+                        const layerProp = tile.properties.find(prop => 
+                            prop.name === "layer");
+                        const layer = layerProp ? layerProp.value : 0;
+                        
+                        if (hasCollision && layer === 0) {
                             collisionTileIds.add(parseInt(tile.id));
                         }
                     }
@@ -338,7 +425,11 @@ export class GameScene extends Phaser.Scene {
             // Filter tiles that have collision enabled
             let collisionTiles;
             if (collisionTileIds.size > 0) {
-                collisionTiles = this.groundLayer.filterTiles(tile => collisionTileIds.has(tile.index));
+                collisionTiles = this.groundLayer.filterTiles(tile => {
+                    // Get the base tile ID (without wang modifications)
+                    const baseTileId = Math.floor(tile.index / 64) * 64;
+                    return collisionTileIds.has(baseTileId);
+                });
             } else {
                 // Fallback to tile index 1 (walls)
                 collisionTiles = this.groundLayer.filterTiles(tile => tile.index === 1);
