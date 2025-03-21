@@ -165,7 +165,7 @@ export class GameScene extends Phaser.Scene {
             const row = [];
             for (let x = 0; x < mapData.size[0]; x++) {
                 const index = y * mapData.size[0] + x;
-                const tileIndex = mapData.mapdata[index] * 32;
+                const tileIndex = mapData.mapdata[index] * 64;
                 row.push(tileIndex);
                 row.push(tileIndex);
             }
@@ -244,7 +244,7 @@ export class GameScene extends Phaser.Scene {
       // Returns a bitmask where each bit represents a neighbor (clockwise from top-left):
       // 0x01: top-left, 0x02: top-right, 0x04: bottom-right, 0x08: bottom-left
       const isTileSameType = (idA: number, idB: number): boolean => {
-        return Math.floor(idA/32) === Math.floor(idB/32);
+        return Math.floor(idA/64) === Math.floor(idB/64);
       }
 
       const getTileBitmask = (x: number, y: number): number => {
@@ -297,8 +297,11 @@ export class GameScene extends Phaser.Scene {
                       const bitmask = getTileBitmask(x, y);
                       tile.index = tile.index + bitmask;
                       // Alternate terrain variation based on offset so 2x2 tiles display correctly
-                      if (x%2 ^ y%2) {
+                      if (x%2) {
                           tile.index += 16;
+                      }
+                      if (y%2) {
+                          tile.index += 32;
                       }
                   }
               }
