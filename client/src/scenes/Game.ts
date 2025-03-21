@@ -95,6 +95,11 @@ export class GameScene extends Phaser.Scene {
     matter: Phaser.Physics.Matter.MatterPhysics;
 
     wall: Wall;
+    
+    // Tilemap properties
+    map: Phaser.Tilemaps.Tilemap;
+    tileset: Phaser.Tilemaps.Tileset;
+    groundLayer: Phaser.Tilemaps.TilemapLayer;
 
     elapsedTime = 0;
     fixedTimeStep = 1000 / 60;
@@ -123,18 +128,101 @@ export class GameScene extends Phaser.Scene {
 
     async create() {
       console.log("GameScene create");
-        // Set world bounds
-        this.matter.world.setBounds(0, 0, 800, 600);
+        // Create the tilemap
+        this.createTilemap();
         
-        // Add a wall
+        if (!this.map) {
+            console.error("Failed to create tilemap");
+            return;
+        }
+        
+        console.log(`Tilemap created successfully: ${this.map.width}x${this.map.height} tiles, ${this.map.widthInPixels}x${this.map.heightInPixels} pixels`);
+        
+        // Set world bounds to match the tilemap size
+        const mapWidth = this.map.widthInPixels;
+        const mapHeight = this.map.heightInPixels;
+        this.matter.world.setBounds(0, 0, mapWidth, mapHeight);
+        
+        // Add a wall for testing
         this.wall = new Wall(this, 100, 100);
-        
-        // Enable collisions between players and walls through collision categories
         
         // Set up collision event handler
         this.matter.world.on('collisionstart', this.handleCollision, this);
 
-        this.cameras.main.setBounds(0, 0, 800, 600);
+        // Set camera bounds to match the map size
+        this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
+    }
+    
+    createTilemap() {
+        // Get the map data from cache
+        const mapData = this.cache.json.get('mapData');
+        
+        // Convert the 1D array into 2D array for tilemap format
+        // Each tile is expanded to a 2x2 block to allow terrain drawing later
+        const mapDataArray = [];
+        for (let y = 0; y < mapData.size[1]; y++) {
+            const row = [];
+            for (let x = 0; x < mapData.size[0]; x++) {
+                const index = y * mapData.size[0] + x;
+                const tileIndex = mapData.mapdata[index] * 32;
+                row.push(tileIndex);
+                row.push(tileIndex);
+            }
+            mapDataArray.push(row);
+            mapDataArray.push(row);
+        }
+        
+        // Create the tilemap with 32x32 tile size using the data
+        this.map = this.make.tilemap({
+            data: mapDataArray,
+            tileWidth: 16, 
+            tileHeight: 16
+        });
+        
+        // Add the tileset image we loaded in the preloader (first param is name used in the map, second is the key in the cache)
+        this.tileset = this.map.addTilesetImage('tileset');
+        
+        // Create a layer using the tileset
+        this.groundLayer = this.map.createLayer(0, this.tileset, 0, 0);
+        
+        if (!this.groundLayer) {
+            console.error("Failed to create ground layer");
+            return;
+        }
+        
+        // Set collision for walls (tile index 1)
+        this.map.setCollision(0);
+        
+        // Create Matter physics bodies for the collision tiles (walls)
+        this.createMatterBodiesForTilemap();
+    }
+    
+    createMatterBodiesForTilemap() {
+        if (!this.groundLayer) {
+            console.error("Ground layer is null, cannot create matter bodies");
+            return;
+        }
+        
+        try {
+            // Get all tiles that have collision enabled
+            const collisionTiles = this.groundLayer.filterTiles(tile => tile.index === 0);
+            
+            console.log(`Creating physics bodies for ${collisionTiles.length} wall tiles`);
+            
+            // Create static bodies for each collision tile
+            collisionTiles.forEach(tile => {
+                const x = tile.pixelX + tile.width / 2;
+                const y = tile.pixelY + tile.height / 2;
+                
+                // Create a static rectangle body at the tile's position
+                const body = this.matter.add.rectangle(x, y, tile.width, tile.height, {
+                    isStatic: true,
+                    label: 'wall'
+                });
+            });
+        } catch (error) {
+            console.error("Error creating matter bodies:", error);
+        }
     }
 
     update(time: number, delta: number): void {
