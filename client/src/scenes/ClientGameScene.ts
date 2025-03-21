@@ -23,6 +23,7 @@ export class ClientGameScene extends GameScene {
     currentPlayer: Tank;
 
     debugFPS: Phaser.GameObjects.Text;
+    debugTileInfo: Phaser.GameObjects.Text;
 
     localRef: Phaser.GameObjects.Rectangle;
     remoteRef: Phaser.GameObjects.Rectangle;
@@ -43,7 +44,8 @@ export class ClientGameScene extends GameScene {
         await super.create();
 
         this.cursorKeys = this.input.keyboard.createCursorKeys();
-        this.debugFPS = this.add.text(4, 4, "", { color: "#ff0000", });
+        this.debugFPS = this.add.text(4, 4, "", { color: "#ff0000" });
+        this.debugTileInfo = this.add.text(4, 24, "", { color: "#ff0000" });
 
         // connect with the room
         await this.connect();
@@ -126,6 +128,7 @@ export class ClientGameScene extends GameScene {
         }
 
         this.debugFPS.text = `Frame rate: ${this.game.loop.actualFps}`;
+        this.debugTileInfo.text = this.debugText;
     }
 
     applyInput() {

@@ -28,6 +28,7 @@ export class Tank extends Phaser.Physics.Matter.Sprite
   };
   speed: number = 0;
   controlAngle: number = 0;
+  baseMaxSpeed: number = 2; // Base max speed without tile modifiers
 
   constructor (scene: Phaser.Scene, x: number, y: number)
   {
@@ -43,9 +44,19 @@ export class Tank extends Phaser.Physics.Matter.Sprite
 
   preUpdate(time: number, delta: number)
   {
+      const gameScene = this.scene as GameScene;
+      
       const acceleration = 0.005; // meters / msec^2
       const rotationSpeed = 0.003; // radians / msec
-      const maxSpeed = 2; // meters / msec
+      
+      // Get speed multiplier from the current tile
+      const speedMultiplier = gameScene.gameMap.getSpeedAtPosition(this.x, this.y);
+      const maxSpeed = this.baseMaxSpeed * speedMultiplier;
+      
+      // Debug output for tile speed
+      if (this === gameScene.currentPlayer) {
+          gameScene.debugText = `Tile Speed: ${speedMultiplier.toFixed(2)}`;
+      }
   
       // Rotate left/right - in Matter we need to set the angle property
       if (this.currentInput.left) {
@@ -59,16 +70,23 @@ export class Tank extends Phaser.Physics.Matter.Sprite
       const velocity = this.body.velocity as Phaser.Math.Vector2;
       this.speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
       
+      let targetSpeed = 0;
       // Apply forces when moving forward/backward
       if (this.currentInput.up) {
-        this.speed += acceleration * delta;
-        if (this.speed > maxSpeed) {
-          this.speed = maxSpeed;
-        }
+        targetSpeed = maxSpeed;
       } else {
+        targetSpeed = 0;
+      }
+
+      if (this.speed > targetSpeed) {
         this.speed -= acceleration * delta;
-        if (this.speed < 0) {
-          this.speed = 0;
+        if (this.speed < targetSpeed) {
+          this.speed = targetSpeed;
+        }
+      } else if (this.speed < targetSpeed) {
+        this.speed += acceleration * delta;
+        if (this.speed > targetSpeed) {
+          this.speed = targetSpeed;
         }
       }
 
@@ -103,6 +121,10 @@ export class GameScene extends Phaser.Scene {
     fixedTimeStep = 1000 / 60;
 
     currentTick: number = 0;
+    
+    // For displaying debug information
+    debugText: string = "";
+    currentPlayer: Tank; // Reference to the local player's tank
 
     constructor() {
       console.log("GameScene constructor");

@@ -10,6 +10,34 @@ export class GameMap {
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
     }
+    
+    // Get the speed multiplier at the given world position
+    // Returns a value between 0 and 1, with default of 1 if no speed property is found
+    getSpeedAtPosition(x: number, y: number): number {
+        if (!this.groundLayer) return 1.0;
+        
+        // Convert world position to tile position
+        const tileX = this.groundLayer.worldToTileX(x);
+        const tileY = this.groundLayer.worldToTileY(y);
+        
+        // Get the tile at this position
+        const tile = this.groundLayer.getTileAt(tileX, tileY);
+        if (!tile) return 1.0;
+        
+        // Get the base tile index (without Wang modifications)
+        const baseTileId = Math.floor(tile.index / 64) * 64;
+        const baseTileIdStr = baseTileId.toString();
+        
+        // Access the tileProperties for this tile
+        const tileProperties = this.tileset.tileProperties[baseTileIdStr];
+        if (!tileProperties || !Array.isArray(tileProperties)) return 1.0;
+        
+        // Find the speed property
+        const speedProp = tileProperties.find(prop => prop.name === "speed");
+        
+        // Return the speed value, or default to 1 if not found
+        return speedProp ? speedProp.value : 1.0;
+    }
 
     createTilemap() {
         // Get the map data and tileset data from cache
