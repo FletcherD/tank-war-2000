@@ -121,6 +121,7 @@ export class Bullet extends Phaser.Physics.Matter.Sprite
     scene.add.existing(this);
 
     this.setCircle(1);
+    this.setBounce(1);
     this.setRotation(rotation);
     const velocity: Phaser.Math.Vector2 = new Phaser.Math.Vector2(
       this.speed * Math.cos(this.rotation), 
@@ -227,44 +228,45 @@ export class GameScene extends Phaser.Scene {
             const bodyA = pair.bodyA;
             const bodyB = pair.bodyB;
             
-            // Check if both bodies have gameObjects associated with them
-            if (bodyA.gameObject && bodyB.gameObject) {
-                // One object is Tank and one is Wall - determine which is which
-                let tank: Tank | null = null;
-                let wall: Wall | null = null;
-                
-                if (bodyA.gameObject instanceof Tank) {
-                    tank = bodyA.gameObject as Tank;
-                } else if (bodyA.gameObject instanceof Wall) {
-                    wall = bodyA.gameObject as Wall;
-                }
-                
-                if (bodyB.gameObject instanceof Tank) {
-                    tank = bodyB.gameObject as Tank;
-                } else if (bodyB.gameObject instanceof Wall) {
-                    wall = bodyB.gameObject as Wall;
-                }
-                
-                // If we have a tank-wall collision, log information
-                if (tank && wall) {
-                    console.log('Tank-Wall Collision Detected:');
-                    console.log('- Tank position:', tank.x, tank.y);
-                    console.log('- Wall position:', wall.x, wall.y);
-                    console.log('- Tank velocity:', tank.body.velocity.x, tank.body.velocity.y);
-                    console.log('- Tank speed:', tank.speed);
-                    console.log('- Collision angle (degrees):', 
-                        Phaser.Math.RadToDeg(
-                            Phaser.Math.Angle.Between(
-                                tank.x, 
-                                tank.y, 
-                                wall.x, 
-                                wall.y
-                            )
-                        )
-                    );
-                    console.log('- Tank rotation (degrees):', Phaser.Math.RadToDeg(tank.rotation));
+            // One object is Tank and one is Wall - determine which is which
+            let bullet: Bullet | null = null;
+            let otherBody: Phaser.GameObjects.GameObject | null = null;
+            
+            if (bodyA.gameObject instanceof Bullet) {
+                bullet = bodyA.gameObject as Bullet;
+                otherBody = bodyB.gameObject;
+            } else if (bodyB.gameObject instanceof Bullet) {
+                bullet = bodyB.gameObject as Bullet;
+                otherBody = bodyA.gameObject;
+            }
+            if (bullet) {
+                console.log('Bullet collision detected');
+                if (otherBody instanceof Tank) {
+                    console.log('Tank collision detected');
+                } else {
+                  debugger;
                 }
             }
+                
+                // If we have a tank-wall collision, log information
+                // if (tank && wall) {
+                //     console.log('Tank-Wall Collision Detected:');
+                //     console.log('- Tank position:', tank.x, tank.y);
+                //     console.log('- Wall position:', wall.x, wall.y);
+                //     console.log('- Tank velocity:', tank.body.velocity.x, tank.body.velocity.y);
+                //     console.log('- Tank speed:', tank.speed);
+                //     console.log('- Collision angle (degrees):', 
+                //         Phaser.Math.RadToDeg(
+                //             Phaser.Math.Angle.Between(
+                //                 tank.x, 
+                //                 tank.y, 
+                //                 wall.x, 
+                //                 wall.y
+                //             )
+                //         )
+                //     );
+                //     console.log('- Tank rotation (degrees):', Phaser.Math.RadToDeg(tank.rotation));
+                // }
         }
     }
 }

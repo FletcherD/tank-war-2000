@@ -18,6 +18,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -41,6 +46,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -68,6 +78,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -91,6 +106,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -118,6 +138,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -141,6 +166,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -168,6 +198,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -191,6 +226,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -218,6 +258,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -241,6 +286,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -268,6 +318,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -291,6 +346,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -318,6 +378,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -341,6 +406,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -368,6 +438,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -391,6 +466,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -418,6 +498,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -441,6 +526,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -468,6 +558,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -491,6 +586,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -518,6 +618,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -541,6 +646,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -568,6 +678,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -591,6 +706,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -618,6 +738,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -641,6 +766,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -668,6 +798,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -691,6 +826,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -718,6 +858,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -741,6 +886,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -768,6 +918,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -791,6 +946,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -818,6 +978,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -841,6 +1006,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -868,6 +1038,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -891,6 +1066,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -918,6 +1098,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -941,6 +1126,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -968,6 +1158,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -991,6 +1186,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1018,6 +1218,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1041,6 +1246,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1068,6 +1278,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1091,6 +1306,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1118,6 +1338,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1141,6 +1366,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1168,6 +1398,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1191,6 +1426,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1218,6 +1458,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1241,6 +1486,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1268,6 +1518,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1291,6 +1546,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1318,6 +1578,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1341,6 +1606,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1368,6 +1638,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1391,6 +1666,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1418,6 +1698,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1441,6 +1726,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1468,6 +1758,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1491,6 +1786,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1518,6 +1818,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1541,6 +1846,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
@@ -1568,6 +1878,11 @@
                  "value":true
                 }, 
                 {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
+                }, 
+                {
                  "name":"isAffectedByNeighbors",
                  "type":"bool",
                  "value":true
@@ -1591,6 +1906,11 @@
                  "name":"hasCollision",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"health",
+                 "type":"int",
+                 "value":2
                 }, 
                 {
                  "name":"isAffectedByNeighbors",
