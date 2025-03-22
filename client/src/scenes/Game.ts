@@ -14,6 +14,7 @@ export interface InputData {
   right: boolean;
   up: boolean;
   down: boolean;
+  fire: boolean;
   tick: number;
 }
 
@@ -24,11 +25,14 @@ export class Tank extends Phaser.Physics.Matter.Sprite
       right: false,
       up: false,
       down: false,
+      fire: false,
       tick: 0,
   };
   speed: number = 0;
   controlAngle: number = 0;
   baseMaxSpeed: number = 2; // Base max speed without tile modifiers
+  fireCooldownTimer: number = 0;
+  cooldownDuration: number = 1000; // Cooldown duration in milliseconds
 
   constructor (scene: Phaser.Scene, x: number, y: number)
   {
@@ -91,28 +95,52 @@ export class Tank extends Phaser.Physics.Matter.Sprite
       }
 
       this.setVelocity(this.speed * Math.cos(this.rotation), this.speed * Math.sin(this.rotation));
+
+      // Handle fire cooldown
+      if (this.currentInput.fire && this.fireCooldownTimer <= 0) {
+        this.fire();
+        this.fireCooldownTimer = this.cooldownDuration;
+      }
+      this.fireCooldownTimer -= delta;
+  }
+
+  fire() {
+    const fireLocation = new Phaser.Math.Vector2(16.0, 0.0).rotate(this.controlAngle);
+    const bullet = new Bullet(this.scene as GameScene, this.x + fireLocation.x, this.y + fireLocation.y, this.controlAngle);
+    this.scene.add.existing(bullet);
   }
 }
 
-export class Wall extends Phaser.Physics.Matter.Image
+export class Bullet extends Phaser.Physics.Matter.Sprite
 {
-  constructor (scene: GameScene, x: number, y: number)
+  speed: number = 10;
+  distanceToLive: number = 4096;
+
+  constructor(scene: GameScene, x: number, y: number, rotation: number) {
+    super(scene.matter.world, x, y, 'bullet');
+    scene.add.existing(this);
+
+    this.setCircle(1);
+    this.setRotation(rotation);
+    const velocity: Phaser.Math.Vector2 = new Phaser.Math.Vector2(
+      this.speed * Math.cos(this.rotation), 
+      this.speed * Math.sin(this.rotation));
+    this.setVelocity(velocity.x, velocity.y);
+  }
+
+
+  preUpdate(time: number, delta: number)
   {
-      super(scene.matter.world, x, y, 'wall');
-      scene.add.existing(this);
-      this.setStatic(true);
-      
-      this.setCollisionCategory(COLLISION_CATEGORIES.WALL);
-      this.setCollidesWith([COLLISION_CATEGORIES.PLAYER, COLLISION_CATEGORIES.PROJECTILE]);
+    this.distanceToLive -= delta * this.speed;
+    if (this.distanceToLive <= 0) {
+      this.destroy();
+    }
   }
 }
-
 
 export class GameScene extends Phaser.Scene {
     playerEntities: { [sessionId: string]: Tank } = {};
     matter: Phaser.Physics.Matter.MatterPhysics;
-
-    wall: Wall;
     
     // Map instance
     gameMap: GameMap;
@@ -163,9 +191,6 @@ export class GameScene extends Phaser.Scene {
         const mapWidth = this.gameMap.map.widthInPixels;
         const mapHeight = this.gameMap.map.heightInPixels;
         this.matter.world.setBounds(0, 0, mapWidth, mapHeight);
-        
-        // Add a wall for testing
-        this.wall = new Wall(this, 100, 100);
         
         // Set up collision event handler
         this.matter.world.on('collisionstart', this.handleCollision, this);

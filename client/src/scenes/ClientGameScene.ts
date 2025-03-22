@@ -29,12 +29,14 @@ export class ClientGameScene extends GameScene {
     remoteRef: Phaser.GameObjects.Rectangle;
 
     cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
+    spaceKey: Phaser.Input.Keyboard.Key;
 
     inputPayload: InputData = {
         left: false,
         right: false,
         up: false,
         down: false,
+        fire: false,
         tick: 0,
     };
 
@@ -44,6 +46,7 @@ export class ClientGameScene extends GameScene {
         await super.create();
 
         this.cursorKeys = this.input.keyboard.createCursorKeys();
+        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.debugFPS = this.add.text(4, 4, "", { color: "#ff0000" });
         this.debugTileInfo = this.add.text(4, 24, "", { color: "#ff0000" });
 
@@ -142,6 +145,7 @@ export class ClientGameScene extends GameScene {
         this.inputPayload.right = this.cursorKeys.right.isDown;
         this.inputPayload.up = this.cursorKeys.up.isDown;
         this.inputPayload.down = this.cursorKeys.down.isDown;
+        this.inputPayload.fire = this.spaceKey.isDown;
         this.inputPayload.tick = this.currentTick;
         this.room.send(0, this.inputPayload);
 

@@ -12,6 +12,7 @@ export class SceneSelector extends Phaser.Scene {
 
         // preload demo assets
         this.load.image('tank', '../assets/tank.png');
+        this.load.image('bullet', '../assets/bullet.png');
         
         // Load tileset image, tileset data, and tilemap
         this.load.image('tileset', '../assets/tiles/tileset.png');
