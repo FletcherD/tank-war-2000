@@ -84,7 +84,7 @@ export class GameMap {
                 const index = y * mapData.size[0] + x;
                 const tileValue = mapData.mapdata[index];
                 
-                if (tileValue === 0) continue; // Skip empty tiles
+                //if (tileValue === 0) continue; // Skip empty tiles
                 const tileIndex = tileValue * 64;
                 
                 const tileId = tileValue.toString();
@@ -342,8 +342,8 @@ export class GameMap {
                 });
                 
                 // Set collision category for this wall
-                this.scene.matter.body.setCollisionCategory(body, 0x0001); // WALL category
-                this.scene.matter.body.setCollidesWith(body, [0x0002, 0x0004]); // PLAYER, PROJECTILE categories
+                // this.scene.matter.body.setCollisionCategory(body, 0x0001); // WALL category
+                // this.scene.matter.body.setCollidesWith(body, [0x0002, 0x0004]); // PLAYER, PROJECTILE categories
             });
         } catch (error) {
             console.error("Error creating matter bodies:", error);
