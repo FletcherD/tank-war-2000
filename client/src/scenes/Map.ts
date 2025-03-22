@@ -151,6 +151,7 @@ export class GameMap {
             console.error("Failed to create decoration layer");
             return;
         }
+
         
         // Fill the decoration layer with the layer 1 data
         for (let y = 0; y < mapDataLayer1.length; y++) {
@@ -171,24 +172,21 @@ export class GameMap {
         
         // Ensure the decoration layer is drawn on top
         this.decorationLayer.setDepth(1);
-        
-        // Find tiles with collision from tileset data
-        const collisionTileIds = [];
-        if (tilesetData.tiles) {
-            for (const tile of tilesetData.tiles) {
-                if (tile && tile.properties && Array.isArray(tile.properties)) {
-                    const hasCollision = tile.properties.find(prop => 
-                        prop.name === "hasCollision" && prop.value === true);
-                    
-                    if (hasCollision) {
-                        collisionTileIds.push(parseInt(tile.id));
-                    }
+
+
+        // Apply tile properties to both layers
+        for (let y = 0; y < this.groundLayer.height; y++) {
+            for (let x = 0; x < this.groundLayer.width; x++) {
+                const tileLayer0 = this.groundLayer.getTileAt(x, y);
+                if (tileLayer0) {
+                    this.applyTileProperties(tileLayer0);
+                }
+                const tileLayer1 = this.decorationLayer.getTileAt(x, y);
+                if (tileLayer1) {
+                    this.applyTileProperties(tileLayer1);
                 }
             }
         }
-        
-        console.log(`Setting collision for tile IDs: ${collisionTileIds.join(', ')}`);
-        this.map.setCollision(collisionTileIds);
         
         // Create Matter physics bodies for the tilemap
         this.createMatterBodiesForTilemap();
@@ -234,6 +232,28 @@ export class GameMap {
       
         return cornerMask;
     }
+    
+    // Apply properties from tilesetData to the given tile object
+    applyTileProperties(tile: Phaser.Tilemaps.Tile) {
+        if (!tile) return;
+        
+        // Get tileset data
+        const tilesetData = this.scene.cache.json.get('tilesetData');
+        
+        // Find the properties for this tile
+        const tileInfo = tilesetData.tiles.find(t => parseInt(t.id) === tile.index);
+        
+        // Create a properties object for the tile if it doesn't exist
+        if (!tile.properties) {
+            tile.properties = {};
+        }
+        
+        // Copy properties from tileset to the tile
+        for (const prop of tileInfo.properties) {
+            tile.properties[prop.name] = prop.value;
+        }
+    }
+
 
     applyWangTiles() {
         // Create a bitmask indicating which of the 4 corner tiles match the center tile
@@ -259,23 +279,16 @@ export class GameMap {
             for (let x = 0; x < layer.width; x++) {
                 const tile = layer.getTileAt(x, y);
                 if (tile) {
-                    const tileIndex = tile.index.toString();
-                    const tileProperties = this.tileset.tileProperties[tileIndex];
-                  
-                    if (tileProperties && Array.isArray(tileProperties)) {
-                        const isAffectedByNeighbors = tileProperties.find(prop => 
-                            prop.name === "isAffectedByNeighbors" && prop.value === true);
-                      
-                        if (isAffectedByNeighbors) {
-                            const bitmask = this.getTileBitmask(layer, x, y);
-                            tile.index = tile.index + bitmask;
-                            // Alternate terrain variation based on offset so 2x2 tiles display correctly
-                            if (x%2) {
-                                tile.index += 16;
-                            }
-                            if (y%2) {
-                                tile.index += 32;
-                            }
+                    const isAffectedByNeighbors = tile.properties?.isAffectedByNeighbors;
+                    if (isAffectedByNeighbors) {
+                        const bitmask = this.getTileBitmask(layer, x, y);
+                        tile.index = tile.index + bitmask;
+                        // Alternate terrain variation based on offset so 2x2 tiles display correctly
+                        if (x%2) {
+                            tile.index += 16;
+                        }
+                        if (y%2) {
+                            tile.index += 32;
                         }
                     }
                 }
@@ -283,50 +296,13 @@ export class GameMap {
         }
     }
     
-    createMatterBodiesForTilemap() {
-        if (!this.groundLayer) {
-            console.error("Ground layer is null, cannot create matter bodies");
-            return;
-        }
-        
+    createMatterBodiesForTilemap() {    
         try {
             // Get tileset data to check for collision properties
             const tilesetData = this.scene.cache.json.get('tilesetData');
             
-            // Find tile IDs that should have collision based on tileset data
-            const collisionTileIds = new Set<number>();
-            
-            if (tilesetData.tiles) {
-                // Process tile collision properties safely
-                for (const tile of tilesetData.tiles) {
-                    if (tile && tile.properties && Array.isArray(tile.properties)) {
-                        const hasCollision = tile.properties.find(prop => 
-                            prop.name === "hasCollision" && prop.value === true);
-                        
-                        // Only add to collision if in layer 0 (ground layer)
-                        const layerProp = tile.properties.find(prop => 
-                            prop.name === "layer");
-                        const layer = layerProp ? layerProp.value : 0;
-                        
-                        if (hasCollision && layer === 0 && tile.id !== undefined) {
-                            collisionTileIds.add(parseInt(tile.id));
-                        }
-                    }
-                }
-            }
-            
             // Filter tiles that have collision enabled
-            let collisionTiles;
-            if (collisionTileIds.size > 0) {
-                collisionTiles = this.groundLayer.filterTiles(tile => {
-                    // Get the base tile ID (without wang modifications)
-                    const baseTileId = Math.floor(tile.index / 64) * 64;
-                    return collisionTileIds.has(baseTileId);
-                });
-            } else {
-                // Fallback to tile index 1 (walls)
-                collisionTiles = this.groundLayer.filterTiles(tile => tile.index === 1);
-            }
+            const collisionTiles = this.groundLayer.filterTiles(tile => (tile.properties?.hasCollision ?? false));
             
             console.log(`Creating physics bodies for ${collisionTiles.length} wall tiles`);
             
