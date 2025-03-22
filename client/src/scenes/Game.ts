@@ -234,17 +234,17 @@ export class GameScene extends Phaser.Scene {
             
             if (bodyA.gameObject instanceof Bullet) {
                 bullet = bodyA.gameObject as Bullet;
-                otherBody = bodyB.gameObject;
+                otherBody = bodyB;
             } else if (bodyB.gameObject instanceof Bullet) {
                 bullet = bodyB.gameObject as Bullet;
-                otherBody = bodyA.gameObject;
+                otherBody = bodyA;
             }
             if (bullet) {
                 console.log('Bullet collision detected');
                 if (otherBody instanceof Tank) {
                     console.log('Tank collision detected');
                 } else {
-                  debugger;
+                  this.handleWallBulletCollision(bullet, otherBody);
                 }
             }
                 
@@ -268,5 +268,11 @@ export class GameScene extends Phaser.Scene {
                 //     console.log('- Tank rotation (degrees):', Phaser.Math.RadToDeg(tank.rotation));
                 // }
         }
+    }
+
+    handleWallBulletCollision(bullet: Bullet, wall: MatterJS.Body) {
+        bullet.destroy();
+        const wallTilePos = wall.position;
+        console.log('Wall collision detected at tile ', wallTilePos);
     }
 }
