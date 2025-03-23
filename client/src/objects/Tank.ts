@@ -36,7 +36,7 @@ export class Tank extends Phaser.Physics.Matter.Sprite
   controlAngle: number = 0;
 
   baseMaxSpeed: number = 2; // meters/msec
-  baseRotationSpeed: number = 0.003; // radians/msec
+  baseRotationSpeed: number = 0.002; // radians/msec
   baseAcceleration: number = 0.005; // meters/msec^2
   
   fireCooldownTimer: number = 0;

@@ -84,7 +84,7 @@ export class GameUI {
     this.healthBarElement.style.width = `${health}%`;
     
     // Update health text
-    this.healthTextElement.textContent = `Health: ${health}%`;
+    this.healthTextElement.textContent = `Health:\u00A0${health}%`;
   }
 
   /**
