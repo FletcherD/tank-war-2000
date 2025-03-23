@@ -30,7 +30,9 @@ export class Tank extends Phaser.Physics.Matter.Sprite
   };
   speed: number = 0;
   controlAngle: number = 0;
-  baseMaxSpeed: number = 2; // Base max speed without tile modifiers
+  baseMaxSpeed: number = 2; // meters/msec
+  baseRotationSpeed: number = 0.003; // radians/msec
+  baseAcceleration: number = 0.005; // meters/msec^2
   fireCooldownTimer: number = 0;
   cooldownDuration: number = 1000; // Cooldown duration in milliseconds
 
@@ -50,12 +52,10 @@ export class Tank extends Phaser.Physics.Matter.Sprite
   {
       const gameScene = this.scene as GameScene;
       
-      const acceleration = 0.005; // meters / msec^2
-      const rotationSpeed = 0.003; // radians / msec
-      
       // Get speed multiplier from the current tile
       const speedMultiplier = gameScene.gameMap.getSpeedAtPosition(this.x, this.y);
       const maxSpeed = this.baseMaxSpeed * speedMultiplier;
+      const rotationSpeed = this.baseRotationSpeed * speedMultiplier;
       
       // Debug output for tile speed
       if (this === gameScene.currentPlayer) {
@@ -83,12 +83,12 @@ export class Tank extends Phaser.Physics.Matter.Sprite
       }
 
       if (this.speed > targetSpeed) {
-        this.speed -= acceleration * delta;
+        this.speed -= this.baseAcceleration * delta;
         if (this.speed < targetSpeed) {
           this.speed = targetSpeed;
         }
       } else if (this.speed < targetSpeed) {
-        this.speed += acceleration * delta;
+        this.speed += this.baseAcceleration * delta;
         if (this.speed > targetSpeed) {
           this.speed = targetSpeed;
         }
@@ -273,6 +273,12 @@ export class GameScene extends Phaser.Scene {
     handleWallBulletCollision(bullet: Bullet, wall: MatterJS.Body) {
         bullet.destroy();
         const wallTilePos = wall.position;
-        console.log('Wall collision detected at tile ', wallTilePos);
+        this.gameMap.map.setLayer(0);
+        const wallTile = this.gameMap.map.getTileAtWorldXY(wallTilePos.x, wallTilePos.y);
+        console.log('Wall collision detected at tile ', wallTile);
+
+        // Adding 192 gets us the 'crater' tile with the same wang index
+        const newTileIndex = wallTile.index+192;
+        this.gameMap.setTile(wallTile.x, wallTile.y, newTileIndex);
     }
 }

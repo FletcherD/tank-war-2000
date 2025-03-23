@@ -21,22 +21,13 @@ export class GameMap {
         const tileY = this.groundLayer.worldToTileY(y);
         
         // Get the tile at this position
-        const tile = this.groundLayer.getTileAt(tileX, tileY);
-        if (!tile) return 1.0;
+        let tile = this.groundLayer.getTileAt(tileX, tileY);
+        if (!tile) { 
+            tile = this.decorationLayer.getTileAt(tileX, tileY);
+            if (!tile) return 1.0;
+        }
         
-        // Get the base tile index (without Wang modifications)
-        const baseTileId = Math.floor(tile.index / 64) * 64;
-        const baseTileIdStr = baseTileId.toString();
-        
-        // Access the tileProperties for this tile
-        const tileProperties = this.tileset.tileProperties[baseTileIdStr];
-        if (!tileProperties || !Array.isArray(tileProperties)) return 1.0;
-        
-        // Find the speed property
-        const speedProp = tileProperties.find(prop => prop.name === "speed");
-        
-        // Return the speed value, or default to 1 if not found
-        return speedProp ? speedProp.value : 1.0;
+        return tile.properties?.speed || 1.0;
     }
 
     createTilemap() {
@@ -82,7 +73,13 @@ export class GameMap {
         for (let y = 0; y < mapData.size[1]; y++) {
             for (let x = 0; x < mapData.size[0]; x++) {
                 const index = y * mapData.size[0] + x;
-                const tileValue = mapData.mapdata[index];
+                let tileValue = mapData.mapdata[index];
+
+                // Change tile value 7 (deep sea) to 1 (water)
+                // Artifact of conversion from original Bolo maps
+                if (tileValue === 7) {
+                    tileValue = 1;
+                }
                 
                 //if (tileValue === 0) continue; // Skip empty tiles
                 const tileIndex = tileValue * 64;
@@ -195,17 +192,7 @@ export class GameMap {
         this.applyWangTiles();
     }
 
-    getTileBitmask(layer: Phaser.Tilemaps.TilemapLayer, x: number, y: number): number {
-        if (!layer) return 0;
-
-        const isTileSameType = (idA: number, idB: number): boolean => {
-            return Math.floor(idA/64) === Math.floor(idB/64);
-        }
-      
-        const centerTile = layer.getTileAt(x, y);
-        if (!centerTile) return 0;
-      
-        // Check all 8 neighbors
+    getNeighborTiles(tile: Phaser.Tilemaps.Tile) {
         const neighbors = [
             {dx: -1, dy: 0}, // left
             {dx: -1, dy: 1}, // top-left
@@ -216,10 +203,33 @@ export class GameMap {
             {dx: 0, dy: -1},  // bottom
             {dx: -1, dy: -1}, // bottom-left
         ];
+        
+        return neighbors.map(({dx, dy}) => {
+            const neighborTile = tile.properties?.layer == 0 ? 
+                this.groundLayer.getTileAt(tile.x + dx, tile.y + dy) : 
+                this.decorationLayer.getTileAt(tile.x + dx, tile.y + dy);
+            return neighborTile;
+        });
+    }
+
+    getTileBitmask(layer: Phaser.Tilemaps.TilemapLayer, x: number, y: number): number {
+        // Create a bitmask indicating which of the 4 corner tiles match the center tile
+        // Returns a bitmask where each bit represents a neighbor (clockwise from top-left):
+        // 0x01: top-left, 0x02: top-right, 0x04: bottom-right, 0x08: bottom-left
+        if (!layer) return 0;
+
+        const isTileSameType = (idA: number, idB: number): boolean => {
+            return Math.floor(idA/64) === Math.floor(idB/64);
+        }
+      
+        const centerTile = layer.getTileAt(x, y);
+        if (!centerTile) return 0;
+      
+        // Check all 8 neighbors
+        const neighborTiles = this.getNeighborTiles(centerTile);
       
         let wang = [];
-        for (const {dx, dy} of neighbors) {
-            const neighborTile = layer.getTileAt(x + dx, y + dy);
+        for (const neighborTile of neighborTiles) {
             const result = neighborTile && isTileSameType(neighborTile.index, centerTile.index);
             wang.push(result);
         }
@@ -232,36 +242,59 @@ export class GameMap {
       
         return cornerMask;
     }
-    
-    // Apply properties from tilesetData to the given tile object
-    applyTileProperties(tile: Phaser.Tilemaps.Tile) {
-        if (!tile) return;
+
+    getDefaultTileProperties(tileIndex: number): { [key: string]: any } {
         
         // Get tileset data
         const tilesetData = this.scene.cache.json.get('tilesetData');
         
         // Find the properties for this tile
-        const tileInfo = tilesetData.tiles.find(t => parseInt(t.id) === tile.index);
+        const tileInfo = tilesetData.tiles.find(t => parseInt(t.id) === tileIndex);
         
         // Create a properties object for the tile if it doesn't exist
-        if (!tile.properties) {
-            tile.properties = {};
+        if (!tileInfo.properties) {
+            tileInfo.properties = {};
         }
         
+        const properties: { [key: string]: any } = {};
         // Copy properties from tileset to the tile
         for (const prop of tileInfo.properties) {
-            tile.properties[prop.name] = prop.value;
+            properties[prop.name] = prop.value;
         }
+        return properties;
+    }
+    
+    // Apply properties from tilesetData to the given tile object
+    applyTileProperties(tile: Phaser.Tilemaps.Tile) {
+        if (!tile) return;
+        
+        const properties = this.getDefaultTileProperties(tile.index);
+        tile.properties = properties;
     }
 
+    setTile(x: number, y: number, tileIndex: number, properties: { [key: string]: any } = null) {
+        let tile;
+        if(properties == null) {
+            properties = this.getDefaultTileProperties(tileIndex);
+        }
+        this.removeMatterBody(this.groundLayer.getTileAt(x, y));
+        if(properties.layer == 0) {
+            tile = this.groundLayer.putTileAt(tileIndex, x, y);
+        } else if (properties.layer == 1) {
+            tile = this.decorationLayer.putTileAt(tileIndex, x, y);
+        }
+        tile.properties = properties;
+        this.updateMatterBody(tile);
+
+        // this.applyWangTile(tile);
+        // for (const neighborTile of this.getNeighborTiles(tile)) {
+        //     this.applyWangTile(neighborTile);
+        // }
+
+        return tile;
+    }
 
     applyWangTiles() {
-        // Create a bitmask indicating which of the 4 corner tiles match the center tile
-        // Returns a bitmask where each bit represents a neighbor (clockwise from top-left):
-        // 0x01: top-left, 0x02: top-right, 0x04: bottom-right, 0x08: bottom-left
-
-        // Get tileset data
-        const tilesetData = this.scene.cache.json.get('tilesetData');
 
         // Apply Wang tiles to ground layer
         this.applyWangTilesToLayer(this.groundLayer);
@@ -270,6 +303,23 @@ export class GameMap {
         this.applyWangTilesToLayer(this.decorationLayer);
     }
     
+    applyWangTile(tile: Phaser.Tilemaps.Tile) {
+        if (tile) {
+            const layer = tile.properties?.layer == 0 ? this.groundLayer : this.decorationLayer;
+            const isAffectedByNeighbors = tile.properties?.isAffectedByNeighbors;
+            if (isAffectedByNeighbors) {
+                const bitmask = this.getTileBitmask(layer, tile.x, tile.y);
+                tile.index = tile.index + bitmask;
+                // Alternate terrain variation based on offset so 2x2 tiles display correctly
+                if (tile.x%2) {
+                    tile.index += 16;
+                }
+                if (tile.y%2) {
+                    tile.index += 32;
+                }
+            }
+        }
+    }
     // Helper method to apply Wang tiles to a specific layer
     applyWangTilesToLayer(layer: Phaser.Tilemaps.TilemapLayer) {
         if (!layer) return;
@@ -278,51 +328,40 @@ export class GameMap {
         for (let y = 0; y < layer.height; y++) {
             for (let x = 0; x < layer.width; x++) {
                 const tile = layer.getTileAt(x, y);
-                if (tile) {
-                    const isAffectedByNeighbors = tile.properties?.isAffectedByNeighbors;
-                    if (isAffectedByNeighbors) {
-                        const bitmask = this.getTileBitmask(layer, x, y);
-                        tile.index = tile.index + bitmask;
-                        // Alternate terrain variation based on offset so 2x2 tiles display correctly
-                        if (x%2) {
-                            tile.index += 16;
-                        }
-                        if (y%2) {
-                            tile.index += 32;
-                        }
-                    }
-                }
+                this.applyWangTile(tile);
             }
         }
     }
-    
-    createMatterBodiesForTilemap() {    
-        try {
-            // Get tileset data to check for collision properties
-            const tilesetData = this.scene.cache.json.get('tilesetData');
+
+    updateMatterBody(tile: Phaser.Tilemaps.Tile) {
+        if (tile.properties?.hasCollision) {
+            const x = tile.pixelX + tile.width / 2;
+            const y = tile.pixelY + tile.height / 2;
             
-            // Filter tiles that have collision enabled
-            const collisionTiles = this.groundLayer.filterTiles(tile => (tile.properties?.hasCollision ?? false));
-            
-            console.log(`Creating physics bodies for ${collisionTiles.length} wall tiles`);
-            
-            // Create static bodies for each collision tile
-            collisionTiles.forEach(tile => {
-                const x = tile.pixelX + tile.width / 2;
-                const y = tile.pixelY + tile.height / 2;
-                
-                // Create a static rectangle body at the tile's position
-                const body = this.scene.matter.add.rectangle(x, y, tile.width, tile.height, {
-                    isStatic: true,
-                    label: 'wall'
-                });
-                
-                // Set collision category for this wall
-                // this.scene.matter.body.setCollisionCategory(body, 0x0001); // WALL category
-                // this.scene.matter.body.setCollidesWith(body, [0x0002, 0x0004]); // PLAYER, PROJECTILE categories
+            // Create a static rectangle body at the tile's position
+            const body = this.scene.matter.add.rectangle(x, y, tile.width, tile.height, {
+                isStatic: true,
+                label: 'wall'
             });
-        } catch (error) {
-            console.error("Error creating matter bodies:", error);
+            tile.body = body;
+        }
+    }
+    
+    removeMatterBody(tile: Phaser.Tilemaps.Tile) {
+        if (tile.body) {
+            this.scene.matter.world.remove(tile.body);
+            tile.body = null;
+        }
+    }
+    
+    createMatterBodiesForTilemap() {
+        for (let y = 0; y < this.groundLayer.height; y++) {
+            for (let x = 0; x < this.groundLayer.width; x++) {
+                const tile = this.groundLayer.getTileAt(x, y);
+                if (tile) {
+                    this.updateMatterBody(tile);
+                }
+            }
         }
     }
 }

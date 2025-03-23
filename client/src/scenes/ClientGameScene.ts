@@ -49,6 +49,7 @@ export class ClientGameScene extends GameScene {
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.debugFPS = this.add.text(4, 4, "", { color: "#ff0000" });
         this.debugTileInfo = this.add.text(4, 24, "", { color: "#ff0000" });
+        this.cameras.main.setBackgroundColor(0x007d3e);
 
         // connect with the room
         await this.connect();
