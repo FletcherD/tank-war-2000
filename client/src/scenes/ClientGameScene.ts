@@ -16,11 +16,15 @@ import { BACKEND_URL } from "../backend";
 // Import the state type from server-side code
 import type { MyRoomState } from "../../../server/src/rooms/GameRoom";
 import { GameScene, InputData, Tank } from "./Game";
+import { GameUI } from "../UI";
 
 export class ClientGameScene extends GameScene {
     room: Room<MyRoomState>;
 
     currentPlayer: Tank;
+    
+    // UI instance
+    gameUI: GameUI;
 
     debugFPS: Phaser.GameObjects.Text;
     debugTileInfo: Phaser.GameObjects.Text;
@@ -47,8 +51,16 @@ export class ClientGameScene extends GameScene {
 
         this.cursorKeys = this.input.keyboard.createCursorKeys();
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        this.debugFPS = this.add.text(4, 4, "", { color: "#ff0000" });
-        this.debugTileInfo = this.add.text(4, 24, "", { color: "#ff0000" });
+        this.debugFPS = this.add.text(4, 4, "", { 
+            color: "#ff0000", 
+            fontFamily: "'Courier Prime', monospace",
+            fontStyle: "bold"
+        });
+        this.debugTileInfo = this.add.text(4, 24, "", { 
+            color: "#ff0000", 
+            fontFamily: "'Courier Prime', monospace",
+            fontStyle: "bold"
+        });
         this.cameras.main.setBackgroundColor(0x007d3e);
 
         // connect with the room
@@ -84,6 +96,11 @@ export class ClientGameScene extends GameScene {
                 this.remoteRef.setStrokeStyle(1, 0xff0000);
 
                 this.cameras.main.startFollow(entity);
+                
+                // Initialize the UI once we have the current player, with a slight delay to ensure the canvas is ready
+                setTimeout(() => {
+                    this.gameUI = new GameUI(this);
+                }, 100);
 
                 $(player).onChange(() => {
                     this.remoteRef.x = player.x;
@@ -143,6 +160,11 @@ export class ClientGameScene extends GameScene {
             this.elapsedTime -= this.fixedTimeStep;
             this.applyInput();
             this.fixedTick(time, this.fixedTimeStep);
+        }
+
+        // Update UI if it exists
+        if (this.gameUI) {
+            this.gameUI.update();
         }
 
         this.debugFPS.text = `Frame rate: ${this.game.loop.actualFps}`;

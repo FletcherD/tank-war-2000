@@ -1,0 +1,447 @@
+button::-moz-focus-inner,
+input[type="reset"]::-moz-focus-inner,
+input[type="button"]::-moz-focus-inner,
+input[type="submit"]::-moz-focus-inner,
+input[type="file"] > input[type="button"]::-moz-focus-inner {border:0;padding:0;margin:0;}
+
+.pixelated {
+  image-rendering:optimizeSpeed;             /* Legal fallback */
+  image-rendering:-moz-crisp-edges;          /* Firefox        */
+  image-rendering:-o-crisp-edges;            /* Opera          */
+  image-rendering:-webkit-optimize-contrast; /* Safari         */
+  -ms-interpolation-mode:nearest-neighbor;   /* IE8+           */
+  image-rendering:optimize-contrast;         /* CSS3 Proposed  */
+  image-rendering:crisp-edges;               /* CSS4 Proposed  */
+  image-rendering:pixelated;                 /* CSS4 Proposed  */
+}
+.unselectable, .button, .buttonImage {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+/* Hue shifts for team colors (from red) */
+.team0 {    
+}
+.team1 {    
+    -webkit-filter: hue-rotate(240deg);
+}
+.team2 {    
+    -webkit-filter: hue-rotate(120deg) brightness(175%);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background-color: #F00;
+    width: 5px;
+    height: 25px;
+}
+input[type="range"]::-moz-range-thumb {
+    -moz-appearance: none;
+    background-color: #F00;
+    width: 5px;
+    height: 25px;
+}
+input[type="range"]:disabled::-webkit-slider-thumb {
+    background-color: #222;
+}
+input[type="range"]:disabled::-moz-range-thumb {
+    background-color: #222;
+}
+input[type='range'] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #888;
+}
+
+@font-face {
+	    font-family: CourierBd;
+	    src: url(assets/courierBd.ttf);
+}
+@font-face {
+	    font-family: Chicago;
+	    src: url(assets/chicago.ttf);
+}
+html,body{
+    background: rgb(0, 0, 0) transparent;
+    background: rgba(0, 0, 0, 0);
+    font:700 20px/1em 'Courier Prime', monospace;
+    color: #FFFFFF;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+div {
+    box-sizing: border-box;
+}
+p {
+    padding-left: 2em;
+    text-indent: -2em;
+    margin: 2px;
+}
+
+.button {    
+    font:700 20px/1em 'Courier Prime', monospace;
+    color: #FFF; 
+    height: 46px;
+    background-color:#AAA;
+    border-style: outset;
+    border-width: 3px;
+    padding: 4px 4px 4px 4px;  
+    margin: 0;
+    float: left;
+    text-align: center;
+    outline:none;
+}
+.button:active, .buttonDepressed {
+    border-style: inset; 
+    background-color:#999;  
+    padding: 5px 4px 3px 4px; 
+}
+.button:disabled {  
+    z-index:2;
+    border-color:#CCC;
+    background-color:#AAA;  
+    /* background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAG0lEQVQIW2NsaGj4b2BgwMC4YcOG/xcuXGAAAEeaCJGaMw2eAAAAAElFTkSuQmCC) repeat; */
+    background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAJklEQVQIW2NsaGj4z8DAwGBgYACiGBgxBDZs2ABWceHCBYgKdAEAKyIRIZZXadcAAAAASUVORK5CYII=) repeat;
+    color: #CCC;
+}
+.buttonImage {
+    width: 32px;
+    margin-left: auto;
+    margin-right: auto;
+    user-drag: none; -moz-user-select: none; -webkit-user-drag: none;
+    display: block;
+    outline:none;
+    cursor: default;
+}
+.buttonImage:disabled,.buttonImageDisabled {    
+    opacity: .25;
+}
+
+.rendererView {	
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    overflow: hidden;
+	margin: 0;
+	padding: 0;
+	background-color: #fff;
+	display: block;
+	left:0;
+	top:0;
+	z-index:0;
+	touch-action: none;
+}
+#gameContainer {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Minimap */
+#mapContainer {
+    position: absolute;
+    width: auto;
+    height: auto;
+    background-color: #00F;
+    border-style: outset;
+    z-index: 1;
+    position: absolute;
+    right: 0px;
+    top: 82px;
+    display: none;
+}
+
+#mapView {
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 4px;
+}
+#mapOverlay {
+    width: auto;
+    height: auto;
+    position: absolute;
+    margin: 4px;
+    top: 0;
+    left: 0;
+}
+.mapMarker {
+    position: absolute;
+    z-index: 2;
+    -webkit-transform: translate(-50%, -50%);
+}
+
+/* Pillbox info panel */
+#pillboxDisplay {
+    font:700 20px/1em 'Courier Prime', monospace;
+    color: #FFFFFF;
+    bottom: 100px;
+    right: 0;
+    width: 250px;
+    height: 90px;
+    background-color:#444;
+    border-style: outset;
+    border-width: 3px;
+    position: absolute;
+    text-align: center;
+    padding: 0px 4px 4px 4px;  
+    display: none;
+    z-index:2;
+	position: absolute;
+}
+#pillboxSlider {
+    display: block;
+}
+#pillboxSlider:disabled {
+    background: #ccc;
+}
+#pillboxUpgradeButton {
+    height: auto;
+    width: auto;
+    float: none;
+}
+
+/* The newswire that shows messages */
+#newswireContainer {
+	width: auto;
+	height: 34px;
+    max-width: 100%;
+	position: absolute;
+	left: 0;
+	top:62px;
+	z-index:1;
+}
+#newswire {
+    font:700 20px/1em 'Courier Prime', monospace;
+    color: #FFFFFF;
+    background-color:#444;
+    border-style: outset;
+    padding: 4px;
+	width: auto;
+	height: 100%;
+    max-width: 100%;
+    min-height: 20px;
+    display: inline-block;
+}
+#newswire.expanded {
+    min-height: 100px;
+    resize: both;
+    overflow-y: scroll;
+}
+#newswire.hidden {
+    display: none;
+}
+#newswireExpandButton {
+    height: 100%;
+    width: 24px;
+    padding:0;
+    bottom: 0;
+    background-color:#444;
+    content: '▼';
+}
+.chatInput {
+    font:700 20px/1em 'Courier Prime', monospace;   
+    color: #000000; 
+    padding: 1px 4px 1px 4px;
+    margin: 0;
+    background-color:#FFFFFF;
+    min-width: 50px;
+}
+#chatButton {
+    height: 100%;
+    width: 34px;
+    padding:0;
+    bottom: 0;
+}
+#newswireText {
+    word-wrap: break-word;
+}
+#optionalInputText {
+    display: inline-block;
+}
+
+/* Panel for showing health & ammo */
+#statusContainer {	 
+	border-style: outset;
+    box-sizing: border-box;
+	width: 40%;
+	position: absolute;
+	right: 0;
+	top:0;
+	z-index:1;
+}    
+.progress {
+    box-sizing: border-box;
+	width: auto;   		 
+	border-style: inset;
+	position: relative;
+	background-color:#666;
+	height: 25px;
+}
+.progress div {
+    height: 100%;
+    width: 0%;
+}
+#bar1Bar {
+    background-color: #D00;
+}
+#bar2Bar {
+    background-color: #bbb;
+}
+#bar3Bar {
+    background-color: #0b0;
+}
+.percent {
+	font:700 20px/1em 'Courier Prime', monospace;
+	color: #FFF;
+	position: absolute;   
+	text-align: center;
+	width:  100%;
+    position:absolute; 
+    top:50%; 
+    height:auto; 
+    margin-top:-9px
+}
+
+/* Animation to show you're firing */
+@keyframes fire {
+    from {width: 0%;}
+    to {width: 100%;}
+}
+#fireProgress {
+	height: 8px;
+    width:0%;
+	position: absolute;
+	left: 0;
+	bottom:0;
+	background-color: #F00;
+    z-index: 1;
+    opacity: 0.5;
+}
+.animFire {
+    animation-name: fire;
+    animation-duration: 0.5s;    
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+.animNone {
+    animation-play-state: paused;
+    width: 0%;
+}
+
+/* TOUCH CONTROLS */
+/* TouchFireButton */
+.TouchFireButton {
+    position: absolute;
+    text-align: center;
+    background: #a00000;
+    border: outset;
+    border-width: 10px;
+    border-color: #800000;
+    opacity: 0.2;
+	z-index:1;
+	touch-action: none;
+}
+.TouchFireButton:active {
+    background: #800000;
+    border-style: inset;
+}
+
+/* TouchJoystick */
+.TouchJoystick {
+    position: absolute;
+	z-index:1;
+	touch-action: none;
+}
+.TouchJoystick-BgCircle {
+    opacity: 0.2;
+    width: 100%;
+    height: 100%;
+    border-width: 5px;
+    border-radius: 50%;
+    border-style: solid;
+    border-color: black;
+    background: radial-gradient(black, white, white);
+}
+.TouchJoystick-ControlCircle {
+    position: absolute;
+    opacity: 0.5;
+    width: 10%;
+    height: 10%;
+    border-radius: 50%;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black;
+    background-color: #ffff80;
+    will-change: top, left;
+}
+
+/* Buttons for building things */
+#buildButtons {
+    width: auto;
+    height: auto;
+	position: absolute;
+	left: 0;
+	top: 0;
+    float: left;
+    padding: 5px;
+    background-color:#444;
+    border-style: outset;
+    border-width: 3px;
+	z-index:1;
+}
+#buttonImage_chat {
+    height: 26px;
+    width: 26px;
+    padding: 1px;
+    width: auto;
+}
+
+/* Table for display of team information */
+#teamDisplay {
+    font:700 20px/1em 'Courier Prime', monospace;
+    color: #FFFFFF;
+    width: auto;
+    height: auto;
+    background-color:#444;
+    border-style: outset;
+    border-width: 3px;
+    position: absolute;
+    top: 30%;
+    left: 10%;
+	z-index:1;
+    display: none; /* disabled by default */
+}
+#teamDisplayTable td {
+    padding: 0px 4px 0px 4px;
+}
+#teamDisplayTable .spacedCol {
+    padding: 0px 0px 0px 20px;
+}
+#teamDisplayTable .borderRow {
+    border-top: groove;
+    height: 4px;
+}
+.overlayImage {
+    height: auto;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+.overlayOuterDiv {
+    height: auto;
+    text-align: center;
+}
+.overlayInnerDiv {
+    position: relative;
+    display: inline-block;
+}
+.shortRow {
+    height: 32px;
+}
