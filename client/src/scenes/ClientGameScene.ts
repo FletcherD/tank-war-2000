@@ -104,8 +104,8 @@ export class ClientGameScene extends GameScene {
                 }, 100);
 
                 $(player).onChange(() => {
-                    this.remoteRef.x = player.x;
-                    this.remoteRef.y = player.y;
+                    // this.remoteRef.x = player.x;
+                    // this.remoteRef.y = player.y;
                     // We don't update the rotation of remoteRef since it's just a debug rectangle
                 });
 
@@ -192,8 +192,8 @@ export class ClientGameScene extends GameScene {
         }
         
         // Update debug references
-        this.localRef.x = this.currentPlayer.x;
-        this.localRef.y = this.currentPlayer.y;
+        // this.localRef.x = this.currentPlayer.x;
+        // this.localRef.y = this.currentPlayer.y;
 
         // Apply interpolation to other players
         for (let sessionId in this.playerEntities) {
@@ -214,7 +214,8 @@ export class ClientGameScene extends GameScene {
             //     currentPos.lerp(targetPos, 0.2);
                 
             //     // Update position
-            //     entity.setPosition(currentPos.x, currentPos.y);
+            //     entity.x = currentPos.x;
+            //     entity.y = currentPos.y;
                 
             //     if (serverRotation !== undefined) {
             //         entity.setRotation(serverRotation);

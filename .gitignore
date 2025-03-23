@@ -3,3 +3,4 @@ node_modules
 .DS_Store
 phaser-docs
 client/dist
+CLAUDE_CODE_LOG.txt

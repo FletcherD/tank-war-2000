@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { Bullet } from "../objects/Bullet";
 import { COLLISION_CATEGORIES, PHYSICS, VISUALS } from "../constants";
+import { GameScene } from "../scenes/GameScene";
 
 export interface InputData {
     left: boolean;
@@ -11,11 +12,16 @@ export interface InputData {
     tick: number;
   }
 
-export class Tank extends Phaser.Physics.Matter.Sprite
+export class Tank extends Phaser.GameObjects.Container
 {
   team: number = 0;
-
   health: number = PHYSICS.TANK_HEALTH;  
+  width: number;
+  height: number;
+
+  // Tank sprites
+  tankBody: Phaser.GameObjects.Sprite;
+  tankTreads: Phaser.GameObjects.Sprite;
 
   currentInput: InputData = {
       left: false,
@@ -35,19 +41,32 @@ export class Tank extends Phaser.Physics.Matter.Sprite
   fireCooldownTimer: number = 0;
   cooldownDuration: number = PHYSICS.TANK_FIRE_COOLDOWN;
 
-  constructor (scene: Phaser.Scene, x: number, y: number)
+  constructor(scene: GameScene, x: number, y: number)
   {
-      super(scene.matter.world, x, y, 'tank');
-      scene.add.existing(this);
-      // Set up player physics body
-      this.setCircle(PHYSICS.TANK_HITBOX_RADIUS);
-      this.setFriction(0.0);
-      this.setFrictionStatic(0.0);
-      this.setFrictionAir(0.0);
+      super(scene as Phaser.Scene, x, y);
       
-      // Set collision category and what it collides with
-      this.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
-      this.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER]);
+      // Create tank body and treads sprites
+      this.tankTreads = scene.add.sprite(0, 0, 'tankTreads');
+      this.tankBody = scene.add.sprite(0, 0, 'tank');
+      
+      // Add sprites to container
+      this.add([this.tankTreads, this.tankBody]);
+      
+      // Add the container to the Matter physics system
+      scene.matter.add.gameObject(this, {
+        shape: {
+          type: 'circle',
+          radius: PHYSICS.TANK_HITBOX_RADIUS
+        },
+        friction: 0.0,
+        frictionStatic: 0.0,
+        frictionAir: 0.0,
+        collisionFilter: {
+          category: COLLISION_CATEGORIES.PLAYER,
+          mask: COLLISION_CATEGORIES.WALL | COLLISION_CATEGORIES.PLAYER
+        }
+      });
+      scene.add.existing(this);
   }
 
   preUpdate(time: number, delta: number)
