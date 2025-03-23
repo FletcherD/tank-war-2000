@@ -305,7 +305,7 @@ export class ClientGameScene extends GameScene {
         if (distance <= MAX_BUILD_DISTANCE) {
             // Change selected tiles to road tiles (index 256)
             for (const tile of this.selectedTiles) {
-                this.gameMap.setTile(tile.x, tile.y, 256);
+                this.gameMap.setTile(tile.x, tile.y, 256, true);
             }
             
             // Clear selection after building

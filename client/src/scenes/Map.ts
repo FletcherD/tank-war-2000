@@ -247,8 +247,7 @@ export class GameMap {
         return cornerMask;
     }
 
-    getDefaultTileProperties(tileIndex: number): { [key: string]: any } {
-        
+    getDefaultTileProperties(tileIndex: number): { [key: string]: any } {        
         // Get tileset data
         const tilesetData = this.scene.cache.json.get('tilesetData');
         
@@ -276,12 +275,14 @@ export class GameMap {
         tile.properties = properties;
     }
 
-    setTile(x: number, y: number, tileIndex: number, properties: { [key: string]: any } = null) {
+    setTile(x: number, y: number, tileIndex: number, applyWang: boolean = false, properties: { [key: string]: any } = null) {
         let tile;
         if(properties == null) {
             properties = this.getDefaultTileProperties(tileIndex);
         }
         this.removeMatterBody(this.groundLayer.getTileAt(x, y));
+        this.groundLayer.removeTileAt(x, y);
+        this.decorationLayer.removeTileAt(x, y);
         if(properties.layer == 0) {
             tile = this.groundLayer.putTileAt(tileIndex, x, y);
         } else if (properties.layer == 1) {
@@ -290,16 +291,17 @@ export class GameMap {
         tile.properties = properties;
         this.updateMatterBody(tile);
 
-        // this.applyWangTile(tile);
-        // for (const neighborTile of this.getNeighborTiles(tile)) {
-        //     this.applyWangTile(neighborTile);
-        // }
+        if(applyWang) {
+            this.applyWangTile(tile);
+            for (const neighborTile of this.getNeighborTiles(tile)) {
+                this.applyWangTile(neighborTile);
+            }
+        }
 
         return tile;
     }
 
     applyWangTiles() {
-
         // Apply Wang tiles to ground layer
         this.applyWangTilesToLayer(this.groundLayer);
       
@@ -313,7 +315,7 @@ export class GameMap {
             const isAffectedByNeighbors = tile.properties?.isAffectedByNeighbors;
             if (isAffectedByNeighbors) {
                 const bitmask = this.getTileBitmask(layer, tile.x, tile.y);
-                tile.index = tile.index + bitmask;
+                tile.index = this.getBaseTileType(tile) + bitmask;
                 // Alternate terrain variation based on offset so 2x2 tiles display correctly
                 if (tile.x%2) {
                     tile.index += 16;
@@ -352,7 +354,7 @@ export class GameMap {
     }
     
     removeMatterBody(tile: Phaser.Tilemaps.Tile) {
-        if (tile.body) {
+        if (tile &&tile.body) {
             this.scene.matter.world.remove(tile.body);
             tile.body = null;
         }
