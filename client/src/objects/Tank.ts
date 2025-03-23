@@ -21,7 +21,12 @@ export class Tank extends Phaser.GameObjects.Container
 
   // Tank sprites
   tankBody: Phaser.GameObjects.Sprite;
-  tankTreads: Phaser.GameObjects.Sprite;
+  leftTread: Phaser.GameObjects.Sprite;
+  rightTread: Phaser.GameObjects.Sprite;
+  
+  // Tread animation
+  leftTreadPosition: number = 0;  
+  rightTreadPosition: number = 0;
 
   currentInput: InputData = {
       left: false,
@@ -45,12 +50,20 @@ export class Tank extends Phaser.GameObjects.Container
   {
       super(scene as Phaser.Scene, x, y);
       
-      // Create tank body and treads sprites
-      this.tankTreads = scene.add.sprite(0, 0, 'tankTreads');
+      // Create tank body sprite
       this.tankBody = scene.add.sprite(0, 0, 'tank');
       
-      // Add sprites to container
-      this.add([this.tankTreads, this.tankBody]);
+      // Create left and right tread sprites
+      // Left tread uses frames from top row (row 0)
+      this.leftTread = scene.add.sprite(0, 0, 'tankTreads', 0);
+      // Right tread uses frames from bottom row (row 1)
+      this.rightTread = scene.add.sprite(0, 0, 'tankTreads', 31);
+      
+      // Add sprites to container (order matters - treads first, then tank body on top)
+      this.add([this.tankBody, this.leftTread, this.rightTread]);
+      
+      // Set up tread frames
+      this.createTreadFrames(scene);
       
       // Add the container to the Matter physics system
       scene.matter.add.gameObject(this, {
@@ -123,6 +136,74 @@ export class Tank extends Phaser.GameObjects.Container
         this.fireCooldownTimer = this.cooldownDuration;
       }
       this.fireCooldownTimer -= delta;
+      
+      // Animate treads based on tank speed
+      this.animateTreads(delta, this.speed, rotationSpeed);
+  }
+  
+  // Helper method to set up tread sprite frames
+  createTreadFrames(scene: Phaser.Scene) {
+    // Ensure the texture exists and has frame configurations
+    const texture = scene.textures.get('tankTreads');
+    
+    // If the frames haven't been set up yet, create them
+    if (texture.frameTotal <= 1) {
+      // Create frames for a 31x2 grid of 32x32 sprites
+      const frameWidth = 32;
+      const frameHeight = 32;
+      const framesPerRow = 31;
+      
+      for (let row = 0; row < 2; row++) {
+        for (let col = 0; col < framesPerRow; col++) {
+          const frameIndex = row * framesPerRow + col;
+          texture.add(
+            frameIndex, // Frame name (numeric index)
+            0, // Source image index
+            col * frameWidth, row * frameHeight, // Position in the atlas
+            frameWidth, frameHeight // Size of the frame
+          );
+        }
+      }
+    }
+
+    this.leftTread.setFrame(this.leftTreadPosition);
+    this.rightTread.setFrame(this.rightTreadPosition);
+  }
+  
+  // Helper method to animate treads based on speed and direction
+  animateTreads(delta: number, speed: number, rotationSpeed: number) {
+    // Only animate if moving
+    const animationSpeed: number = -0.02;
+    const turningSpeed: number = -10;
+    const framesPerRow: number = 31;
+
+    if (Math.abs(speed) > 0 || Math.abs(rotationSpeed) > 0) {
+      // Calculate frame increment based on speed
+      // Faster speed = faster animation
+      let frameIncrementL = (speed * delta) * animationSpeed;
+      let frameIncrementR = (speed * delta) * animationSpeed;
+      
+      // Handle turning - treads move in opposite directions when turning
+      if (this.currentInput.left) {
+        // Left tread moves backward, right tread moves forward
+        frameIncrementL -= (rotationSpeed * delta) * turningSpeed;
+        frameIncrementR += (rotationSpeed * delta) * turningSpeed;
+      } else if (this.currentInput.right) {
+        // Left tread moves forward, right tread moves backward
+        frameIncrementL += (rotationSpeed * delta) * turningSpeed;
+        frameIncrementR -= (rotationSpeed * delta) * turningSpeed;
+      }
+
+      function mod(n: number, m: number): number {
+        return ((n % m) + m) % m;
+      }
+
+      this.leftTreadPosition = mod(this.leftTreadPosition + frameIncrementL, framesPerRow);
+      this.rightTreadPosition = mod(this.rightTreadPosition + frameIncrementR, framesPerRow);
+
+      this.leftTread.setFrame(Math.floor(this.leftTreadPosition));
+      this.rightTread.setFrame(Math.floor(this.rightTreadPosition) + framesPerRow);
+    }
   }
 
   fire() {
