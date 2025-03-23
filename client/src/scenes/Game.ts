@@ -105,7 +105,7 @@ export class GameScene extends Phaser.Scene {
         // Add pillboxes to the map
         for (const location of pillboxLocations) {
             const worldLocation = this.gameMap.groundLayer.tileToWorldXY(location[0]*2+1, location[1]*2+1);
-            this.addPillbox(worldLocation.x, worldLocation.y, 1);
+            this.addPillbox(worldLocation.x, worldLocation.y, 0);
         }
         
         // Add stations to the map

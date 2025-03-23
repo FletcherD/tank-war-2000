@@ -10,7 +10,7 @@ export class Station extends Phaser.Physics.Matter.Sprite {
   
   // The team colors (same as Pillbox)
   static TEAM_COLORS = {
-    1: 0x4444ff, // Blue for team 1
+    1: 0x0000ff, // Blue for team 1
     2: 0xff0000  // Red for team 2
   };
   
