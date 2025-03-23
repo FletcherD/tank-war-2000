@@ -76,8 +76,8 @@ export class GameScene extends Phaser.Scene {
         const pillboxLocations = mapData.pillboxes;
         // Add pillboxes to the map
         for (const location of pillboxLocations) {
-            const worldLocation = this.gameMap.groundLayer.tileToWorldXY((location[0]+1)*2, (location[1]+1)*2);
-            this.addPillbox(worldLocation.x, worldLocation.y, -1);
+            const worldLocation = this.gameMap.groundLayer.tileToWorldXY(location[0]*2+1, location[1]*2+1);
+            this.addPillbox(worldLocation.x, worldLocation.y, 1);
         }
     }
 
@@ -125,12 +125,12 @@ export class GameScene extends Phaser.Scene {
                 if (otherBody.gameObject instanceof Tank) {
                     console.log('Tank collision detected');
                     const tank = otherBody.gameObject as Tank;
-                    tank.takeDamage(10);
+                    tank.takeDamage(1);
                     bullet.destroy();
                 } else if (otherBody.gameObject instanceof Pillbox) {
                     console.log('Pillbox collision detected');
                     const pillbox = otherBody.gameObject as Pillbox;
-                    pillbox.takeDamage(10);
+                    pillbox.takeDamage(1);
                     bullet.destroy();
                 } else {
                     this.handleWallBulletCollision(bullet, otherBody);

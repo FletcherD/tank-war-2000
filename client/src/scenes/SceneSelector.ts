@@ -13,7 +13,10 @@ export class SceneSelector extends Phaser.Scene {
         // preload demo assets
         this.load.image('tank', '../assets/tank.png');
         this.load.image('bullet', '../assets/bullet.png');
-        this.load.image('pillbox', '../assets/tank.png'); // Temporarily using tank image for pillbox
+        
+        // Load pillbox sprite atlases
+        this.load.spritesheet('pillbox0', '../assets/pillbox0.png', { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('pillbox1', '../assets/pillbox1.png', { frameWidth: 64, frameHeight: 64 });
         
         // Load tileset image, tileset data, and tilemap
         this.load.image('tileset', '../assets/tiles/tileset.png');

@@ -12,14 +12,27 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
   firingTimer: number = 0;
   
   // Health
-  health: number = 50;
+  health: number = 8;
   
   // Team - 0 for neutral, 1+ for player teams
   team: number = 0;
   
+  // The top layer of the pillbox (will be tinted for team color)
+  topSprite: Phaser.GameObjects.Sprite;
+  
+  // The team colors
+  static TEAM_COLORS = {
+    1: 0x4444ff, // Blue for team 1
+    2: 0xff0000  // Red for team 2
+  };
+  
   constructor(scene: Phaser.Scene, x: number, y: number, team: number = 0) {
-    super(scene.matter.world, x, y, 'pillbox');
+    // Using pillbox0 for the base sprite
+    super(scene.matter.world, x, y, 'pillbox0', 0);
     scene.add.existing(this);
+    
+    // Create the top sprite that will be tinted
+    this.topSprite = scene.add.sprite(x, y, 'pillbox1', 0);
     
     // Set up pillbox physics body
     this.setCircle(14);
@@ -32,13 +45,21 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
     // Set team
     this.team = team;
     
-    // Set a different tint to distinguish from tanks
-    this.setTint(0xff0000); // Red tint
+    // Apply team color if it's not neutral
+    if (team > 0 && Pillbox.TEAM_COLORS[team]) {
+      this.setTint(Pillbox.TEAM_COLORS[team]);
+    }
   }
   
   preUpdate(time: number, delta: number) {
     // Update firing timer
     this.firingTimer -= delta;
+    
+    // Make sure the top sprite follows the base sprite
+    if (this.topSprite && this.topSprite.active) {
+      this.topSprite.x = this.x;
+      this.topSprite.y = this.y;
+    }
     
     // Find nearest tank within range
     const targetTank = this.findTargetTank();
@@ -62,7 +83,7 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
       const tank = gameScene.playerEntities[sessionId];
       
       // Skip tanks on the same team
-      //if (tank.team === this.team) continue;
+      if (tank.team === this.team && this.team !== 0) continue;
       
       // Calculate distance
       const distance = Phaser.Math.Distance.Between(this.x, this.y, tank.x, tank.y);
@@ -89,8 +110,28 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
   
   takeDamage(amount: number) {
     this.health -= amount;
+    
+    // Update the frame based on health
+    // We have 7 frames (0-6) for each damage level
+    // Map health from 8-0 to frame 0-6
+    const baseFrame = Math.max(0, 6 - Math.ceil(this.health));
+    this.setFrame(baseFrame);
+    this.topSprite.setFrame(baseFrame);
+    
     if (this.health <= 0) {
+      // Destroy both sprites
+      if (this.topSprite && this.topSprite.active) {
+        this.topSprite.destroy();
+      }
       this.destroy();
     }
+  }
+  
+  destroy() {
+    // Ensure the top sprite is destroyed when the base is destroyed
+    if (this.topSprite && this.topSprite.active) {
+      this.topSprite.destroy();
+    }
+    super.destroy();
   }
 }
