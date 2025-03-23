@@ -41,6 +41,9 @@ export class Tank extends Phaser.Physics.Matter.Sprite
       scene.add.existing(this);
       // Set up player physics body
       this.setCircle(PHYSICS.TANK_HITBOX_RADIUS);
+      this.setFriction(0.0);
+      this.setFrictionStatic(0.0);
+      this.setFrictionAir(0.0);
       
       // Set collision category and what it collides with
       this.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);

@@ -56,14 +56,6 @@ input[type='range'] {
     background-color: #888;
 }
 
-@font-face {
-	    font-family: CourierBd;
-	    src: url(assets/courierBd.ttf);
-}
-@font-face {
-	    font-family: Chicago;
-	    src: url(assets/chicago.ttf);
-}
 html,body{
     background: rgb(0, 0, 0) transparent;
     background: rgba(0, 0, 0, 0);
