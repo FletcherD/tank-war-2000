@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { GameMap } from "./Map";
 import { Tank } from "../objects/Tank";
 import { Bullet } from "../objects/Bullet";
+import { Pillbox } from "../objects/Pillbox";
 
 export class GameScene extends Phaser.Scene {
     playerEntities: { [sessionId: string]: Tank } = {};
@@ -18,6 +19,9 @@ export class GameScene extends Phaser.Scene {
     // For displaying debug information
     debugText: string = "";
     currentPlayer: Tank; // Reference to the local player's tank
+    
+    // Pillboxes
+    pillboxes: Pillbox[] = [];
 
     constructor() {
       console.log("GameScene constructor");
@@ -38,9 +42,15 @@ export class GameScene extends Phaser.Scene {
         delete this.playerEntities[sessionId]
       }
     }
+    
+    addPillbox(x: number, y: number, team: number = 0): Pillbox {
+      const pillbox = new Pillbox(this, x, y, team);
+      this.pillboxes.push(pillbox);
+      return pillbox;
+    }
 
     async create() {
-      console.log("GameScene create");
+        const mapData = this.cache.json.get('mapData');
         // Create the game map
         this.gameMap = new GameMap(this);
         this.gameMap.createTilemap();
@@ -62,6 +72,13 @@ export class GameScene extends Phaser.Scene {
 
         // Set camera bounds to match the map size
         this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
+        
+        const pillboxLocations = mapData.pillboxes;
+        // Add pillboxes to the map
+        for (const location of pillboxLocations) {
+            const worldLocation = this.gameMap.groundLayer.tileToWorldXY((location[0]+1)*2, (location[1]+1)*2);
+            this.addPillbox(worldLocation.x, worldLocation.y, -1);
+        }
     }
 
     update(time: number, delta: number): void {
@@ -105,32 +122,20 @@ export class GameScene extends Phaser.Scene {
             }
             if (bullet) {
                 console.log('Bullet collision detected');
-                if (otherBody instanceof Tank) {
+                if (otherBody.gameObject instanceof Tank) {
                     console.log('Tank collision detected');
+                    const tank = otherBody.gameObject as Tank;
+                    tank.takeDamage(10);
+                    bullet.destroy();
+                } else if (otherBody.gameObject instanceof Pillbox) {
+                    console.log('Pillbox collision detected');
+                    const pillbox = otherBody.gameObject as Pillbox;
+                    pillbox.takeDamage(10);
+                    bullet.destroy();
                 } else {
-                  this.handleWallBulletCollision(bullet, otherBody);
+                    this.handleWallBulletCollision(bullet, otherBody);
                 }
             }
-                
-                // If we have a tank-wall collision, log information
-                // if (tank && wall) {
-                //     console.log('Tank-Wall Collision Detected:');
-                //     console.log('- Tank position:', tank.x, tank.y);
-                //     console.log('- Wall position:', wall.x, wall.y);
-                //     console.log('- Tank velocity:', tank.body.velocity.x, tank.body.velocity.y);
-                //     console.log('- Tank speed:', tank.speed);
-                //     console.log('- Collision angle (degrees):', 
-                //         Phaser.Math.RadToDeg(
-                //             Phaser.Math.Angle.Between(
-                //                 tank.x, 
-                //                 tank.y, 
-                //                 wall.x, 
-                //                 wall.y
-                //             )
-                //         )
-                //     );
-                //     console.log('- Tank rotation (degrees):', Phaser.Math.RadToDeg(tank.rotation));
-                // }
         }
     }
 

@@ -150,7 +150,9 @@ export class ClientGameScene extends GameScene {
         this.inputPayload.tick = this.currentTick;
         this.room.send(0, this.inputPayload);
 
-        this.currentPlayer.currentInput = this.inputPayload;
+        if (this.currentPlayer.active) {
+            this.currentPlayer.currentInput = this.inputPayload;
+        }
         
         // Update debug references
         this.localRef.x = this.currentPlayer.x;
