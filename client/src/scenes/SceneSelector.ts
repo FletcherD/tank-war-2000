@@ -18,6 +18,10 @@ export class SceneSelector extends Phaser.Scene {
         this.load.spritesheet('pillbox0', '../assets/pillbox0.png', { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('pillbox1', '../assets/pillbox1.png', { frameWidth: 64, frameHeight: 64 });
         
+        // Load station sprite images
+        this.load.image('station0', '../assets/station0.png');
+        this.load.image('station1', '../assets/station1.png');
+        
         // Load tileset image, tileset data, and tilemap
         this.load.image('tileset', '../assets/tiles/tileset.png');
         this.load.json('mapData', '../assets/maps/Duff Gardens.json');

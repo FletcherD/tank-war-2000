@@ -57,7 +57,21 @@ export class ClientGameScene extends GameScene {
         const $ = getStateCallbacks(this.room);
 
         $(this.room.state).players.onAdd((player, sessionId) => {
-            const entity = this.addPlayer(player.x, player.y, sessionId);
+            // Assign a team based on player index (odd/even)
+            const team = this.room.state.players.size % 2 === 0 ? 1 : 2;
+            
+            // Find a spawn position at a team station
+            let spawnX = player.x;
+            let spawnY = player.y;
+            
+            const station = this.getRandomStationForTeam(team);
+            if (station) {
+                spawnX = station.x;
+                spawnY = station.y;
+            }
+            
+            const entity = this.addPlayer(spawnX, spawnY, sessionId);
+            entity.team = team;
 
             // is current player
             if (sessionId === this.room.sessionId) {

@@ -3,6 +3,7 @@ import { GameMap } from "./Map";
 import { Tank } from "../objects/Tank";
 import { Bullet } from "../objects/Bullet";
 import { Pillbox } from "../objects/Pillbox";
+import { Station } from "../objects/Station";
 
 export class GameScene extends Phaser.Scene {
     playerEntities: { [sessionId: string]: Tank } = {};
@@ -22,6 +23,10 @@ export class GameScene extends Phaser.Scene {
     
     // Pillboxes
     pillboxes: Pillbox[] = [];
+    
+    // Stations
+    stations: Station[] = [];
+    teamStations: { [team: number]: Station[] } = {};
 
     constructor() {
       console.log("GameScene constructor");
@@ -47,6 +52,29 @@ export class GameScene extends Phaser.Scene {
       const pillbox = new Pillbox(this, x, y, team);
       this.pillboxes.push(pillbox);
       return pillbox;
+    }
+    
+    addStation(x: number, y: number, team: number = 0): Station {
+      const station = new Station(this, x, y, team);
+      this.stations.push(station);
+      
+      // Add to team stations list
+      if (!this.teamStations[team]) {
+        this.teamStations[team] = [];
+      }
+      this.teamStations[team].push(station);
+      
+      return station;
+    }
+    
+    getRandomStationForTeam(team: number): Station | null {
+      const teamStations = this.teamStations[team];
+      if (!teamStations || teamStations.length === 0) {
+        return null;
+      }
+      
+      const randomIndex = Phaser.Math.Between(0, teamStations.length - 1);
+      return teamStations[randomIndex];
     }
 
     async create() {
@@ -78,6 +106,44 @@ export class GameScene extends Phaser.Scene {
         for (const location of pillboxLocations) {
             const worldLocation = this.gameMap.groundLayer.tileToWorldXY(location[0]*2+1, location[1]*2+1);
             this.addPillbox(worldLocation.x, worldLocation.y, 1);
+        }
+        
+        // Add stations to the map
+        if (mapData.stations) {
+            const stationLocations = mapData.stations;
+            for (const location of stationLocations) {
+                const worldLocation = this.gameMap.groundLayer.tileToWorldXY(location[0]*2+1, location[1]*2+1);
+                this.addStation(worldLocation.x, worldLocation.y, 0); // Neutral station
+            }
+            
+            // Assign one random station to each team
+            if (this.stations.length >= 2) {
+                // Get two random indexes for team stations
+                const indices = Phaser.Utils.Array.NumberArray(0, this.stations.length - 1);
+                Phaser.Utils.Array.Shuffle(indices);
+                
+                // Assign team 1 station
+                const team1StationIndex = indices[0];
+                this.stations[team1StationIndex].team = 1;
+                this.stations[team1StationIndex].topSprite.setTint(Station.TEAM_COLORS[1]);
+                
+                // Update team stations array
+                if (!this.teamStations[1]) {
+                    this.teamStations[1] = [];
+                }
+                this.teamStations[1].push(this.stations[team1StationIndex]);
+                
+                // Assign team 2 station
+                const team2StationIndex = indices[1];
+                this.stations[team2StationIndex].team = 2;
+                this.stations[team2StationIndex].topSprite.setTint(Station.TEAM_COLORS[2]);
+                
+                // Update team stations array
+                if (!this.teamStations[2]) {
+                    this.teamStations[2] = [];
+                }
+                this.teamStations[2].push(this.stations[team2StationIndex]);
+            }
         }
     }
 
