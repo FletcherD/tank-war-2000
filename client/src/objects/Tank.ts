@@ -1,13 +1,6 @@
 import Phaser from "phaser";
 import { Bullet } from "../objects/Bullet";
-
-export const COLLISION_CATEGORIES = {
-    NONE: 0,            // 0000 (0 in binary)
-    WALL: 0x0001,       // 0001 (1 in binary)
-    PLAYER: 0x0002,     // 0010 (2 in binary)
-    PROJECTILE: 0x0004, // 0100 (4 in binary)
-    PICKUP: 0x0008      // 1000 (8 in binary)
-  };
+import { COLLISION_CATEGORIES, PHYSICS, VISUALS } from "../constants";
 
 export interface InputData {
     left: boolean;
@@ -22,7 +15,7 @@ export class Tank extends Phaser.Physics.Matter.Sprite
 {
   team: number = 0;
 
-  health: number = 100;  
+  health: number = PHYSICS.TANK_HEALTH;  
 
   currentInput: InputData = {
       left: false,
@@ -35,19 +28,19 @@ export class Tank extends Phaser.Physics.Matter.Sprite
   speed: number = 0;
   controlAngle: number = 0;
 
-  baseMaxSpeed: number = 2; // meters/msec
-  baseRotationSpeed: number = 0.002; // radians/msec
-  baseAcceleration: number = 0.005; // meters/msec^2
+  baseMaxSpeed: number = PHYSICS.TANK_MAX_SPEED;
+  baseRotationSpeed: number = PHYSICS.TANK_ROTATION_SPEED;
+  baseAcceleration: number = PHYSICS.TANK_ACCELERATION;
   
   fireCooldownTimer: number = 0;
-  cooldownDuration: number = 1000; // Cooldown duration in milliseconds
+  cooldownDuration: number = PHYSICS.TANK_FIRE_COOLDOWN;
 
   constructor (scene: Phaser.Scene, x: number, y: number)
   {
       super(scene.matter.world, x, y, 'tank');
       scene.add.existing(this);
       // Set up player physics body
-      this.setCircle(14);
+      this.setCircle(PHYSICS.TANK_HITBOX_RADIUS);
       
       // Set collision category and what it collides with
       this.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
@@ -111,7 +104,7 @@ export class Tank extends Phaser.Physics.Matter.Sprite
   }
 
   fire() {
-    const fireLocation = new Phaser.Math.Vector2(16.0, 0.0).rotate(this.controlAngle);
+    const fireLocation = new Phaser.Math.Vector2(VISUALS.FIRING_OFFSET, 0.0).rotate(this.controlAngle);
     const bullet = new Bullet(this.scene as GameScene, this.x + fireLocation.x, this.y + fireLocation.y, this.controlAngle);
     this.scene.add.existing(bullet);
   }

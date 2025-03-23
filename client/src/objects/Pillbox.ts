@@ -1,30 +1,24 @@
 import Phaser from "phaser";
 import { Bullet } from "./Bullet";
 import { Tank } from "./Tank";
-import { COLLISION_CATEGORIES } from "./Tank";
+import { COLLISION_CATEGORIES, PHYSICS, TEAM_COLORS, VISUALS } from "../constants";
 
 export class Pillbox extends Phaser.Physics.Matter.Sprite {
   // Detection range for targeting tanks
-  detectionRange: number = 256;
+  detectionRange: number = PHYSICS.PILLBOX_DETECTION_RANGE;
   
   // Firing properties
-  firingCooldown: number = 1000; // milliseconds between shots
+  firingCooldown: number = PHYSICS.PILLBOX_FIRE_COOLDOWN;
   firingTimer: number = 0;
   
   // Health
-  health: number = 8;
+  health: number = PHYSICS.PILLBOX_HEALTH;
   
   // Team - 0 for neutral, 1+ for player teams
   team: number = 0;
   
   // The top layer of the pillbox (will be tinted for team color)
   topSprite: Phaser.GameObjects.Sprite;
-  
-  // The team colors
-  static TEAM_COLORS = {
-    1: 0x0000ff, // Blue for team 1
-    2: 0xff0000  // Red for team 2
-  };
   
   constructor(scene: Phaser.Scene, x: number, y: number, team: number = 0) {
     // Using pillbox0 for the base sprite
@@ -35,7 +29,7 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
     this.topSprite = scene.add.sprite(x, y, 'pillbox1', 0);
     
     // Set up pillbox physics body
-    this.setCircle(14);
+    this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS);
     this.setStatic(true);
     
     // Set collision category and what it collides with
@@ -46,8 +40,8 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
     this.team = team;
     
     // Apply team color if it's not neutral
-    if (team > 0 && Pillbox.TEAM_COLORS[team]) {
-      this.setTint(Pillbox.TEAM_COLORS[team]);
+    if (team > 0 && TEAM_COLORS[team]) {
+      this.setTint(TEAM_COLORS[team]);
     }
   }
   
@@ -99,8 +93,8 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
   }
   
   fireAtTarget(target: Tank) {
-    // Get the bullet speed from the Bullet class (for leading calculation)
-    const bulletSpeed = 10; // Same as defined in Bullet class
+    // Get the bullet speed from constants
+    const bulletSpeed = PHYSICS.BULLET_SPEED;
     
     // Get target's current velocity and position
     const targetVelocity = target.body.velocity as Phaser.Math.Vector2;
@@ -128,7 +122,7 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
     );
     
     // Create bullet at pillbox position with the calculated lead angle
-    const fireLocation = new Phaser.Math.Vector2(16.0, 0.0).rotate(angle);
+    const fireLocation = new Phaser.Math.Vector2(VISUALS.FIRING_OFFSET, 0.0).rotate(angle);
     const bullet = new Bullet(this.scene as any, this.x + fireLocation.x, this.y + fireLocation.y, angle);
     this.scene.add.existing(bullet);
   }

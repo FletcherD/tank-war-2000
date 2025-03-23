@@ -17,6 +17,7 @@ import { BACKEND_URL } from "../backend";
 import type { MyRoomState } from "../../../server/src/rooms/GameRoom";
 import { GameScene, InputData, Tank } from "./Game";
 import { GameUI } from "../UI";
+import { VISUALS } from "../constants";
 
 export class ClientGameScene extends GameScene {
     room: Room<MyRoomState>;
@@ -61,7 +62,7 @@ export class ClientGameScene extends GameScene {
             fontFamily: "'Courier Prime', monospace",
             fontStyle: "bold"
         });
-        this.cameras.main.setBackgroundColor(0x007d3e);
+        this.cameras.main.setBackgroundColor(VISUALS.BACKGROUND_COLOR);
 
         // connect with the room
         await this.connect();

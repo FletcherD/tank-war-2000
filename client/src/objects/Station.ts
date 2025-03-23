@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { COLLISION_CATEGORIES } from "./Tank";
+import { COLLISION_CATEGORIES, TEAM_COLORS } from "../constants";
 
 export class Station extends Phaser.Physics.Matter.Sprite {
   // Team - 0 for neutral, 1+ for player teams
@@ -7,12 +7,6 @@ export class Station extends Phaser.Physics.Matter.Sprite {
   
   // The top layer of the station (will be tinted for team color)
   topSprite: Phaser.GameObjects.Sprite;
-  
-  // The team colors (same as Pillbox)
-  static TEAM_COLORS = {
-    1: 0x0000ff, // Blue for team 1
-    2: 0xff0000  // Red for team 2
-  };
   
   constructor(scene: Phaser.Scene, x: number, y: number, team: number = 0) {
     // Using station0 for the base sprite
@@ -32,8 +26,8 @@ export class Station extends Phaser.Physics.Matter.Sprite {
     this.team = team;
     
     // Apply team color if it's not neutral
-    if (team > 0 && Station.TEAM_COLORS[team]) {
-      this.topSprite.setTint(Station.TEAM_COLORS[team]);
+    if (team > 0 && TEAM_COLORS[team]) {
+      this.topSprite.setTint(TEAM_COLORS[team]);
     }
   }
   

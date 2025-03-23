@@ -4,6 +4,7 @@ import { Tank } from "../objects/Tank";
 import { Bullet } from "../objects/Bullet";
 import { Pillbox } from "../objects/Pillbox";
 import { Station } from "../objects/Station";
+import { PHYSICS, DAMAGE, TEAM_COLORS } from "../constants";
 
 export class GameScene extends Phaser.Scene {
     playerEntities: { [sessionId: string]: Tank } = {};
@@ -13,7 +14,7 @@ export class GameScene extends Phaser.Scene {
     gameMap: GameMap;
 
     elapsedTime = 0;
-    fixedTimeStep = 1000 / 60;
+    fixedTimeStep = PHYSICS.FIXED_TIMESTEP;
 
     currentTick: number = 0;
     
@@ -125,7 +126,7 @@ export class GameScene extends Phaser.Scene {
                 // Assign team 1 station
                 const team1StationIndex = indices[0];
                 this.stations[team1StationIndex].team = 1;
-                this.stations[team1StationIndex].topSprite.setTint(Station.TEAM_COLORS[1]);
+                this.stations[team1StationIndex].topSprite.setTint(TEAM_COLORS[1]);
                 
                 // Update team stations array
                 if (!this.teamStations[1]) {
@@ -136,7 +137,7 @@ export class GameScene extends Phaser.Scene {
                 // Assign team 2 station
                 const team2StationIndex = indices[1];
                 this.stations[team2StationIndex].team = 2;
-                this.stations[team2StationIndex].topSprite.setTint(Station.TEAM_COLORS[2]);
+                this.stations[team2StationIndex].topSprite.setTint(TEAM_COLORS[2]);
                 
                 // Update team stations array
                 if (!this.teamStations[2]) {
@@ -191,12 +192,12 @@ export class GameScene extends Phaser.Scene {
                 if (otherBody.gameObject instanceof Tank) {
                     console.log('Tank collision detected');
                     const tank = otherBody.gameObject as Tank;
-                    tank.takeDamage(1);
+                    tank.takeDamage(DAMAGE.BULLET_TO_TANK);
                     bullet.destroy();
                 } else if (otherBody.gameObject instanceof Pillbox) {
                     console.log('Pillbox collision detected');
                     const pillbox = otherBody.gameObject as Pillbox;
-                    pillbox.takeDamage(1);
+                    pillbox.takeDamage(DAMAGE.BULLET_TO_PILLBOX);
                     bullet.destroy();
                 } else {
                     this.handleWallBulletCollision(bullet, otherBody);
