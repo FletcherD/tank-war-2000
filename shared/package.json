@@ -1,0 +1,9 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "description": "Shared game logic for phaser project",
+  "main": "index.js",
+  "dependencies": {
+    "phaser": "^3.88.2"
+  }
+}

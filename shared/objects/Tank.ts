@@ -1,7 +1,7 @@
 import Phaser from "phaser";
-import { Bullet } from "../objects/Bullet";
+import { Bullet } from "./Bullet";
 import { COLLISION_CATEGORIES, PHYSICS, VISUALS } from "../constants";
-import { GameScene } from "../scenes/GameScene";
+import { GameScene } from "../scenes/Game";
 
 export interface InputData {
     left: boolean;

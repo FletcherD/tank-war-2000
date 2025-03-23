@@ -6,6 +6,8 @@ import { Pillbox } from "../objects/Pillbox";
 import { Station } from "../objects/Station";
 import { PHYSICS, DAMAGE, TEAM_COLORS } from "../constants";
 
+export { InputData } from "../objects/Tank";
+
 export class GameScene extends Phaser.Scene {
     playerEntities: { [sessionId: string]: Tank } = {};
     matter: Phaser.Physics.Matter.MatterPhysics;
