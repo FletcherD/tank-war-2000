@@ -99,10 +99,35 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
   }
   
   fireAtTarget(target: Tank) {
-    // Calculate angle to target
-    const angle = Phaser.Math.Angle.Between(this.x, this.y, target.x, target.y);
+    // Get the bullet speed from the Bullet class (for leading calculation)
+    const bulletSpeed = 10; // Same as defined in Bullet class
     
-    // Create bullet at pillbox position with calculated angle
+    // Get target's current velocity and position
+    const targetVelocity = target.body.velocity as Phaser.Math.Vector2;
+    const targetPosition = new Phaser.Math.Vector2(target.x, target.y);
+    const pillboxPosition = new Phaser.Math.Vector2(this.x, this.y);
+    
+    // Calculate distance to target
+    const distance = Phaser.Math.Distance.Between(this.x, this.y, target.x, target.y);
+    
+    // Calculate time it would take for bullet to reach target's current position
+    const timeToTarget = distance / bulletSpeed;
+    
+    // Predict where the target will be when the bullet arrives
+    const predictedPosition = new Phaser.Math.Vector2(
+      target.x + targetVelocity.x * timeToTarget,
+      target.y + targetVelocity.y * timeToTarget
+    );
+    
+    // Calculate angle to the predicted position
+    const angle = Phaser.Math.Angle.Between(
+      this.x, 
+      this.y, 
+      predictedPosition.x, 
+      predictedPosition.y
+    );
+    
+    // Create bullet at pillbox position with the calculated lead angle
     const fireLocation = new Phaser.Math.Vector2(16.0, 0.0).rotate(angle);
     const bullet = new Bullet(this.scene as any, this.x + fireLocation.x, this.y + fireLocation.y, angle);
     this.scene.add.existing(bullet);
