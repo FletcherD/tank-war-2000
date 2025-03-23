@@ -6,6 +6,7 @@ export class GameUI {
   private healthBarElement: HTMLDivElement;
   private healthTextElement: HTMLDivElement;
   private buildButton: HTMLButtonElement;
+  private cancelBuildButton: HTMLButtonElement;
   private messageElement: HTMLDivElement;
   private messageTimeout: number | null = null;
   private gameScene: ClientGameScene;
@@ -75,6 +76,25 @@ export class GameUI {
     this.buildButton.onclick = () => this.gameScene.buildRoad();
     this.uiContainer.appendChild(this.buildButton);
     
+    // Create Cancel Build button (initially hidden)
+    this.cancelBuildButton = document.createElement('button');
+    this.cancelBuildButton.textContent = 'Cancel Build';
+    this.cancelBuildButton.style.position = 'absolute';
+    this.cancelBuildButton.style.bottom = '20px';
+    this.cancelBuildButton.style.right = '150px'; // Position to the left of build button
+    this.cancelBuildButton.style.padding = '10px 20px';
+    this.cancelBuildButton.style.backgroundColor = '#f44336'; // Red
+    this.cancelBuildButton.style.color = 'white';
+    this.cancelBuildButton.style.border = 'none';
+    this.cancelBuildButton.style.borderRadius = '5px';
+    this.cancelBuildButton.style.cursor = 'pointer';
+    this.cancelBuildButton.style.fontFamily = "'Courier Prime', monospace";
+    this.cancelBuildButton.style.fontWeight = "700";
+    this.cancelBuildButton.style.pointerEvents = 'auto';
+    this.cancelBuildButton.style.display = 'none'; // Initially hidden
+    this.cancelBuildButton.onclick = () => this.gameScene.cancelBuild("Construction canceled by player.");
+    this.uiContainer.appendChild(this.cancelBuildButton);
+    
     // Create message element for notifications
     this.messageElement = document.createElement('div');
     this.messageElement.style.position = 'absolute';
@@ -130,6 +150,15 @@ export class GameUI {
   public update() {
     if (this.gameScene.currentPlayer) {
       this.updateHealthBar(this.gameScene.currentPlayer.health);
+    }
+    
+    // Update build buttons based on building state
+    if (this.gameScene.isBuilding) {
+      this.buildButton.style.display = 'none';
+      this.cancelBuildButton.style.display = 'block';
+    } else {
+      this.buildButton.style.display = 'block';
+      this.cancelBuildButton.style.display = 'none';
     }
     
     // Regularly check if the canvas position/size has changed

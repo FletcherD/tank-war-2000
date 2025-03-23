@@ -41,6 +41,18 @@ export class ClientGameScene extends GameScene {
     selectionEndTile: { x: number, y: number } | null = null;
     selectionRect: Phaser.GameObjects.Rectangle | null = null;
     selectedTiles: { x: number, y: number }[] = [];
+    
+    // Road building properties
+    buildQueue: { 
+        tile: { x: number, y: number }, 
+        progress: number, 
+        indicator: Phaser.GameObjects.Arc,
+        worldX: number,
+        worldY: number
+    }[] = [];
+    isBuilding: boolean = false;
+    BUILD_TIME_PER_TILE: number = 1500; // milliseconds per tile
+    MAX_BUILD_DISTANCE: number = 100; // maximum distance for building
 
     inputPayload: InputData = {
         left: false,
@@ -179,6 +191,9 @@ export class ClientGameScene extends GameScene {
             this.applyInput();
             this.fixedTick(time, this.fixedTimeStep);
         }
+        
+        // Process build queue
+        this.updateBuildQueue(delta);
 
         // Update UI if it exists
         if (this.gameUI) {
@@ -187,6 +202,49 @@ export class ClientGameScene extends GameScene {
 
         this.debugFPS.text = `Frame rate: ${this.game.loop.actualFps}`;
         this.debugTileInfo.text = this.debugText;
+    }
+    
+    // Update the build queue and process construction
+    updateBuildQueue(delta: number): void {
+        if (!this.buildQueue.length || !this.isBuilding || !this.currentPlayer) return;
+        
+        // Check if player is still in range of the build area
+        const currentTile = this.buildQueue[0];
+        const distance = Phaser.Math.Distance.Between(
+            this.currentPlayer.x, this.currentPlayer.y,
+            currentTile.worldX, currentTile.worldY
+        );
+        
+        // If player moved too far away, cancel the build
+        if (distance > this.MAX_BUILD_DISTANCE) {
+            this.cancelBuild("Too far from build site! Construction canceled.");
+            return;
+        }
+        
+        // Update progress of the first tile in the queue
+        currentTile.progress += delta;
+        
+        // Update visual indicator
+        const progressRatio = Math.min(currentTile.progress / this.BUILD_TIME_PER_TILE, 1);
+        currentTile.indicator.setFillStyle(0x00ff00, 0.7 * progressRatio);
+        
+        // If the tile is complete
+        if (currentTile.progress >= this.BUILD_TIME_PER_TILE) {
+            // Build the tile
+            this.gameMap.setTile(currentTile.tile.x, currentTile.tile.y, 256, true);
+            
+            // Remove from queue and destroy the indicator
+            currentTile.indicator.destroy();
+            this.buildQueue.shift();
+            
+            // If we've completed all tiles, finish building
+            if (this.buildQueue.length === 0) {
+                this.isBuilding = false;
+                if (this.gameUI) {
+                    this.gameUI.showMessage("Road construction complete!");
+                }
+            }
+        }
     }
     
     // Start tile selection process
@@ -275,9 +333,10 @@ export class ClientGameScene extends GameScene {
         this.selectionRect.setSize(width, height);
     }
     
-    // Function to build road on selected tiles
+    // Function to start building road on selected tiles
     buildRoad() {
-        if (!this.selectedTiles.length || !this.currentPlayer) return;
+        // Check if already building or no tiles selected
+        if (this.isBuilding || !this.selectedTiles.length || !this.currentPlayer) return;
         
         // Check if the selection is close enough to the player
         // Calculate the center of the selection
@@ -299,22 +358,66 @@ export class ClientGameScene extends GameScene {
             centerX, centerY
         );
         
-        // Maximum distance for building (adjust as needed)
-        const MAX_BUILD_DISTANCE = 100;
-        
-        if (distance <= MAX_BUILD_DISTANCE) {
-            // Change selected tiles to road tiles (index 256)
+        if (distance <= this.MAX_BUILD_DISTANCE) {
+            // Initialize build queue
+            this.buildQueue = [];
+            this.isBuilding = true;
+            
+            // Add each selected tile to the build queue
             for (const tile of this.selectedTiles) {
-                this.gameMap.setTile(tile.x, tile.y, 256, true);
+                const worldPos = this.gameMap.groundLayer.tileToWorldXY(tile.x, tile.y);
+                
+                // Create a progress indicator for this tile
+                const indicator = this.add.circle(
+                    worldPos.x + 16, // Center of tile (assuming 32x32 tiles)
+                    worldPos.y + 16, 
+                    10, // Radius
+                    0x00ff00, // Color
+                    0.1 // Alpha (start almost transparent)
+                );
+                indicator.setDepth(110); // Ensure it's visible above other elements
+                
+                // Add to build queue
+                this.buildQueue.push({
+                    tile: tile,
+                    progress: 0,
+                    indicator: indicator,
+                    worldX: worldPos.x + 16,
+                    worldY: worldPos.y + 16
+                });
             }
             
-            // Clear selection after building
-            this.clearSelection();
+            // Message to show build started
+            if (this.gameUI) {
+                this.gameUI.showMessage("Road construction started!");
+            }
+            
+            // Clear selection rectangle but keep selected tiles stored
+            if (this.selectionRect) {
+                this.selectionRect.setVisible(false);
+            }
         } else {
-            // Show message that player is too far (handled in UI)
+            // Show message that player is too far
             if (this.gameUI) {
                 this.gameUI.showMessage("Too far to build! Move closer to the selected area.");
             }
+        }
+    }
+    
+    // Cancel current build process
+    cancelBuild(message: string = "Construction canceled.") {
+        // Destroy all indicators
+        for (const item of this.buildQueue) {
+            item.indicator.destroy();
+        }
+        
+        // Clear the queue
+        this.buildQueue = [];
+        this.isBuilding = false;
+        
+        // Show message
+        if (this.gameUI) {
+            this.gameUI.showMessage(message);
         }
     }
     
