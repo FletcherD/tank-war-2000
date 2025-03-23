@@ -14,6 +14,7 @@ export class SceneSelector extends Phaser.Scene {
         this.load.image('tank', './assets/tank.png');
         this.load.image('tankTreads', './assets/tankTreads.png');
         this.load.image('bullet', './assets/bullet.png');
+        this.load.image('crosshair', './assets/crosshair.png');
         
         // Load pillbox sprite atlases
         this.load.spritesheet('pillbox0', './assets/pillbox0.png', { frameWidth: 64, frameHeight: 64 });

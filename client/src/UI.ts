@@ -5,6 +5,9 @@ export class GameUI {
   private healthBarContainer: HTMLDivElement;
   private healthBarElement: HTMLDivElement;
   private healthTextElement: HTMLDivElement;
+  private buildButton: HTMLButtonElement;
+  private messageElement: HTMLDivElement;
+  private messageTimeout: number | null = null;
   private gameScene: ClientGameScene;
 
   constructor(gameScene: ClientGameScene) {
@@ -53,6 +56,40 @@ export class GameUI {
     this.healthTextElement.style.fontFamily = "'Courier Prime', monospace";
     this.healthTextElement.style.fontWeight = "700";
     healthBarOuter.appendChild(this.healthTextElement);
+    
+    // Create Build Road button
+    this.buildButton = document.createElement('button');
+    this.buildButton.textContent = 'Build Road';
+    this.buildButton.style.position = 'absolute';
+    this.buildButton.style.bottom = '20px';
+    this.buildButton.style.right = '20px';
+    this.buildButton.style.padding = '10px 20px';
+    this.buildButton.style.backgroundColor = '#4CAF50';
+    this.buildButton.style.color = 'white';
+    this.buildButton.style.border = 'none';
+    this.buildButton.style.borderRadius = '5px';
+    this.buildButton.style.cursor = 'pointer';
+    this.buildButton.style.fontFamily = "'Courier Prime', monospace";
+    this.buildButton.style.fontWeight = "700";
+    this.buildButton.style.pointerEvents = 'auto'; // Allow button clicks
+    this.buildButton.onclick = () => this.gameScene.buildRoad();
+    this.uiContainer.appendChild(this.buildButton);
+    
+    // Create message element for notifications
+    this.messageElement = document.createElement('div');
+    this.messageElement.style.position = 'absolute';
+    this.messageElement.style.top = '100px';
+    this.messageElement.style.left = '50%';
+    this.messageElement.style.transform = 'translateX(-50%)';
+    this.messageElement.style.padding = '10px 20px';
+    this.messageElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    this.messageElement.style.color = 'white';
+    this.messageElement.style.borderRadius = '5px';
+    this.messageElement.style.fontFamily = "'Courier Prime', monospace";
+    this.messageElement.style.fontWeight = "700";
+    this.messageElement.style.display = 'none';
+    this.messageElement.style.zIndex = '20';
+    this.uiContainer.appendChild(this.messageElement);
 
     // Update UI container position when window resizes
     window.addEventListener('resize', () => this.updateUIPosition());
@@ -97,5 +134,28 @@ export class GameUI {
     
     // Regularly check if the canvas position/size has changed
     this.updateUIPosition();
+  }
+  
+  /**
+   * Shows a temporary message to the player
+   * @param message The message to display
+   * @param duration How long to show the message in milliseconds (default 3000ms)
+   */
+  public showMessage(message: string, duration: number = 3000) {
+    // Clear any existing message timeout
+    if (this.messageTimeout !== null) {
+      clearTimeout(this.messageTimeout);
+      this.messageTimeout = null;
+    }
+    
+    // Set message content and show it
+    this.messageElement.textContent = message;
+    this.messageElement.style.display = 'block';
+    
+    // Hide message after duration
+    this.messageTimeout = window.setTimeout(() => {
+      this.messageElement.style.display = 'none';
+      this.messageTimeout = null;
+    }, duration);
   }
 }

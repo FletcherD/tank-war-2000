@@ -23,6 +23,7 @@ export class Tank extends Phaser.GameObjects.Container
   tankBody: Phaser.GameObjects.Sprite;
   leftTread: Phaser.GameObjects.Sprite;
   rightTread: Phaser.GameObjects.Sprite;
+  crosshair: Phaser.GameObjects.Sprite;
   
   // Tread animation
   leftTreadPosition: number = 0;  
@@ -59,8 +60,12 @@ export class Tank extends Phaser.GameObjects.Container
       // Right tread uses frames from bottom row (row 1)
       this.rightTread = scene.add.sprite(0, 0, 'tankTreads', 31);
       
-      // Add sprites to container (order matters - treads first, then tank body on top)
-      this.add([this.tankBody, this.leftTread, this.rightTread]);
+      // Create crosshair sprite (initially invisible)
+      this.crosshair = scene.add.sprite(PHYSICS.BULLET_RANGE, 0, 'crosshair');
+      this.crosshair.setVisible(false);
+      
+      // Add sprites to container (order matters - treads first, then tank body on top, then crosshair)
+      this.add([this.leftTread, this.rightTread, this.tankBody, this.crosshair]);
       
       // Set up tread frames
       this.createTreadFrames(scene);
@@ -94,6 +99,9 @@ export class Tank extends Phaser.GameObjects.Container
       // Debug output for tile speed
       if (this === gameScene.currentPlayer) {
           gameScene.debugText = `Tile Speed: ${speedMultiplier.toFixed(2)}`;
+          
+          // Show crosshair only for current player
+          this.crosshair.setVisible(true);
       }
   
       // Rotate left/right - in Matter we need to set the angle property

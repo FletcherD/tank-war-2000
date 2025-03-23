@@ -35,6 +35,12 @@ export class ClientGameScene extends GameScene {
 
     cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
     spaceKey: Phaser.Input.Keyboard.Key;
+    
+    // Tile selection properties
+    selectionStartTile: { x: number, y: number } | null = null;
+    selectionEndTile: { x: number, y: number } | null = null;
+    selectionRect: Phaser.GameObjects.Rectangle | null = null;
+    selectedTiles: { x: number, y: number }[] = [];
 
     inputPayload: InputData = {
         left: false,
@@ -63,6 +69,17 @@ export class ClientGameScene extends GameScene {
             fontStyle: "bold"
         });
         this.cameras.main.setBackgroundColor(VISUALS.BACKGROUND_COLOR);
+        
+        // Create selection rectangle (initially invisible)
+        this.selectionRect = this.add.rectangle(0, 0, 0, 0, 0xffff00, 0.3);
+        this.selectionRect.setStrokeStyle(2, 0xffff00);
+        this.selectionRect.setVisible(false);
+        this.selectionRect.setDepth(100); // Make sure it's above everything else
+        
+        // Set up mouse input for tile selection
+        this.input.on('pointerdown', this.startTileSelection, this);
+        this.input.on('pointermove', this.updateTileSelection, this);
+        this.input.on('pointerup', this.endTileSelection, this);
 
         // connect with the room
         await this.connect();
@@ -170,6 +187,146 @@ export class ClientGameScene extends GameScene {
 
         this.debugFPS.text = `Frame rate: ${this.game.loop.actualFps}`;
         this.debugTileInfo.text = this.debugText;
+    }
+    
+    // Start tile selection process
+    startTileSelection(pointer: Phaser.Input.Pointer) {
+        // Convert pointer position to tile coordinates
+        const tileXY = this.gameMap.groundLayer.worldToTileXY(pointer.worldX, pointer.worldY);
+        
+        this.selectionStartTile = { x: tileXY.x, y: tileXY.y };
+        this.selectionEndTile = { x: tileXY.x, y: tileXY.y };
+        
+        // Set selection rectangle position and size
+        this.updateSelectionRectangle();
+        
+        // Show the selection rectangle
+        if (this.selectionRect) {
+            this.selectionRect.setVisible(true);
+        }
+    }
+    
+    // Update tile selection as mouse moves
+    updateTileSelection(pointer: Phaser.Input.Pointer) {
+        if (!this.selectionStartTile || !pointer.isDown) return;
+        
+        // Convert pointer position to tile coordinates
+        const tileXY = this.gameMap.groundLayer.worldToTileXY(pointer.worldX, pointer.worldY);
+        this.selectionEndTile = { x: tileXY.x, y: tileXY.y };
+        
+        // Limit selection to 2x2 tiles
+        if (Math.abs(this.selectionEndTile.x - this.selectionStartTile.x) > 1) {
+            this.selectionEndTile.x = this.selectionStartTile.x + 
+                (this.selectionEndTile.x > this.selectionStartTile.x ? 1 : -1);
+        }
+        
+        if (Math.abs(this.selectionEndTile.y - this.selectionStartTile.y) > 1) {
+            this.selectionEndTile.y = this.selectionStartTile.y + 
+                (this.selectionEndTile.y > this.selectionStartTile.y ? 1 : -1);
+        }
+        
+        // Update selection rectangle
+        this.updateSelectionRectangle();
+    }
+    
+    // End tile selection process
+    endTileSelection(pointer: Phaser.Input.Pointer) {
+        if (!this.selectionStartTile || !this.selectionEndTile) return;
+        
+        // Calculate the list of selected tiles
+        this.selectedTiles = [];
+        
+        const startX = Math.min(this.selectionStartTile.x, this.selectionEndTile.x);
+        const endX = Math.max(this.selectionStartTile.x, this.selectionEndTile.x);
+        const startY = Math.min(this.selectionStartTile.y, this.selectionEndTile.y);
+        const endY = Math.max(this.selectionStartTile.y, this.selectionEndTile.y);
+        
+        for (let y = startY; y <= endY; y++) {
+            for (let x = startX; x <= endX; x++) {
+                this.selectedTiles.push({ x, y });
+            }
+        }
+        
+        // Keep selection rectangle visible to show the selected area
+    }
+    
+    // Update the selection rectangle's position and size
+    updateSelectionRectangle() {
+        if (!this.selectionRect || !this.selectionStartTile || !this.selectionEndTile) return;
+        
+        const startX = Math.min(this.selectionStartTile.x, this.selectionEndTile.x);
+        const endX = Math.max(this.selectionStartTile.x, this.selectionEndTile.x);
+        const startY = Math.min(this.selectionStartTile.y, this.selectionEndTile.y);
+        const endY = Math.max(this.selectionStartTile.y, this.selectionEndTile.y);
+        
+        // Convert tile coordinates to world coordinates
+        const startPoint = this.gameMap.groundLayer.tileToWorldXY(startX, startY);
+        const endPoint = this.gameMap.groundLayer.tileToWorldXY(endX + 1, endY + 1);
+        
+        // Set rectangle position to the center of the selected area
+        const centerX = (startPoint.x + endPoint.x) / 2;
+        const centerY = (startPoint.y + endPoint.y) / 2;
+        
+        // Set rectangle size
+        const width = endPoint.x - startPoint.x;
+        const height = endPoint.y - startPoint.y;
+        
+        this.selectionRect.setPosition(centerX, centerY);
+        this.selectionRect.setSize(width, height);
+    }
+    
+    // Function to build road on selected tiles
+    buildRoad() {
+        if (!this.selectedTiles.length || !this.currentPlayer) return;
+        
+        // Check if the selection is close enough to the player
+        // Calculate the center of the selection
+        let centerX = 0;
+        let centerY = 0;
+        
+        for (const tile of this.selectedTiles) {
+            const worldPos = this.gameMap.groundLayer.tileToWorldXY(tile.x, tile.y);
+            centerX += worldPos.x;
+            centerY += worldPos.y;
+        }
+        
+        centerX /= this.selectedTiles.length;
+        centerY /= this.selectedTiles.length;
+        
+        // Calculate distance from player to selection center
+        const distance = Phaser.Math.Distance.Between(
+            this.currentPlayer.x, this.currentPlayer.y,
+            centerX, centerY
+        );
+        
+        // Maximum distance for building (adjust as needed)
+        const MAX_BUILD_DISTANCE = 100;
+        
+        if (distance <= MAX_BUILD_DISTANCE) {
+            // Change selected tiles to road tiles (index 256)
+            for (const tile of this.selectedTiles) {
+                this.gameMap.setTile(tile.x, tile.y, 256);
+            }
+            
+            // Clear selection after building
+            this.clearSelection();
+        } else {
+            // Show message that player is too far (handled in UI)
+            if (this.gameUI) {
+                this.gameUI.showMessage("Too far to build! Move closer to the selected area.");
+            }
+        }
+    }
+    
+    // Clear the current selection
+    clearSelection() {
+        this.selectedTiles = [];
+        this.selectionStartTile = null;
+        this.selectionEndTile = null;
+        
+        if (this.selectionRect) {
+            this.selectionRect.setVisible(false);
+        }
     }
 
     applyInput() {

@@ -212,14 +212,18 @@ export class GameMap {
         });
     }
 
+    getBaseTileType(tile: Phaser.Tilemaps.Tile): number {
+        return Math.floor(tile.index / 64) * 64;
+    }
+
     getTileBitmask(layer: Phaser.Tilemaps.TilemapLayer, x: number, y: number): number {
         // Create a bitmask indicating which of the 4 corner tiles match the center tile
         // Returns a bitmask where each bit represents a neighbor (clockwise from top-left):
         // 0x01: top-left, 0x02: top-right, 0x04: bottom-right, 0x08: bottom-left
         if (!layer) return 0;
 
-        const isTileSameType = (idA: number, idB: number): boolean => {
-            return Math.floor(idA/64) === Math.floor(idB/64);
+        const isTileSameType = (tileA: Phaser.Tilemaps.Tile, tileB: Phaser.Tilemaps.Tile): boolean => {
+            return this.getBaseTileType(tileA) === this.getBaseTileType(tileB);
         }
       
         const centerTile = layer.getTileAt(x, y);
@@ -230,7 +234,7 @@ export class GameMap {
       
         let wang = [];
         for (const neighborTile of neighborTiles) {
-            const result = neighborTile && isTileSameType(neighborTile.index, centerTile.index);
+            const result = neighborTile && isTileSameType(neighborTile, centerTile);
             wang.push(result);
         }
 
