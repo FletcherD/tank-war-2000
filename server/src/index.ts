@@ -16,21 +16,7 @@ import Phaser from 'phaser'
 
 // Import arena config
 import appConfig from "./app.config";
-
-class ServerScene extends Phaser.Scene {
-  constructor() {
-    super()
-    this.tick = 0
-  }
-
-  create() {
-    console.log("ServerScene created");
-  }
-
-  update() {
-    this.tick++
-  }
-}
+import { ServerGameScene } from "./scenes/ServerGameScene";
 
 const config = {
   type: Phaser.HEADLESS,
@@ -38,7 +24,7 @@ const config = {
   height: 720,
   banner: false,
   audio: false,
-  scene: [ServerScene],
+  scene: [ServerGameScene],
   physics: {
       default: "matter",
       matter: {

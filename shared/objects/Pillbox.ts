@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import { Bullet } from "./Bullet";
 import { Tank } from "./Tank";
 import { COLLISION_CATEGORIES, PHYSICS, TEAM_COLORS, VISUALS } from "../constants";

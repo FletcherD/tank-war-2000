@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import { COLLISION_CATEGORIES, TEAM_COLORS } from "../constants";
 
 export class Station extends Phaser.Physics.Matter.Sprite {

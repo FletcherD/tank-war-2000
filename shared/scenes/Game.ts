@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import { GameMap } from "./Map";
 import { Tank } from "../objects/Tank";
 import { Bullet } from "../objects/Bullet";

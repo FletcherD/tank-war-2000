@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 
 export class GameMap {
     scene: Phaser.Scene;

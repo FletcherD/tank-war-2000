@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import { Bullet } from "./Bullet";
 import { COLLISION_CATEGORIES, PHYSICS, VISUALS } from "../constants";
 import { GameScene } from "../scenes/Game";
