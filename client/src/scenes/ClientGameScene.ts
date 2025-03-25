@@ -32,6 +32,7 @@ export class ClientGameScene extends GameScene {
 
     debugFPS: Phaser.GameObjects.Text;
     debugTileInfo: Phaser.GameObjects.Text;
+    debugPrediction: Phaser.GameObjects.Text;
 
     localRef: Phaser.GameObjects.Rectangle;
     remoteRef: Phaser.GameObjects.Rectangle;
@@ -79,6 +80,11 @@ export class ClientGameScene extends GameScene {
             fontStyle: "bold"
         });
         this.debugTileInfo = this.add.text(4, 24, "", { 
+            color: "#ff0000", 
+            fontFamily: "'Courier Prime', monospace",
+            fontStyle: "bold"
+        });
+        this.debugPrediction = this.add.text(4, 44, "", { 
             color: "#ff0000", 
             fontFamily: "'Courier Prime', monospace",
             fontStyle: "bold"
@@ -208,6 +214,16 @@ export class ClientGameScene extends GameScene {
 
         this.debugFPS.text = `Frame rate: ${this.game.loop.actualFps}`;
         this.debugTileInfo.text = this.debugText;
+        
+        // Show prediction debug info
+        if (this.currentPlayer) {
+            const pendingInputCount = this.currentPlayer.pendingInputs.length;
+            const serverLastTick = this.currentPlayer.lastServerState.tick;
+            const clientCurrentTick = this.currentTick;
+            const tickDiff = clientCurrentTick - serverLastTick;
+            
+            this.debugPrediction.text = `Prediction: ${pendingInputCount} pending, Tick diff: ${tickDiff}`;
+        }
     }
     
     // Update the build queue and process construction
@@ -472,7 +488,8 @@ export class ClientGameScene extends GameScene {
 
         // Apply input to current player for client-side prediction
         if (this.currentPlayer && this.currentPlayer.active) {
-            this.currentPlayer.currentInput = this.inputPayload;
+            // Use sendInput to properly handle input buffering and prediction
+            this.currentPlayer.sendInput({...this.inputPayload});
         }
     }
 

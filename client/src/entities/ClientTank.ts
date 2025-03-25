@@ -15,6 +15,7 @@ export class ClientTank extends Tank {
     tick: number;
   };
   inputBuffer: InputData[] = [];
+  pendingInputs: InputData[] = [];
   
   constructor(scene: ClientGameScene, x: number, y: number, sessionId: string, isLocalPlayer: boolean = false) {
     super(scene, x, y);
@@ -62,30 +63,70 @@ export class ClientTank extends Tank {
       this.currentInput.fire = data.fire;
       this.currentInput.tick = data.tick;
     } else {
-      // For local player, reconcile if needed
+      // For local player, perform reconciliation with rollback
       this.reconcileWithServer();
     }
   }
 
   reconcileWithServer(): void {
-    // Simple reconciliation: if server position differs too much, snap to it
+    // Remove inputs that have been processed by the server
+    this.pendingInputs = this.pendingInputs.filter(input => input.tick > this.lastServerState.tick);
+    
+    // Cleanup input buffer to prevent memory leak
+    // Only keep the last 100 inputs (about 1-2 seconds worth)
+    const MAX_BUFFER_SIZE = 100;
+    if (this.inputBuffer.length > MAX_BUFFER_SIZE) {
+      this.inputBuffer = this.inputBuffer.slice(-MAX_BUFFER_SIZE);
+    }
+    
+    // Check if we need to correct our position
     const distanceToServer = Phaser.Math.Distance.Between(
       this.x, this.y, 
       this.lastServerState.x, this.lastServerState.y
     );
-
-    // If distance is too large, correct position
-    if (distanceToServer > 50) {
+    
+    const headingDifference = Math.abs(this.heading - this.lastServerState.heading);
+    const speedDifference = Math.abs(this.speed - this.lastServerState.speed);
+    
+    // If our prediction is too far off from server state, we need to reconcile
+    const needsReconciliation = distanceToServer > 10 || headingDifference > 0.1 || speedDifference > 5;
+    
+    if (needsReconciliation) {
+      console.log(`Reconciling position. Distance: ${distanceToServer.toFixed(2)}, Heading diff: ${headingDifference.toFixed(2)}`);
+      
+      // Rollback to server state
       this.x = this.lastServerState.x;
       this.y = this.lastServerState.y;
-      this.rotation = this.lastServerState.heading;
+      this.heading = this.lastServerState.heading;
       this.speed = this.lastServerState.speed;
+      this.rotation = this.heading;
+      
+      // Re-apply all pending inputs to get back to current predicted state
+      const gameScene = this.scene as GameScene;
+      const delta = gameScene.fixedTimeStep;
+      
+      // Save current input
+      const currentInput = { ...this.currentInput };
+      
+      // Re-apply each pending input
+      for (const input of this.pendingInputs) {
+        this.currentInput = input;
+        super.preUpdate(0, delta);
+      }
+      
+      // Restore current input
+      this.currentInput = currentInput;
+      
+      console.log(`After reconciliation: x=${this.x.toFixed(2)}, y=${this.y.toFixed(2)}`);
     }
   }
 
   sendInput(input: InputData): void {
     // Store input for client-side prediction
     this.inputBuffer.push(input);
+    
+    // Add to pending inputs for reconciliation
+    this.pendingInputs.push({ ...input });
     
     // Update local state
     this.currentInput = input;

@@ -107,6 +107,7 @@ export class Tank extends Phaser.GameObjects.Container
       } else if (this.currentInput.right) {
         this.heading += rotationSpeed * delta;
       }
+      this.heading = Phaser.Math.Wrap(this.heading, 0, Math.PI * 2);
       this.setRotation(this.heading);
 
       // Get current velocity and calculate speed
@@ -133,7 +134,7 @@ export class Tank extends Phaser.GameObjects.Container
         }
       }
 
-      this.setVelocity(this.speed * Math.cos(this.rotation), this.speed * Math.sin(this.rotation));
+      this.setVelocity(this.speed * Math.cos(this.heading), this.speed * Math.sin(this.heading));
 
       // Handle fire cooldown
       if (this.currentInput.fire && this.fireCooldownTimer <= 0) {
