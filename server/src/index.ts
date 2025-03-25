@@ -8,16 +8,14 @@
  */
 import { listen } from "@colyseus/tools";
 
+// imports for headless phaser
+import '@geckos.io/phaser-on-nodejs'
+import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
+const SI = new SnapshotInterpolation()
+import Phaser from 'phaser'
+
 // Import arena config
 import appConfig from "./app.config";
-
-
-// imports for  phaser
-require('@geckos.io/phaser-on-nodejs')
-const { SnapshotInterpolation } = require('@geckos.io/snapshot-interpolation')
-const SI = new SnapshotInterpolation()
-const Phaser = require('phaser')
-
 
 class ServerScene extends Phaser.Scene {
   constructor() {
