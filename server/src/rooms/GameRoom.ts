@@ -1,6 +1,6 @@
 import { Room, Client } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
-import { Player, InputData } from "../../../game/Player";
+import { InputData } from "../../../shared/scenes/Game";
 
 export class PlayerState extends Schema {
   @type("number") x: number;
@@ -53,13 +53,13 @@ export class GameRoom extends Room<MyRoomState> {
       // dequeue player inputs
       while (input = player.inputQueue.shift()) {
         // Use the shared Player class to handle movement
-        const playerMovement = new Player(player.x, player.y, player.rotation);
-        playerMovement.applyInput(input, velocity);
-        player.x = playerMovement.x;
-        player.y = playerMovement.y;
-        player.rotation = playerMovement.rotation;
+        // const playerMovement = new Player(player.x, player.y, player.rotation);
+        // playerMovement.applyInput(input, velocity);
+        // player.x = playerMovement.x;
+        // player.y = playerMovement.y;
+        // player.rotation = playerMovement.rotation;
 
-        player.tick = input.tick;
+        // player.tick = input.tick;
       }
     });
   }

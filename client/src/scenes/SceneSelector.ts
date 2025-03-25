@@ -49,7 +49,7 @@ export class SceneSelector extends Phaser.Scene {
             .setInteractive()
             .setPadding(6)
             .on("pointerdown", () => {
-                this.runScene("game");
+                this.runScene("default");
             });
     }
 

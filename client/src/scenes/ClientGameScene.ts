@@ -174,6 +174,7 @@ export class ClientGameScene extends GameScene {
 
             // connection successful!
             connectionStatusText.destroy();
+            console.log("Connected to server!");
 
         } catch (e) {
             // couldn't connect
