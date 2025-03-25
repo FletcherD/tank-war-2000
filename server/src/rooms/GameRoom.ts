@@ -1,38 +1,41 @@
 import { Room, Client } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
-import { InputData } from "../../../shared/scenes/Game";
+import { InputData } from "../../../shared/objects/Tank";
+import { TankSchema } from "../schemas/TankSchema";
+import { ServerGameScene } from "../scenes/ServerGameScene";
+import { PhaserServer } from "../phaser/PhaserServer";
 
 export class PlayerState extends Schema {
-  @type("number") x: number;
-  @type("number") y: number;
-  @type("number") rotation: number;
-  @type("number") tick: number;
-  inputQueue: InputData[] = [];
+  @type(TankSchema) tank: TankSchema = new TankSchema();
 }
 
 export class MyRoomState extends Schema {
-  @type("number") mapWidth: number;
-  @type("number") mapHeight: number;
+  @type("string") mapName: string = "Test Map";
   @type({ map: PlayerState }) players = new MapSchema<PlayerState>();
 }
 
 export class GameRoom extends Room<MyRoomState> {
   state = new MyRoomState();
   fixedTimeStep = 1000 / 60;
+  gameScene: ServerGameScene;
+  phaserServer: PhaserServer;
 
-  onCreate (options: any) {
-    // set map dimensions
-    this.state.mapWidth = 800;
-    this.state.mapHeight = 600;
+  onCreate(options: any) {
+    // Initialize game state
+    if (options.mapName) {
+      this.state.mapName = options.mapName;
+    }
 
-    this.onMessage(0, (client, input) => {
-      // handle player input
-      const player = this.state.players.get(client.sessionId);
+    // Initialize Phaser server and create the game scene
+    this.phaserServer = new PhaserServer();
+    this.gameScene = this.phaserServer.createScene(ServerGameScene, this);
 
-      // enqueue input to user input buffer.
-      player.inputQueue.push(input);
+    // Handle player input
+    this.onMessage("input", (client, input: InputData) => {
+      this.gameScene.handlePlayerInput(client.sessionId, input);
     });
 
+    // Set up fixed timestep simulation
     let elapsedTime = 0;
     this.setSimulationInterval((deltaTime) => {
       elapsedTime += deltaTime;
@@ -45,43 +48,43 @@ export class GameRoom extends Room<MyRoomState> {
   }
 
   fixedTick(timeStep: number) {
-    const velocity = 2;
-
-    this.state.players.forEach(player => {
-      let input: InputData;
-
-      // dequeue player inputs
-      while (input = player.inputQueue.shift()) {
-        // Use the shared Player class to handle movement
-        // const playerMovement = new Player(player.x, player.y, player.rotation);
-        // playerMovement.applyInput(input, velocity);
-        // player.x = playerMovement.x;
-        // player.y = playerMovement.y;
-        // player.rotation = playerMovement.rotation;
-
-        // player.tick = input.tick;
+    // The physics update is now handled by Phaser in the ServerGameScene
+    // We just need to sync the state
+    this.state.players.forEach((playerState, sessionId) => {
+      const tank = this.gameScene.players.get(sessionId);
+      if (tank) {
+        playerState.tank = tank.schema;
       }
     });
   }
 
-  onJoin (client: Client, options: any) {
+  onJoin(client: Client, options: any) {
     console.log(client.sessionId, "joined!");
 
-    const player = new PlayerState();
-    player.x = Math.random() * this.state.mapWidth;
-    player.y = Math.random() * this.state.mapHeight;
-    player.rotation = 0;
+    // Create player state
+    const playerState = new PlayerState();
+    this.state.players.set(client.sessionId, playerState);
 
-    this.state.players.set(client.sessionId, player);
+    // Spawn player in game world
+    const spawnX = Math.random() * 800;
+    const spawnY = Math.random() * 600;
+    const tank = this.gameScene.addPlayer(client.sessionId, spawnX, spawnY);
+    playerState.tank = tank.schema;
   }
 
-  onLeave (client: Client, consented: boolean) {
+  onLeave(client: Client, consented: boolean) {
     console.log(client.sessionId, "left!");
+    
+    // Remove player from game world
+    this.gameScene.removePlayer(client.sessionId);
+    
+    // Remove player from state
     this.state.players.delete(client.sessionId);
   }
 
   onDispose() {
     console.log("room", this.roomId, "disposing...");
+    // Shutdown Phaser server
+    this.phaserServer.shutdown();
   }
-
 }

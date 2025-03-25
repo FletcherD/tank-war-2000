@@ -447,7 +447,7 @@ export class ClientGameScene extends GameScene {
         this.inputPayload.down = this.cursorKeys.down.isDown;
         this.inputPayload.fire = this.spaceKey.isDown;
         this.inputPayload.tick = this.currentTick;
-        this.room.send(0, this.inputPayload);
+        this.room.send("input", this.inputPayload);
 
         if (this.currentPlayer.active) {
             this.currentPlayer.currentInput = this.inputPayload;
