@@ -8,7 +8,6 @@ import { PHYSICS, DAMAGE, TEAM_COLORS } from "../constants";
 export { InputData } from "../objects/Tank";
 
 export class GameScene extends Phaser.Scene {
-    playerEntities: { [sessionId: string]: Tank } = {};
     matter: Phaser.Physics.Matter.MatterPhysics;
     
     // Map instance
@@ -21,7 +20,6 @@ export class GameScene extends Phaser.Scene {
     
     // For displaying debug information
     debugText: string = "";
-    currentPlayer: Tank; // Reference to the local player's tank
     
     // Pillboxes
     pillboxes: Pillbox[] = [];
@@ -35,20 +33,7 @@ export class GameScene extends Phaser.Scene {
         super({ key: "game" });
     }
 
-    addPlayer(x: number, y: number, sessionId: string): Tank  {
-      const entity = new Tank(this, x, y); 
-      this.playerEntities[sessionId] = entity;
-
-      return entity;
-    }
-
-    removePlayer(sessionId: string) {
-      const entity = this.playerEntities[sessionId];
-      if (entity) {
-        entity.destroy();
-        delete this.playerEntities[sessionId]
-      }
-    }
+    // Player management has been moved to client/server-specific implementations
     
     addPillbox(x: number, y: number, team: number = 0): Pillbox {
       const pillbox = new Pillbox(this, x, y, team);

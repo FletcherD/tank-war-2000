@@ -83,28 +83,36 @@ export class GameRoom extends Room<MyRoomState> {
     // Create player state
     const playerState = new PlayerState();
     
-    // Spawn player in game world
-    const spawnX = Math.random() * 800;
-    const spawnY = Math.random() * 600;
-    
     // Make sure gameScene is initialized
     if (!this.gameScene) {
       console.error("Game scene not initialized when player joined!");
       return;
     }
     
-    // Add player to the game
-    const tank = this.gameScene.addPlayer(client.sessionId, spawnX, spawnY);
+    // Determine team (alternating assignment)
+    const team = this.state.players.size % 2 === 0 ? 1 : 2;
+    
+    // Get spawn position for team
+    const spawnPos = this.gameScene.getSpawnPositionForTeam(team);
+    
+    // Add player to the game at the spawn position
+    const tank = this.gameScene.addPlayer(client.sessionId, spawnPos.x, spawnPos.y);
+    
+    // Set team
+    tank.team = team;
     
     // Copy initial values from tank schema to player state
     Object.keys(tank.schema).forEach(key => {
       playerState.tank[key] = tank.schema[key];
     });
     
+    // Make sure team is set in schema
+    playerState.tank.team = team;
+    
     // Add player to state AFTER initializing properties to ensure first state sync is complete
     this.state.players.set(client.sessionId, playerState);
     
-    console.log(`Player ${client.sessionId} joined at position ${spawnX.toFixed(2)}, ${spawnY.toFixed(2)}`);
+    console.log(`Player ${client.sessionId} joined at position ${spawnPos.x.toFixed(2)}, ${spawnPos.y.toFixed(2)}, team: ${team}`);
   }
 
   onLeave(client: Client, consented: boolean) {

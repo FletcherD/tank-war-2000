@@ -5,6 +5,7 @@ import { Room } from "colyseus";
 import { MyRoomState } from "../rooms/GameRoom";
 
 export class ServerGameScene extends GameScene {
+  // Map of players by session ID
   players: Map<string, ServerTank> = new Map();
   room: Room<MyRoomState>;
 
@@ -22,17 +23,41 @@ export class ServerGameScene extends GameScene {
   create() {
     super.create();
     console.log("ServerGameScene created");
+    
+    // Additional setup specific to server could go here
+  }
+  
+  // Get a spawn location for a team
+  getSpawnPositionForTeam(team: number): { x: number, y: number } {
+    // Try to find a station for this team
+    const teamStations = this.stations.filter(station => station.team === team);
+    
+    if (teamStations.length > 0) {
+      // Choose a random station from the team's stations
+      const station = teamStations[Math.floor(Math.random() * teamStations.length)];
+      return { x: station.x, y: station.y };
+    }
+    
+    // Fallback to a random position if no stations for this team
+    return { 
+      x: Math.random() * this.gameMap.widthInPixels, 
+      y: Math.random() * this.gameMap.heightInPixels 
+    };
   }
 
+  // Add a player to the server game scene
   addPlayer(sessionId: string, x: number, y: number): ServerTank {
+    console.log(`Server adding player ${sessionId} at (${x}, ${y})`);
     const tank = new ServerTank(this, x, y, sessionId);
     this.players.set(sessionId, tank);
     return tank;
   }
 
-  removePlayer(sessionId: string) {
+  // Remove a player from the server game scene
+  removePlayer(sessionId: string): void {
     const tank = this.players.get(sessionId);
     if (tank) {
+      console.log(`Server removing player ${sessionId}`);
       tank.destroy();
       this.players.delete(sessionId);
     }

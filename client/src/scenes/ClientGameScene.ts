@@ -23,6 +23,8 @@ import { VISUALS } from "../../../shared/constants";
 export class ClientGameScene extends GameScene {
     room: Room<MyRoomState>;
 
+    // Map of players by session ID
+    players: Map<string, ClientTank> = new Map();
     currentPlayer: ClientTank;
     
     // UI instance
@@ -101,20 +103,16 @@ export class ClientGameScene extends GameScene {
 
         $(this.room.state).players.onAdd((player, sessionId) => {
             console.log("Player added:", player);
-            // Assign a team based on player index (odd/even)
-            const team = this.room.state.players.size % 2 === 0 ? 1 : 2;
             
-            // Find a spawn position at a team station
-            let spawnX = player.x;
-            let spawnY = player.y;
+            // Use the position and team sent from the server
+            const spawnX = player.tank.x;
+            const spawnY = player.tank.y;
+            const team = player.tank.team;
             
-            const station = this.getRandomStationForTeam(team);
-            if (station) {
-                spawnX = station.x;
-                spawnY = station.y;
-            }
+            console.log(`Creating player at server position: ${spawnX}, ${spawnY}, team: ${team}`);
             
-            const entity = this.addPlayer(spawnX, spawnY, sessionId);
+            // Create the tank at the server-provided position
+            const entity = this.addPlayer(spawnX, spawnY, sessionId, sessionId === this.room.sessionId);
             entity.team = team;
 
             // is current player
@@ -440,55 +438,41 @@ export class ClientGameScene extends GameScene {
         }
     }
 
+    // Add a player entity to the scene
+    addPlayer(x: number, y: number, sessionId: string, isLocalPlayer: boolean = false): ClientTank {
+        console.log(`Adding ${isLocalPlayer ? "local" : "remote"} player ${sessionId} at (${x}, ${y})`);
+        const tank = new ClientTank(this, x, y, sessionId, isLocalPlayer);
+        this.players.set(sessionId, tank);
+        return tank;
+    }
+
+    // Remove a player entity from the scene
+    removePlayer(sessionId: string): void {
+        const tank = this.players.get(sessionId);
+        if (tank) {
+            console.log(`Removing player ${sessionId}`);
+            tank.destroy();
+            this.players.delete(sessionId);
+        }
+    }
+    
     applyInput() {
         this.currentTick++;
 
-        // const currentPlayerRemote = this.room.state.players.get(this.room.sessionId);
-        // const ticksBehind = this.currentTick - currentPlayerRemote.tick;
-        // console.log({ ticksBehind });
-
+        // Update input payload based on keyboard state
         this.inputPayload.left = this.cursorKeys.left.isDown;
         this.inputPayload.right = this.cursorKeys.right.isDown;
         this.inputPayload.up = this.cursorKeys.up.isDown;
         this.inputPayload.down = this.cursorKeys.down.isDown;
         this.inputPayload.fire = this.spaceKey.isDown;
         this.inputPayload.tick = this.currentTick;
+        
+        // Send input to server with the correct message type (0) to match server handler
         this.room.send("input", this.inputPayload);
 
-        if (this.currentPlayer.active) {
+        // Apply input to current player for client-side prediction
+        if (this.currentPlayer && this.currentPlayer.active) {
             this.currentPlayer.currentInput = this.inputPayload;
-        }
-        
-        // Update debug references
-        // this.localRef.x = this.currentPlayer.x;
-        // this.localRef.y = this.currentPlayer.y;
-
-        // Apply interpolation to other players
-        for (let sessionId in this.playerEntities) {
-            // Skip the current player
-            if (sessionId === this.room.sessionId) {
-                continue;
-            }
-
-            const entity = this.playerEntities[sessionId];
-            const { serverX, serverY, serverRotation } = entity.data.values;
-
-            // if (serverX !== undefined && serverY !== undefined) {
-            //     // Smoothly interpolate position for Matter physics
-            //     const currentPos = new Phaser.Math.Vector2(entity.x, entity.y);
-            //     const targetPos = new Phaser.Math.Vector2(serverX, serverY);
-                
-            //     // Linear interpolation
-            //     currentPos.lerp(targetPos, 0.2);
-                
-            //     // Update position
-            //     entity.x = currentPos.x;
-            //     entity.y = currentPos.y;
-                
-            //     if (serverRotation !== undefined) {
-            //         entity.setRotation(serverRotation);
-            //     }
-            // }
         }
     }
 
