@@ -189,14 +189,11 @@ export class GameScene extends Phaser.Scene {
                 otherBody = bodyA;
             }
             if (bullet) {
-                console.log('Bullet collision detected');
                 if (otherBody.gameObject instanceof Tank) {
-                    console.log('Tank collision detected');
                     const tank = otherBody.gameObject as Tank;
                     tank.takeDamage(DAMAGE.BULLET_TO_TANK);
                     bullet.destroy();
                 } else if (otherBody.gameObject instanceof Pillbox) {
-                    console.log('Pillbox collision detected');
                     const pillbox = otherBody.gameObject as Pillbox;
                     pillbox.takeDamage(DAMAGE.BULLET_TO_PILLBOX);
                     bullet.destroy();
@@ -212,7 +209,6 @@ export class GameScene extends Phaser.Scene {
         const wallTilePos = wall.position;
         this.gameMap.map.setLayer(0);
         const wallTile = this.gameMap.map.getTileAtWorldXY(wallTilePos.x, wallTilePos.y);
-        console.log('Wall collision detected at tile ', wallTile);
 
         // Adding 192 gets us the 'crater' tile with the same wang index
         const newTileIndex = wallTile.index+192;

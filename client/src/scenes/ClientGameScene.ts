@@ -100,6 +100,7 @@ export class ClientGameScene extends GameScene {
         const $ = getStateCallbacks(this.room);
 
         $(this.room.state).players.onAdd((player, sessionId) => {
+            console.log("Player added:", player);
             // Assign a team based on player index (odd/even)
             const team = this.room.state.players.size % 2 === 0 ? 1 : 2;
             
@@ -134,6 +135,7 @@ export class ClientGameScene extends GameScene {
                 }, 100);
 
                 $(player).onChange(() => {
+                    console.log("Player state changed:", player);
                     // this.remoteRef.x = player.x;
                     // this.remoteRef.y = player.y;
                     // We don't update the rotation of remoteRef since it's just a debug rectangle
@@ -143,6 +145,7 @@ export class ClientGameScene extends GameScene {
                 // listening for server updates
                 $(player).onChange(() => {
                     //
+                    console.log("Player state changed:", player);
                     // we're going to LERP the positions during the render loop.
                     //
                     entity.setData('serverX', player.x);
