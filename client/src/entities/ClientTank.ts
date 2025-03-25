@@ -8,7 +8,7 @@ export class ClientTank extends Tank {
   lastServerState: {
     x: number;
     y: number;
-    rotation: number;
+    heading: number;
     speed: number;
     health: number;
     team: number;
@@ -23,7 +23,7 @@ export class ClientTank extends Tank {
     this.lastServerState = {
       x: x,
       y: y,
-      rotation: 0,
+      heading: 0,
       speed: 0,
       health: 100,
       team: 0,
@@ -38,7 +38,7 @@ export class ClientTank extends Tank {
     this.lastServerState = {
       x: data.x,
       y: data.y,
-      rotation: data.rotation,
+      heading: data.heading,
       speed: data.speed,
       health: data.health,
       team: data.team,
@@ -49,7 +49,7 @@ export class ClientTank extends Tank {
     if (!this.isLocalPlayer) {
       this.x = data.x;
       this.y = data.y;
-      this.rotation = data.rotation;
+      this.heading = data.heading;
       this.speed = data.speed;
       this.health = data.health;
       this.team = data.team;
@@ -78,7 +78,7 @@ export class ClientTank extends Tank {
     if (distanceToServer > 50) {
       this.x = this.lastServerState.x;
       this.y = this.lastServerState.y;
-      this.rotation = this.lastServerState.rotation;
+      this.rotation = this.lastServerState.heading;
       this.speed = this.lastServerState.speed;
     }
   }

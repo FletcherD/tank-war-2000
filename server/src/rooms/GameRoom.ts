@@ -60,7 +60,7 @@ export class GameRoom extends Room<MyRoomState> {
         // Copy all properties individually to ensure change detection
         if (playerState.tank.x !== schema.x) playerState.tank.x = schema.x;
         if (playerState.tank.y !== schema.y) playerState.tank.y = schema.y;
-        if (playerState.tank.rotation !== schema.rotation) playerState.tank.rotation = schema.rotation;
+        if (playerState.tank.heading !== schema.heading) playerState.tank.heading = schema.heading;
         if (playerState.tank.speed !== schema.speed) playerState.tank.speed = schema.speed;
         if (playerState.tank.health !== schema.health) playerState.tank.health = schema.health;
         if (playerState.tank.team !== schema.team) playerState.tank.team = schema.team;

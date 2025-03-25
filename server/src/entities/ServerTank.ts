@@ -22,7 +22,7 @@ export class ServerTank extends Tank {
     // Instead of just assignment, explicitly set each property to trigger change detection
     if (this.schema.x !== this.x) this.schema.x = this.x;
     if (this.schema.y !== this.y) this.schema.y = this.y;
-    if (this.schema.rotation !== this.rotation) this.schema.rotation = this.rotation;
+    if (this.schema.heading !== this.heading) this.schema.heading = this.heading;
     if (this.schema.speed !== this.speed) this.schema.speed = this.speed;
     if (this.schema.health !== this.health) this.schema.health = this.health;
     if (this.schema.team !== this.team) this.schema.team = this.team;

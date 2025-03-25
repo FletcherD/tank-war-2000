@@ -3,7 +3,7 @@ import { Schema, type } from "@colyseus/schema";
 export class TankSchema extends Schema {
   @type("number") x: number = 0;
   @type("number") y: number = 0;
-  @type("number") rotation: number = 0;
+  @type("number") heading: number = 0;
   @type("number") speed: number = 0;
   @type("number") health: number = 100;
   @type("number") team: number = 0;

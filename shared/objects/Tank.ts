@@ -14,9 +14,7 @@ export interface InputData {
 export class Tank extends Phaser.GameObjects.Container
 {
   team: number = 0;
-  health: number = PHYSICS.TANK_HEALTH;  
-  width: number;
-  height: number;
+  health: number = PHYSICS.TANK_HEALTH;
 
   // Tank sprites
   tankBody: Phaser.GameObjects.Sprite;
@@ -37,7 +35,7 @@ export class Tank extends Phaser.GameObjects.Container
       tick: 0,
   };
   speed: number = 0;
-  controlAngle: number = 0;
+  heading: number = 0;
 
   baseMaxSpeed: number = PHYSICS.TANK_MAX_SPEED;
   baseRotationSpeed: number = PHYSICS.TANK_ROTATION_SPEED;
@@ -105,11 +103,11 @@ export class Tank extends Phaser.GameObjects.Container
   
       // Rotate left/right - in Matter we need to set the angle property
       if (this.currentInput.left) {
-        this.controlAngle -= rotationSpeed * delta;
+        this.heading -= rotationSpeed * delta;
       } else if (this.currentInput.right) {
-        this.controlAngle += rotationSpeed * delta;
+        this.heading += rotationSpeed * delta;
       }
-      this.setRotation(this.controlAngle);
+      this.setRotation(this.heading);
 
       // Get current velocity and calculate speed
       const velocity = this.body.velocity as Phaser.Math.Vector2;
@@ -214,8 +212,8 @@ export class Tank extends Phaser.GameObjects.Container
   }
 
   fire() {
-    const fireLocation = new Phaser.Math.Vector2(VISUALS.FIRING_OFFSET, 0.0).rotate(this.controlAngle);
-    const bullet = new Bullet(this.scene as GameScene, this.x + fireLocation.x, this.y + fireLocation.y, this.controlAngle);
+    const fireLocation = new Phaser.Math.Vector2(VISUALS.FIRING_OFFSET, 0.0).rotate(this.heading);
+    const bullet = new Bullet(this.scene as GameScene, this.x + fireLocation.x, this.y + fireLocation.y, this.heading);
     this.scene.add.existing(bullet);
   }
 
