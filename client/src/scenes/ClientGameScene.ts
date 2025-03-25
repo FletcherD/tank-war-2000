@@ -16,14 +16,14 @@ import { BACKEND_URL } from "../backend";
 // Import the state type from server-side code
 import type { MyRoomState } from "../../../server/src/rooms/GameRoom";
 import { GameScene, InputData } from "../../../shared/scenes/Game";
-import { Tank } from "../../../shared/objects/Tank";
+import { ClientTank } from "../entities/ClientTank";
 import { GameUI } from "../UI";
 import { VISUALS } from "../../../shared/constants";
 
 export class ClientGameScene extends GameScene {
     room: Room<MyRoomState>;
 
-    currentPlayer: Tank;
+    currentPlayer: ClientTank;
     
     // UI instance
     gameUI: GameUI;
@@ -134,23 +134,26 @@ export class ClientGameScene extends GameScene {
                     this.gameUI = new GameUI(this);
                 }, 100);
 
-                $(player).onChange(() => {
-                    console.log("Player state changed:", player);
-                    // this.remoteRef.x = player.x;
-                    // this.remoteRef.y = player.y;
-                    // We don't update the rotation of remoteRef since it's just a debug rectangle
+                // Listen for changes on the tank schema directly
+                $(player.tank).onChange(() => {
+                    console.log("Current player tank state changed:", player.tank);
+                    
+                    // Update client's position based on server state
+                    this.currentPlayer.updateFromServer(player.tank);
+                    
+                    // Update debug rectangle position
+                    this.remoteRef.x = player.tank.x;
+                    this.remoteRef.y = player.tank.y;
                 });
 
             } else {
                 // listening for server updates
-                $(player).onChange(() => {
-                    //
-                    console.log("Player state changed:", player);
-                    // we're going to LERP the positions during the render loop.
-                    //
-                    entity.setData('serverX', player.x);
-                    entity.setData('serverY', player.y);
-                    entity.setData('serverRotation', player.rotation);
+                // Listen for changes on the tank schema directly
+                $(player.tank).onChange(() => {
+                    console.log("Other player tank state changed:", player.tank);
+                    
+                    // Update entity based on the changed tank data
+                    entity.updateFromServer(player.tank);
                 });
 
             }

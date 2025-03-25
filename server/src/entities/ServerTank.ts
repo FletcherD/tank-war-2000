@@ -19,18 +19,19 @@ export class ServerTank extends Tank {
   }
 
   updateSchema(): void {
-    this.schema.x = this.x;
-    this.schema.y = this.y;
-    this.schema.rotation = this.rotation;
-    this.schema.speed = this.speed;
-    this.schema.health = this.health;
-    this.schema.team = this.team;
-    this.schema.left = this.currentInput.left;
-    this.schema.right = this.currentInput.right;
-    this.schema.up = this.currentInput.up;
-    this.schema.down = this.currentInput.down;
-    this.schema.fire = this.currentInput.fire;
-    this.schema.tick = this.currentInput.tick;
+    // Instead of just assignment, explicitly set each property to trigger change detection
+    if (this.schema.x !== this.x) this.schema.x = this.x;
+    if (this.schema.y !== this.y) this.schema.y = this.y;
+    if (this.schema.rotation !== this.rotation) this.schema.rotation = this.rotation;
+    if (this.schema.speed !== this.speed) this.schema.speed = this.speed;
+    if (this.schema.health !== this.health) this.schema.health = this.health;
+    if (this.schema.team !== this.team) this.schema.team = this.team;
+    if (this.schema.left !== this.currentInput.left) this.schema.left = this.currentInput.left;
+    if (this.schema.right !== this.currentInput.right) this.schema.right = this.currentInput.right;
+    if (this.schema.up !== this.currentInput.up) this.schema.up = this.currentInput.up;
+    if (this.schema.down !== this.currentInput.down) this.schema.down = this.currentInput.down;
+    if (this.schema.fire !== this.currentInput.fire) this.schema.fire = this.currentInput.fire;
+    if (this.schema.tick !== this.currentInput.tick) this.schema.tick = this.currentInput.tick;
   }
 
   override fire() {

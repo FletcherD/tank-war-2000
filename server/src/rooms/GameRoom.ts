@@ -32,6 +32,7 @@ export class GameRoom extends Room<MyRoomState> {
 
     // Handle player input
     this.onMessage("input", (client, input: InputData) => {
+      //console.log(`Received input from ${client.sessionId}:`, input);
       this.gameScene.handlePlayerInput(client.sessionId, input);
     });
 
@@ -49,11 +50,29 @@ export class GameRoom extends Room<MyRoomState> {
 
   fixedTick(timeStep: number) {
     // The physics update is now handled by Phaser in the ServerGameScene
-    // We just need to sync the state
+    // We need to sync the state properties individually to trigger change detection
     this.state.players.forEach((playerState, sessionId) => {
       const tank = this.gameScene.players.get(sessionId);
       if (tank) {
-        playerState.tank = tank.schema;
+        // Instead of replacing the schema, update its properties
+        const schema = tank.schema;
+        
+        // Copy all properties individually to ensure change detection
+        if (playerState.tank.x !== schema.x) playerState.tank.x = schema.x;
+        if (playerState.tank.y !== schema.y) playerState.tank.y = schema.y;
+        if (playerState.tank.rotation !== schema.rotation) playerState.tank.rotation = schema.rotation;
+        if (playerState.tank.speed !== schema.speed) playerState.tank.speed = schema.speed;
+        if (playerState.tank.health !== schema.health) playerState.tank.health = schema.health;
+        if (playerState.tank.team !== schema.team) playerState.tank.team = schema.team;
+        if (playerState.tank.left !== schema.left) playerState.tank.left = schema.left;
+        if (playerState.tank.right !== schema.right) playerState.tank.right = schema.right;
+        if (playerState.tank.up !== schema.up) playerState.tank.up = schema.up;
+        if (playerState.tank.down !== schema.down) playerState.tank.down = schema.down;
+        if (playerState.tank.fire !== schema.fire) playerState.tank.fire = schema.fire;
+        if (playerState.tank.tick !== schema.tick) playerState.tank.tick = schema.tick;
+        
+        // Add debugging to check if updates are happening on the server side
+        console.log(`Player ${sessionId} position: ${schema.x.toFixed(2)}, ${schema.y.toFixed(2)}`);
       }
     });
   }
@@ -63,13 +82,29 @@ export class GameRoom extends Room<MyRoomState> {
 
     // Create player state
     const playerState = new PlayerState();
-    this.state.players.set(client.sessionId, playerState);
-
+    
     // Spawn player in game world
     const spawnX = Math.random() * 800;
     const spawnY = Math.random() * 600;
+    
+    // Make sure gameScene is initialized
+    if (!this.gameScene) {
+      console.error("Game scene not initialized when player joined!");
+      return;
+    }
+    
+    // Add player to the game
     const tank = this.gameScene.addPlayer(client.sessionId, spawnX, spawnY);
-    playerState.tank = tank.schema;
+    
+    // Copy initial values from tank schema to player state
+    Object.keys(tank.schema).forEach(key => {
+      playerState.tank[key] = tank.schema[key];
+    });
+    
+    // Add player to state AFTER initializing properties to ensure first state sync is complete
+    this.state.players.set(client.sessionId, playerState);
+    
+    console.log(`Player ${client.sessionId} joined at position ${spawnX.toFixed(2)}, ${spawnY.toFixed(2)}`);
   }
 
   onLeave(client: Client, consented: boolean) {

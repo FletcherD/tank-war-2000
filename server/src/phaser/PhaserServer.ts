@@ -30,8 +30,24 @@ export class PhaserServer {
   
   createScene(SceneClass: typeof ServerGameScene, room: Room<MyRoomState>): ServerGameScene {
     const key = "game-" + room.roomId;
-    const scene = new SceneClass({ key }, room);
+    
+    // Create scene with proper configuration
+    const scene = new SceneClass({ 
+      key: key,
+      active: true,
+      visible: false,
+      physics: {
+        matter: {
+          gravity: { y: 0 },
+          debug: false
+        }
+      }
+    }, room);
+    
+    // Add the scene and start it
     this.game.scene.add(key, scene, true);
+    console.log(`Created server game scene with key: ${key}`);
+    
     return scene;
   }
   

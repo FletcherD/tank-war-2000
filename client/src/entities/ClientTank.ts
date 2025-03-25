@@ -32,6 +32,8 @@ export class ClientTank extends Tank {
   }
 
   updateFromServer(data: any): void {
+    console.log(`Received update for ${this.sessionId} - x:${data.x.toFixed(2)}, y:${data.y.toFixed(2)}, isLocal:${this.isLocalPlayer}`);
+    
     // Store server state for reconciliation
     this.lastServerState = {
       x: data.x,
