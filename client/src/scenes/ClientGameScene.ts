@@ -21,6 +21,7 @@ import { GameUI } from "../UI";
 import { VISUALS, TEAM_COLORS } from "../../../shared/constants";
 import { ClientMap } from "./ClientMap";
 import { Station } from "../../../shared/objects/Station";
+import { ClientPillbox } from "../entities/ClientPillbox";
 
 export class ClientGameScene extends GameScene {
     room: Room<MyRoomState>;
@@ -138,6 +139,33 @@ export class ClientGameScene extends GameScene {
                 }
             });
         });
+        
+        // Handle pillboxes
+        $(this.room.state).pillboxes.onAdd((pillboxSchema, pillboxId) => {
+            console.log(`Pillbox added: ${pillboxId} at (${pillboxSchema.x}, ${pillboxSchema.y}), team: ${pillboxSchema.team}, health: ${pillboxSchema.health}`);
+            
+            // Override addPillbox for this specific case to create ClientPillbox instances
+            const oldAddPillbox = this.addPillbox;
+            this.addPillbox = (x, y, team) => {
+                const pillbox = new ClientPillbox(this, x, y, team);
+                this.pillboxes.push(pillbox);
+                return pillbox;
+            };
+            
+            // Create a client pillbox at the given position
+            const pillbox = this.addPillbox(pillboxSchema.x, pillboxSchema.y, pillboxSchema.team) as ClientPillbox;
+            
+            // Restore original method
+            this.addPillbox = oldAddPillbox;
+            
+            // Initial update from server schema
+            pillbox.updateFromServer(pillboxSchema);
+            
+            // Listen for changes to this pillbox
+            $(pillboxSchema).onChange(() => {
+                pillbox.updateFromServer(pillboxSchema);
+            });
+        });
 
         $(this.room.state).players.onAdd((player, sessionId) => {
             console.log("Player added:", player);
@@ -172,7 +200,7 @@ export class ClientGameScene extends GameScene {
 
                 // Listen for changes on the tank schema directly
                 $(player.tank).onChange(() => {
-                    console.log("Current player tank state changed:", player.tank);
+                    //console.log("Current player tank state changed:", player.tank);
                     
                     // Update client's position based on server state
                     this.currentPlayer.updateFromServer(player.tank);
@@ -186,7 +214,7 @@ export class ClientGameScene extends GameScene {
                 // listening for server updates
                 // Listen for changes on the tank schema directly
                 $(player.tank).onChange(() => {
-                    console.log("Other player tank state changed:", player.tank);
+                    //console.log("Other player tank state changed:", player.tank);
                     
                     // Update entity based on the changed tank data
                     entity.updateFromServer(player.tank);

@@ -6,6 +6,7 @@ import { ServerGameScene } from "../scenes/ServerGameScene";
 import { PhaserServer } from "../phaser/PhaserServer";
 import { WorldMapSchema } from "../schemas/WorldMapSchema";
 import { StationSchema } from "../schemas/StationSchema";
+import { PillboxSchema } from "../schemas/PillboxSchema";
 
 export class PlayerState extends Schema {
   @type(TankSchema) tank: TankSchema = new TankSchema();
@@ -16,6 +17,7 @@ export class MyRoomState extends Schema {
   @type({ map: PlayerState }) players = new MapSchema<PlayerState>();
   @type(WorldMapSchema) map: WorldMapSchema = new WorldMapSchema();
   @type({ map: StationSchema }) stations = new MapSchema<StationSchema>();
+  @type({ map: PillboxSchema }) pillboxes = new MapSchema<PillboxSchema>();
 }
 
 export class GameRoom extends Room<MyRoomState> {

@@ -19,6 +19,9 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
   // The top layer of the pillbox (will be tinted for team color)
   topSprite: Phaser.GameObjects.Sprite;
   
+  // Schema ID for server-client synchronization
+  schemaId: string = "";
+  
   constructor(scene: Phaser.Scene, x: number, y: number, team: number = 0) {
     // Using pillbox0 for the base sprite
     super(scene.matter.world, x, y, 'pillbox0', 0);

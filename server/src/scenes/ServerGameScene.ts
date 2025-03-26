@@ -5,7 +5,9 @@ import { Room } from "colyseus";
 import { MyRoomState } from "../rooms/GameRoom";
 import { ServerMap } from "../scenes/ServerMap";
 import { StationSchema } from "../schemas/StationSchema";
-import { TEAM_COLORS } from "../../../shared/constants";
+import { PillboxSchema } from "../schemas/PillboxSchema";
+import { TEAM_COLORS, PHYSICS } from "../../../shared/constants";
+import { ServerPillbox } from "../entities/ServerPillbox";
 
 export class ServerGameScene extends GameScene {
   // Map of players by session ID
@@ -98,6 +100,30 @@ export class ServerGameScene extends GameScene {
         }
     }
     
+    // Add pillboxes to the map
+    if (mapData.pillboxes) {
+        console.log("Adding pillboxes from map data:", mapData.pillboxes);
+        const pillboxLocations = mapData.pillboxes;
+        
+        this.addPillbox = (x, y, team) => {
+            const pillbox = new ServerPillbox(this, x, y, team);
+            this.pillboxes.push(pillbox);
+            return pillbox;
+        };
+        
+        for (let i = 0; i < pillboxLocations.length; i++) {
+            const location = pillboxLocations[i];
+            const worldLocation = this.gameMap.groundLayer.tileToWorldXY(location[0]*2+1, location[1]*2+1);
+            const pillbox = this.addPillbox(worldLocation.x, worldLocation.y, 0) as ServerPillbox; // Neutral pillbox initially
+            
+            // Set ID in schema
+            pillbox.schema.id = `pillbox_${i}`;
+            
+            // Add schema to room state
+            this.room.state.pillboxes.set(pillbox.schema.id, pillbox.schema);
+        }
+    }
+    
     // Additional setup specific to server could go here
   }
   
@@ -106,17 +132,9 @@ export class ServerGameScene extends GameScene {
     // Try to find a station for this team
     const teamStations = this.stations.filter(station => station.team === team);
     
-    if (teamStations.length > 0) {
-      // Choose a random station from the team's stations
-      const station = teamStations[Math.floor(Math.random() * teamStations.length)];
-      return { x: station.x, y: station.y };
-    }
-    
-    // Fallback to a random position if no stations for this team
-    return { 
-      x: Math.random() * this.gameMap.widthInPixels, 
-      y: Math.random() * this.gameMap.heightInPixels 
-    };
+    // Choose a random station from the team's stations
+    const station = teamStations[Math.floor(Math.random() * teamStations.length)];
+    return { x: station.x, y: station.y };
   }
 
   // Add a player to the server game scene
@@ -150,6 +168,13 @@ export class ServerGameScene extends GameScene {
     // Update schemas for all players
     this.players.forEach(tank => {
       tank.updateSchema();
+    });
+    
+    // Update schemas for all ServerPillbox instances
+    this.pillboxes.forEach(pillbox => {
+      if (pillbox instanceof ServerPillbox) {
+        pillbox.updateSchema();
+      }
     });
   }
 }
