@@ -106,6 +106,10 @@ export class ClientGameScene extends GameScene {
         await this.connect();
 
         const $ = getStateCallbacks(this.room);
+        
+        $(this.room.state).listen("map", (currentValue, previousValue) => {
+            console.log("Map added:", currentValue);
+        });
 
         $(this.room.state).players.onAdd((player, sessionId) => {
             console.log("Player added:", player);

@@ -29,7 +29,7 @@ export class GameMap {
         return tile.properties?.speed || 1.0;
     }
 
-    createTilemap() {
+    createTilemapFromFile() {
         // Get the map data and tileset data from cache
         const mapData = this.scene.cache.json.get('mapData');
         const tilesetData = this.scene.cache.json.get('tilesetData');

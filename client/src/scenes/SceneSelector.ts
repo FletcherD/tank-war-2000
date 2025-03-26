@@ -26,7 +26,6 @@ export class SceneSelector extends Phaser.Scene {
         
         // Load tileset image, tileset data, and tilemap
         this.load.image('tileset', './assets/tiles/tileset.png');
-        this.load.json('mapData', './assets/maps/Duff Gardens.json');
         this.load.json('tilesetData', './assets/tiles/tileset.json');
     }
 

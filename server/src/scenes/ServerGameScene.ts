@@ -3,6 +3,7 @@ import { ServerTank } from "../entities/ServerTank";
 import { InputData } from "../../../shared/objects/Tank";
 import { Room } from "colyseus";
 import { MyRoomState } from "../rooms/GameRoom";
+import { ServerMap } from "../scenes/ServerMap";
 
 export class ServerGameScene extends GameScene {
   // Map of players by session ID
@@ -25,6 +26,22 @@ export class ServerGameScene extends GameScene {
     console.log("ServerGameScene created");
 
     console.log(this.room.state)
+
+            // Create the game map
+    this.gameMap = new ServerMap(this);
+    this.gameMap.createTilemapFromFile();
+    this.room.state.map = this.gameMap.schema;
+
+    if (!this.gameMap.map) {
+        console.error("Failed to create tilemap");
+        return;
+    }        
+    console.log(`Tilemap created successfully: ${this.gameMap.map.width}x${this.gameMap.map.height} tiles, ${this.gameMap.map.widthInPixels}x${this.gameMap.map.heightInPixels} pixels`);
+    
+    // Set world bounds to match the tilemap size
+    const mapWidth = this.gameMap.map.widthInPixels;
+    const mapHeight = this.gameMap.map.heightInPixels;
+    this.matter.world.setBounds(0, 0, mapWidth, mapHeight);
     
     // Additional setup specific to server could go here
   }

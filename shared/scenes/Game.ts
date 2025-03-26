@@ -65,73 +65,56 @@ export class GameScene extends Phaser.Scene {
     }
 
     async create() {
-        const mapData = this.cache.json.get('mapData');
-        // Create the game map
-        this.gameMap = new GameMap(this);
-        this.gameMap.createTilemap();
-        
-        if (!this.gameMap.map) {
-            console.error("Failed to create tilemap");
-            return;
-        }
-        
-        console.log(`Tilemap created successfully: ${this.gameMap.map.width}x${this.gameMap.map.height} tiles, ${this.gameMap.map.widthInPixels}x${this.gameMap.map.heightInPixels} pixels`);
-        
-        // Set world bounds to match the tilemap size
-        const mapWidth = this.gameMap.map.widthInPixels;
-        const mapHeight = this.gameMap.map.heightInPixels;
-        this.matter.world.setBounds(0, 0, mapWidth, mapHeight);
-        
         // Set up collision event handler
         this.matter.world.on('collisionstart', this.handleCollision, this);
 
-        // Set camera bounds to match the map size
-        this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
+        // // Set camera bounds to match the map size
+        // this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
         
-        const pillboxLocations = mapData.pillboxes;
-        // Add pillboxes to the map
-        for (const location of pillboxLocations) {
-            const worldLocation = this.gameMap.groundLayer.tileToWorldXY(location[0]*2+1, location[1]*2+1);
-            this.addPillbox(worldLocation.x, worldLocation.y, 0);
-        }
+        // const pillboxLocations = mapData.pillboxes;
+        // // Add pillboxes to the map
+        // for (const location of pillboxLocations) {
+        //     const worldLocation = this.gameMap.groundLayer.tileToWorldXY(location[0]*2+1, location[1]*2+1);
+        //     this.addPillbox(worldLocation.x, worldLocation.y, 0);
+        // }
         
-        // Add stations to the map
-        if (mapData.stations) {
-            const stationLocations = mapData.stations;
-            for (const location of stationLocations) {
-                const worldLocation = this.gameMap.groundLayer.tileToWorldXY(location[0]*2+1, location[1]*2+1);
-                this.addStation(worldLocation.x, worldLocation.y, 0); // Neutral station
-            }
+        // // Add stations to the map
+        // if (mapData.stations) {
+        //     const stationLocations = mapData.stations;
+        //     for (const location of stationLocations) {
+        //         const worldLocation = this.gameMap.groundLayer.tileToWorldXY(location[0]*2+1, location[1]*2+1);
+        //         this.addStation(worldLocation.x, worldLocation.y, 0); // Neutral station
+        //     }
             
-            // Assign one random station to each team
-            if (this.stations.length >= 2) {
-                // Get two random indexes for team stations
-                const indices = Phaser.Utils.Array.NumberArray(0, this.stations.length - 1);
-                Phaser.Utils.Array.Shuffle(indices);
+        //     // Assign one random station to each team
+        //     if (this.stations.length >= 2) {
+        //         // Get two random indexes for team stations
+        //         const indices = Phaser.Utils.Array.NumberArray(0, this.stations.length - 1);
+        //         Phaser.Utils.Array.Shuffle(indices);
                 
-                // Assign team 1 station
-                const team1StationIndex = indices[0];
-                this.stations[team1StationIndex].team = 1;
-                this.stations[team1StationIndex].topSprite.setTint(TEAM_COLORS[1]);
+        //         // Assign team 1 station
+        //         const team1StationIndex = indices[0];
+        //         this.stations[team1StationIndex].team = 1;
+        //         this.stations[team1StationIndex].topSprite.setTint(TEAM_COLORS[1]);
                 
-                // Update team stations array
-                if (!this.teamStations[1]) {
-                    this.teamStations[1] = [];
-                }
-                this.teamStations[1].push(this.stations[team1StationIndex]);
+        //         // Update team stations array
+        //         if (!this.teamStations[1]) {
+        //             this.teamStations[1] = [];
+        //         }
+        //         this.teamStations[1].push(this.stations[team1StationIndex]);
                 
-                // Assign team 2 station
-                const team2StationIndex = indices[1];
-                this.stations[team2StationIndex].team = 2;
-                this.stations[team2StationIndex].topSprite.setTint(TEAM_COLORS[2]);
+        //         // Assign team 2 station
+        //         const team2StationIndex = indices[1];
+        //         this.stations[team2StationIndex].team = 2;
+        //         this.stations[team2StationIndex].topSprite.setTint(TEAM_COLORS[2]);
                 
-                // Update team stations array
-                if (!this.teamStations[2]) {
-                    this.teamStations[2] = [];
-                }
-                this.teamStations[2].push(this.stations[team2StationIndex]);
-            }
-        }
+        //         // Update team stations array
+        //         if (!this.teamStations[2]) {
+        //             this.teamStations[2] = [];
+        //         }
+        //         this.teamStations[2].push(this.stations[team2StationIndex]);
+        //     }
+        // }
     }
 
     update(time: number, delta: number): void {

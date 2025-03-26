@@ -4,6 +4,7 @@ import { InputData } from "../../../shared/objects/Tank";
 import { TankSchema } from "../schemas/TankSchema";
 import { ServerGameScene } from "../scenes/ServerGameScene";
 import { PhaserServer } from "../phaser/PhaserServer";
+import { WorldMapSchema } from "../schemas/WorldMapSchema";
 
 export class PlayerState extends Schema {
   @type(TankSchema) tank: TankSchema = new TankSchema();
@@ -12,6 +13,7 @@ export class PlayerState extends Schema {
 export class MyRoomState extends Schema {
   @type("string") mapName: string = "Test Map";
   @type({ map: PlayerState }) players = new MapSchema<PlayerState>();
+  @type(WorldMapSchema) map: WorldMapSchema = new WorldMapSchema();
 }
 
 export class GameRoom extends Room<MyRoomState> {
@@ -32,7 +34,7 @@ export class GameRoom extends Room<MyRoomState> {
     this.gameScene = this.phaserServer.createScene(ServerGameScene, this);
 
     this.gameScene.room = this;
-    
+
     // Handle player input
     this.onMessage("input", (client, input: InputData) => {
       //console.log(`Received input from ${client.sessionId}:`, input);
