@@ -8,11 +8,15 @@ import { StationSchema } from "../schemas/StationSchema";
 import { PillboxSchema } from "../schemas/PillboxSchema";
 import { TEAM_COLORS, PHYSICS } from "../../../shared/constants";
 import { ServerPillbox } from "../entities/ServerPillbox";
+import { ServerBullet } from "../entities/ServerBullet";
 
 export class ServerGameScene extends GameScene {
   // Map of players by session ID
   players: Map<string, ServerTank> = new Map();
   room: Room<MyRoomState>;
+  
+  // Track server-managed bullets
+  serverBullets: ServerBullet[] = [];
 
   constructor(config: Phaser.Types.Scenes.SettingsConfig) {
     super(config);
@@ -21,7 +25,7 @@ export class ServerGameScene extends GameScene {
 
   preload() {
     this.load.image('tileset', '../../../../assets/tiles/tileset.png');
-    this.load.json('mapData', '../../../../assets/maps/Baringi v2.json');
+    this.load.json('mapData', '../../../../assets/maps/Duff Gardens.json');
     this.load.json('tilesetData', '../../../../assets/tiles/tileset.json');
   }
 
@@ -162,6 +166,22 @@ export class ServerGameScene extends GameScene {
     }
   }
 
+  // Create a server bullet (from tank or pillbox)
+  createBullet(x: number, y: number, angle: number, team: number, ownerId: string = "") {
+    const bullet = new ServerBullet(this, x, y, angle, team, ownerId);
+    this.serverBullets.push(bullet);
+    
+    // Add to room state
+    this.room.state.bullets.set(bullet.schema.id, bullet.schema);
+    
+    return bullet;
+  }
+  
+  // Override the base Bullet creation
+  createBulletAt(x: number, y: number, angle: number, team: number, ownerId: string = "") {
+    return this.createBullet(x, y, angle, team, ownerId);
+  }
+  
   update(time: number, delta: number): void {
     super.update(time, delta);
     
@@ -176,5 +196,19 @@ export class ServerGameScene extends GameScene {
         pillbox.updateSchema();
       }
     });
+    
+    // Update bullets and clean up destroyed ones
+    for (let i = this.serverBullets.length - 1; i >= 0; i--) {
+      const bullet = this.serverBullets[i];
+      
+      // Update schema position for active bullets
+      if (bullet.active) {
+        bullet.updateSchema();
+      } else {
+        // Remove from server bullets array and room state
+        this.serverBullets.splice(i, 1);
+        this.room.state.bullets.delete(bullet.schema.id);
+      }
+    }
   }
 }

@@ -1,0 +1,10 @@
+import { Schema, type } from "@colyseus/schema";
+
+export class BulletSchema extends Schema {
+    @type("number") x: number = 0;
+    @type("number") y: number = 0;
+    @type("number") angle: number = 0;
+    @type("number") team: number = 0;
+    @type("string") id: string = "";
+    @type("string") ownerId: string = ""; // ID of the tank or pillbox that fired it
+}

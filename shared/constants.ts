@@ -41,7 +41,8 @@ export const TEAM_COLORS = {
 
 // UI & Visual Constants
 export const VISUALS = {
-  BACKGROUND_COLOR: 0x007d3e,
+  GRASS_COLOR: 0x007d3e,
+  WATER_COLOR: 0x00b8d7,
   FIRING_OFFSET: 16.0, // distance from center to spawn bullets
 };
 

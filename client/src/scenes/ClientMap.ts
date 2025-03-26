@@ -1,6 +1,7 @@
 import { GameMap } from "../../../shared/scenes/Map";
 import { WorldMapSchema } from "../../../server/src/schemas/WorldMapSchema";
 import Phaser from "phaser";
+import { VISUALS } from "shared";
 
 export class ClientMap extends GameMap {
     constructor(scene: Phaser.Scene) {
@@ -147,5 +148,12 @@ export class ClientMap extends GameMap {
         
         // Create Matter physics bodies for the tilemap
         this.createMatterBodiesForTilemap();
+
+        // create a green rectangle under the map to fix visual issues around transparent layer 1 tiles
+        this.scene.add.rectangle(0, 0, this.map.widthInPixels, this.map.heightInPixels, VISUALS.GRASS_COLOR, 1.0)
+            .setDepth(-1)
+            .setVisible(true)
+            .setOrigin(0, 0)
+            .setFillStyle(VISUALS.GRASS_COLOR, 1.0);
     }
 }

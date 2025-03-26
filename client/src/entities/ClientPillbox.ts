@@ -1,8 +1,53 @@
 import { Pillbox } from "../../../shared/objects/Pillbox";
 import { PillboxSchema } from "../../../server/src/schemas/PillboxSchema";
-import { TEAM_COLORS } from "../../../shared/constants";
+import { TEAM_COLORS, VISUALS } from "../../../shared/constants";
+import { Tank } from "../../../shared/objects/Tank";
 
 export class ClientPillbox extends Pillbox {
+    // Override fireAtTarget to do nothing - server handles all bullets
+    override fireAtTarget(target: Tank): void {
+        // Only show visual effects if ready to fire
+        if (this.firingTimer <= 0) {
+            // Reset firing timer
+            this.firingTimer = this.firingCooldown;
+            
+            // Flash effect
+            this.setTint(0xFFFFFF);
+            this.scene.time.delayedCall(50, () => {
+                this.clearTint();
+            });
+            
+            // Calculate angle to target
+            const angle = Phaser.Math.Angle.Between(
+                this.x, 
+                this.y, 
+                target.x, 
+                target.y
+            );
+            
+            // Position for muzzle flash
+            const fireLocation = new Phaser.Math.Vector2(VISUALS.FIRING_OFFSET, 0.0).rotate(angle);
+            
+            // Add particle effect for muzzle flash
+            const particles = this.scene.add.particles(
+                this.x + fireLocation.x, 
+                this.y + fireLocation.y, 
+                'bullet', 
+                {
+                    speed: 100,
+                    scale: { start: 0.5, end: 0 },
+                    blendMode: 'ADD',
+                    lifespan: 100,
+                    quantity: 1
+                }
+            );
+            
+            // Destroy particles after a short time
+            this.scene.time.delayedCall(100, () => {
+                particles.destroy();
+            });
+        }
+    }
     constructor(scene: Phaser.Scene, x: number, y: number, team: number = 0) {
         super(scene, x, y, team);
     }

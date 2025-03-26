@@ -35,9 +35,21 @@ export class ServerTank extends Tank {
   }
 
   override fire() {
-    super.fire();
-    // Additional server-side logic for firing could go here
-    // For example, notifying other players about the bullet
+    // Only fire if cooldown is complete
+    if (this.firingCooldown <= 0) {
+      const scene = this.scene as ServerGameScene;
+      
+      // Calculate bullet spawn position
+      const angle = this.rotation;
+      const bulletX = this.x + Math.cos(angle) * 30; // Offset from tank center
+      const bulletY = this.y + Math.sin(angle) * 30;
+      
+      // Create a server bullet with this tank as owner
+      scene.createBullet(bulletX, bulletY, angle, this.team, this.sessionId);
+      
+      // Reset cooldown
+      this.firingCooldown = this.firingRate;
+    }
   }
 
   override preUpdate(time: number, delta: number): void {

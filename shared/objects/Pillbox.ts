@@ -9,6 +9,7 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
   // Firing properties
   firingCooldown: number = PHYSICS.PILLBOX_FIRE_COOLDOWN;
   firingTimer: number = 0;
+  bulletSpeed: number = PHYSICS.BULLET_SPEED;
   
   // Health
   health: number = PHYSICS.PILLBOX_HEALTH;

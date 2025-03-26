@@ -22,11 +22,13 @@ import { VISUALS, TEAM_COLORS } from "../../../shared/constants";
 import { ClientMap } from "./ClientMap";
 import { Station } from "../../../shared/objects/Station";
 import { ClientPillbox } from "../entities/ClientPillbox";
+import { ClientBullet } from "../entities/ClientBullet";
 
 export class ClientGameScene extends GameScene {
     room: Room<MyRoomState>;
 
     // Map of players by session ID
+    clientBullets: Map<string, ClientBullet> = new Map();
     players: Map<string, ClientTank> = new Map();
     currentPlayer: ClientTank;
     
@@ -92,7 +94,7 @@ export class ClientGameScene extends GameScene {
             fontFamily: "'Courier Prime', monospace",
             fontStyle: "bold"
         });
-        this.cameras.main.setBackgroundColor(VISUALS.BACKGROUND_COLOR);
+        this.cameras.main.setBackgroundColor(VISUALS.WATER_COLOR);
         
         // Create selection rectangle (initially invisible)
         this.selectionRect = this.add.rectangle(0, 0, 0, 0, 0xffff00, 0.3);
@@ -227,6 +229,37 @@ export class ClientGameScene extends GameScene {
         // remove local reference when entity is removed from the server
         $(this.room.state).players.onRemove((player, sessionId) => {
             this.removePlayer(sessionId);
+        });
+        
+        // Handle bullets
+        $(this.room.state).bullets.onAdd((bulletSchema, bulletId) => {
+            // Create a client bullet based on the schema
+            const bullet = new ClientBullet(
+                this, 
+                bulletSchema.x, 
+                bulletSchema.y, 
+                bulletSchema.angle
+            );
+            
+            // Add to our local bullets map
+            this.clientBullets.set(bulletId, bullet);
+            
+            // Listen for changes to this bullet
+            $(bulletSchema).onChange(() => {
+                if (this.clientBullets.has(bulletId)) {
+                    this.clientBullets.get(bulletId).updateFromServer(bulletSchema);
+                }
+            });
+        });
+        
+        // Handle bullet removal
+        $(this.room.state).bullets.onRemove((bulletSchema, bulletId) => {
+            // Destroy the bullet if it exists
+            if (this.clientBullets.has(bulletId)) {
+                const bullet = this.clientBullets.get(bulletId);
+                bullet.destroy();
+                this.clientBullets.delete(bulletId);
+            }
         });
     }
 

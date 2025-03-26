@@ -9,6 +9,10 @@ export class GameMap {
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
     }
+
+    getTileAt(x: number, y: number): Phaser.Tilemaps.Tile {
+        return this.groundLayer.getTileAt(x, y) || this.decorationLayer.getTileAt(x, y);
+    }
     
     // Get the speed multiplier at the given world position
     // Returns a value between 0 and 1, with default of 1 if no speed property is found
@@ -204,9 +208,7 @@ export class GameMap {
         ];
         
         return neighbors.map(({dx, dy}) => {
-            const neighborTile = tile.properties?.layer == 0 ? 
-                this.groundLayer.getTileAt(tile.x + dx, tile.y + dy) : 
-                this.decorationLayer.getTileAt(tile.x + dx, tile.y + dy);
+            const neighborTile = this.getTileAt(tile.x + dx, tile.y + dy);
             return neighborTile;
         });
     }
@@ -233,8 +235,11 @@ export class GameMap {
       
         let wang = [];
         for (const neighborTile of neighborTiles) {
-            const result = neighborTile && isTileSameType(neighborTile, centerTile);
-            wang.push(result);
+            if (!neighborTile) {
+                wang.push(true);
+                continue;
+            }
+            wang.push(isTileSameType(neighborTile, centerTile));
         }
 
         let cornerMask = 0;
