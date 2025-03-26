@@ -19,6 +19,7 @@ import { GameScene, InputData } from "../../../shared/scenes/Game";
 import { ClientTank } from "../entities/ClientTank";
 import { GameUI } from "../UI";
 import { VISUALS } from "../../../shared/constants";
+import { ClientMap } from "./ClientMap";
 
 export class ClientGameScene extends GameScene {
     room: Room<MyRoomState>;
@@ -109,6 +110,9 @@ export class ClientGameScene extends GameScene {
         
         $(this.room.state).listen("map", (currentValue, previousValue) => {
             console.log("Map added:", currentValue);
+            // Use ClientMap to create the tilemap from the schema
+            this.gameMap = new ClientMap(this);
+            (this.gameMap as ClientMap).createTilemapFromSchema(currentValue);
         });
 
         $(this.room.state).players.onAdd((player, sessionId) => {
