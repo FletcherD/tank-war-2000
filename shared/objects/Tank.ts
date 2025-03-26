@@ -135,7 +135,7 @@ export class Tank extends Phaser.GameObjects.Container
       }
 
       this.setVelocity(this.speed * Math.cos(this.heading), this.speed * Math.sin(this.heading));
-
+      
       // Handle fire cooldown
       if (this.currentInput.fire && this.fireCooldownTimer <= 0) {
         this.fire();
@@ -213,6 +213,7 @@ export class Tank extends Phaser.GameObjects.Container
   }
 
   fire() {
+    console.log("Base Tank fire")
     const fireLocation = new Phaser.Math.Vector2(VISUALS.FIRING_OFFSET, 0.0).rotate(this.heading);
     const bullet = new Bullet(this.scene as GameScene, this.x + fireLocation.x, this.y + fireLocation.y, this.heading);
     this.scene.add.existing(bullet);

@@ -6,11 +6,8 @@ export class ServerBullet extends Bullet {
     schema: BulletSchema;
     ownerId: string;
     
-    constructor(scene: Phaser.Scene, x: number, y: number, angle: number, team: number = 0, ownerId: string = "") {
-        super(scene, x, y, angle);
-        
-        // Set team
-        this.team = team;
+    constructor(scene: Phaser.Scene, x: number, y: number, rotation: number, ownerId: string = "") {
+        super(scene, x, y, rotation);        
         
         // Set owner ID
         this.ownerId = ownerId;
@@ -24,8 +21,7 @@ export class ServerBullet extends Bullet {
     updateSchema() {
         this.schema.x = this.x;
         this.schema.y = this.y;
-        this.schema.angle = this.angle;
-        this.schema.team = this.team;
+        this.schema.rotation = this.rotation;
         this.schema.ownerId = this.ownerId;
     }
     

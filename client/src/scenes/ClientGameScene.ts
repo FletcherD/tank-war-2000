@@ -238,18 +238,11 @@ export class ClientGameScene extends GameScene {
                 this, 
                 bulletSchema.x, 
                 bulletSchema.y, 
-                bulletSchema.angle
+                bulletSchema.rotation
             );
             
             // Add to our local bullets map
             this.clientBullets.set(bulletId, bullet);
-            
-            // Listen for changes to this bullet
-            $(bulletSchema).onChange(() => {
-                if (this.clientBullets.has(bulletId)) {
-                    this.clientBullets.get(bulletId).updateFromServer(bulletSchema);
-                }
-            });
         });
         
         // Handle bullet removal

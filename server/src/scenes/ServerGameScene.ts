@@ -167,8 +167,8 @@ export class ServerGameScene extends GameScene {
   }
 
   // Create a server bullet (from tank or pillbox)
-  createBullet(x: number, y: number, angle: number, team: number, ownerId: string = "") {
-    const bullet = new ServerBullet(this, x, y, angle, team, ownerId);
+  createBullet(x: number, y: number, angle: number, ownerId: string = "") {
+    const bullet = new ServerBullet(this, x, y, angle, ownerId);
     this.serverBullets.push(bullet);
     
     // Add to room state
@@ -178,8 +178,8 @@ export class ServerGameScene extends GameScene {
   }
   
   // Override the base Bullet creation
-  createBulletAt(x: number, y: number, angle: number, team: number, ownerId: string = "") {
-    return this.createBullet(x, y, angle, team, ownerId);
+  createBulletAt(x: number, y: number, angle: number, ownerId: string = "") {
+    return this.createBullet(x, y, angle, ownerId);
   }
   
   update(time: number, delta: number): void {
