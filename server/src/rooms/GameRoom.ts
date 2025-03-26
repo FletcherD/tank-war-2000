@@ -5,6 +5,7 @@ import { TankSchema } from "../schemas/TankSchema";
 import { ServerGameScene } from "../scenes/ServerGameScene";
 import { PhaserServer } from "../phaser/PhaserServer";
 import { WorldMapSchema } from "../schemas/WorldMapSchema";
+import { StationSchema } from "../schemas/StationSchema";
 
 export class PlayerState extends Schema {
   @type(TankSchema) tank: TankSchema = new TankSchema();
@@ -14,6 +15,7 @@ export class MyRoomState extends Schema {
   @type("string") mapName: string = "Test Map";
   @type({ map: PlayerState }) players = new MapSchema<PlayerState>();
   @type(WorldMapSchema) map: WorldMapSchema = new WorldMapSchema();
+  @type({ map: StationSchema }) stations = new MapSchema<StationSchema>();
 }
 
 export class GameRoom extends Room<MyRoomState> {
@@ -77,7 +79,7 @@ export class GameRoom extends Room<MyRoomState> {
         if (playerState.tank.tick !== schema.tick) playerState.tank.tick = schema.tick;
         
         // Add debugging to check if updates are happening on the server side
-        console.log(`Player ${sessionId} position: ${schema.x.toFixed(2)}, ${schema.y.toFixed(2)}`);
+        //console.log(`Player ${sessionId} position: ${schema.x.toFixed(2)}, ${schema.y.toFixed(2)}`);
       }
     });
   }

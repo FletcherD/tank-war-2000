@@ -5,7 +5,7 @@ import { ServerGameScene } from "../scenes/ServerGameScene";
 import { MyRoomState } from "../rooms/GameRoom";
 
 import { Encoder } from "@colyseus/schema";
-Encoder.BUFFER_SIZE = 128 * 1024; // 128 KB
+Encoder.BUFFER_SIZE = 256 * 1024; // 256 KB
 
 export class PhaserServer {
   game: Phaser.Game;

@@ -18,8 +18,9 @@ import type { MyRoomState } from "../../../server/src/rooms/GameRoom";
 import { GameScene, InputData } from "../../../shared/scenes/Game";
 import { ClientTank } from "../entities/ClientTank";
 import { GameUI } from "../UI";
-import { VISUALS } from "../../../shared/constants";
+import { VISUALS, TEAM_COLORS } from "../../../shared/constants";
 import { ClientMap } from "./ClientMap";
+import { Station } from "../../../shared/objects/Station";
 
 export class ClientGameScene extends GameScene {
     room: Room<MyRoomState>;
@@ -113,6 +114,29 @@ export class ClientGameScene extends GameScene {
             // Use ClientMap to create the tilemap from the schema
             this.gameMap = new ClientMap(this);
             (this.gameMap as ClientMap).createTilemapFromSchema(currentValue);
+        });
+        
+        // Handle stations
+        $(this.room.state).stations.onAdd((stationSchema, stationId) => {
+            console.log(`Station added: ${stationId} at (${stationSchema.x}, ${stationSchema.y}), team: ${stationSchema.team}`);
+            
+            // Create a station at the given position
+            const station = this.addStation(stationSchema.x, stationSchema.y, stationSchema.team);
+            
+            // Listen for changes to this station
+            $(stationSchema).onChange(() => {
+                // Update the station's team if it changed
+                if (station.team !== stationSchema.team) {
+                    station.team = stationSchema.team;
+                    
+                    // Update the station's appearance based on team
+                    if (station.team > 0 && TEAM_COLORS[station.team]) {
+                        station.topSprite.setTint(TEAM_COLORS[station.team]);
+                    } else {
+                        station.topSprite.clearTint();
+                    }
+                }
+            });
         });
 
         $(this.room.state).players.onAdd((player, sessionId) => {
