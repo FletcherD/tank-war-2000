@@ -15,12 +15,12 @@ const config: Phaser.Types.Core.GameConfig = {
     width: "100%",
     height: "100%",
     // height: 200,
-    backgroundColor: '#00b8d7',
+    backgroundColor: '#000000',
     parent: 'phaser-example',
     physics: {
         default: "matter",
         matter: {
-            debug: false,
+            debug: true,
             gravity: { y: 0 }
         }
     },
