@@ -32,7 +32,5 @@ const config = {
   },
 }
 
-new Phaser.Game(config)
-
 // Create and listen on 2567 (or PORT environment variable.)
 listen(appConfig);

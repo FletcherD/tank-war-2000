@@ -9,9 +9,9 @@ export class ServerGameScene extends GameScene {
   players: Map<string, ServerTank> = new Map();
   room: Room<MyRoomState>;
 
-  constructor(config: Phaser.Types.Scenes.SettingsConfig, room: Room<MyRoomState>) {
+  constructor(config: Phaser.Types.Scenes.SettingsConfig) {
     super(config);
-    this.room = room;
+    console.log("ServerGameScene constructor");
   }
 
   preload() {
@@ -23,6 +23,8 @@ export class ServerGameScene extends GameScene {
   create() {
     super.create();
     console.log("ServerGameScene created");
+
+    console.log(this.room.state)
     
     // Additional setup specific to server could go here
   }

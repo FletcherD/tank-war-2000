@@ -21,6 +21,7 @@ export class GameRoom extends Room<MyRoomState> {
   phaserServer: PhaserServer;
 
   onCreate(options: any) {
+    console.log("GameRoom created");
     // Initialize game state
     if (options.mapName) {
       this.state.mapName = options.mapName;
@@ -30,6 +31,8 @@ export class GameRoom extends Room<MyRoomState> {
     this.phaserServer = new PhaserServer();
     this.gameScene = this.phaserServer.createScene(ServerGameScene, this);
 
+    this.gameScene.room = this;
+    
     // Handle player input
     this.onMessage("input", (client, input: InputData) => {
       //console.log(`Received input from ${client.sessionId}:`, input);
