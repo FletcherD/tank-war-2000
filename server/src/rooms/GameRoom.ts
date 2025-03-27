@@ -46,6 +46,17 @@ export class GameRoom extends Room<MyRoomState> {
       //console.log(`Received input from ${client.sessionId}:`, input);
       this.gameScene.handlePlayerInput(client.sessionId, input);
     });
+    
+    // Handle pillbox placement requests
+    this.onMessage("placePillbox", (client, data: { x: number, y: number }) => {
+      const tank = this.gameScene.players.get(client.sessionId);
+      if (tank) {
+        // Validate position for placing pillbox
+        const success = tank.placePillbox(data.x, data.y);
+        // Inform client of success/failure
+        this.send(client, "pillboxPlaced", { success, x: data.x, y: data.y });
+      }
+    });
 
     // Set up fixed timestep simulation
     let elapsedTime = 0;
@@ -81,6 +92,7 @@ export class GameRoom extends Room<MyRoomState> {
         if (playerState.tank.down !== schema.down) playerState.tank.down = schema.down;
         if (playerState.tank.fire !== schema.fire) playerState.tank.fire = schema.fire;
         if (playerState.tank.tick !== schema.tick) playerState.tank.tick = schema.tick;
+        if (playerState.tank.pillboxCount !== schema.pillboxCount) playerState.tank.pillboxCount = schema.pillboxCount;
         
         // Add debugging to check if updates are happening on the server side
         //console.log(`Player ${sessionId} position: ${schema.x.toFixed(2)}, ${schema.y.toFixed(2)}`);

@@ -6,4 +6,6 @@ export class PillboxSchema extends Schema {
     @type("number") team: number = 0;
     @type("number") health: number = 8; // Default pillbox health
     @type("string") id: string = "";
+    @type("string") state: string = "placed"; // "placed", "pickup", or "held"
+    @type("string") ownerId: string = ""; // Session ID of the player who owns it when held
 }

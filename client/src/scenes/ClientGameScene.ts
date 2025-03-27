@@ -255,6 +255,20 @@ export class ClientGameScene extends GameScene {
             // connection successful!
             connectionStatusText.destroy();
             console.log("Connected to server!");
+            
+            // Listen for response from server on pillbox placement
+            this.room.onMessage("pillboxPlaced", (response) => {
+                if (response.success) {
+                    if (this.gameUI) {
+                        this.gameUI.showMessage("Pillbox placed successfully!");
+                    }
+                    this.clearSelection();
+                } else {
+                    if (this.gameUI) {
+                        this.gameUI.showMessage("Failed to place pillbox.");
+                    }
+                }
+            });
 
         } catch (e) {
             // couldn't connect
@@ -521,6 +535,47 @@ export class ClientGameScene extends GameScene {
         
         if (this.selectionRect) {
             this.selectionRect.setVisible(false);
+        }
+    }
+    
+    // Method to place a pillbox at the selected location
+    placePillbox() {
+        // Check if we have a selection and if the player has pillboxes
+        if (!this.selectedTiles.length || !this.currentPlayer || this.currentPlayer.pillboxCount <= 0) {
+            if (this.gameUI) {
+                this.gameUI.showMessage("No tiles selected or no pillboxes available.");
+            }
+            return;
+        }
+        
+        // For simplicity, we'll just use the first selected tile
+        const tile = this.selectedTiles[0];
+        
+        // Convert tile coordinates to world coordinates
+        const worldPos = this.gameMap.groundLayer.tileToWorldXY(tile.x, tile.y);
+        const centerX = worldPos.x + 16; // Center of the tile
+        const centerY = worldPos.y + 16;
+        
+        // Calculate distance from player to selection
+        const distance = Phaser.Math.Distance.Between(
+            this.currentPlayer.x, this.currentPlayer.y,
+            centerX, centerY
+        );
+        
+        // Check if player is close enough
+        if (distance <= 100) { // Using the same distance as for building roads
+            // Send placement request to server
+            this.room.send("placePillbox", { x: centerX, y: centerY });
+            
+            // Show message
+            if (this.gameUI) {
+                this.gameUI.showMessage("Placing pillbox...");
+            }
+        } else {
+            // Show message that player is too far
+            if (this.gameUI) {
+                this.gameUI.showMessage("Too far to place pillbox! Move closer to the selected tile.");
+            }
         }
     }
 

@@ -7,6 +7,8 @@ export class GameUI {
   private healthTextElement: HTMLDivElement;
   private buildButton: HTMLButtonElement;
   private cancelBuildButton: HTMLButtonElement;
+  private placePillboxButton: HTMLButtonElement;
+  private pillboxCountElement: HTMLDivElement;
   private messageElement: HTMLDivElement;
   private messageTimeout: number | null = null;
   private gameScene: ClientGameScene;
@@ -95,6 +97,39 @@ export class GameUI {
     this.cancelBuildButton.onclick = () => this.gameScene.cancelBuild("Construction canceled by player.");
     this.uiContainer.appendChild(this.cancelBuildButton);
     
+    // Create place pillbox button
+    this.placePillboxButton = document.createElement('button');
+    this.placePillboxButton.textContent = 'Place Pillbox';
+    this.placePillboxButton.style.position = 'absolute';
+    this.placePillboxButton.style.bottom = '60px'; // Position above build button
+    this.placePillboxButton.style.right = '20px';
+    this.placePillboxButton.style.padding = '10px 20px';
+    this.placePillboxButton.style.backgroundColor = '#9c27b0'; // Purple
+    this.placePillboxButton.style.color = 'white';
+    this.placePillboxButton.style.border = 'none';
+    this.placePillboxButton.style.borderRadius = '5px';
+    this.placePillboxButton.style.cursor = 'pointer';
+    this.placePillboxButton.style.fontFamily = "'Courier Prime', monospace";
+    this.placePillboxButton.style.fontWeight = "700";
+    this.placePillboxButton.style.pointerEvents = 'auto';
+    this.placePillboxButton.style.display = 'none'; // Initially hidden until player has pillboxes
+    this.placePillboxButton.onclick = () => this.gameScene.placePillbox();
+    this.uiContainer.appendChild(this.placePillboxButton);
+    
+    // Create pillbox count display
+    this.pillboxCountElement = document.createElement('div');
+    this.pillboxCountElement.style.position = 'absolute';
+    this.pillboxCountElement.style.top = '40px';
+    this.pillboxCountElement.style.right = '20px';
+    this.pillboxCountElement.style.padding = '5px 10px';
+    this.pillboxCountElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    this.pillboxCountElement.style.color = 'white';
+    this.pillboxCountElement.style.borderRadius = '5px';
+    this.pillboxCountElement.style.fontFamily = "'Courier Prime', monospace";
+    this.pillboxCountElement.style.fontWeight = "700";
+    this.pillboxCountElement.textContent = 'Pillboxes: 0';
+    this.uiContainer.appendChild(this.pillboxCountElement);
+    
     // Create message element for notifications
     this.messageElement = document.createElement('div');
     this.messageElement.style.position = 'absolute';
@@ -145,11 +180,28 @@ export class GameUI {
   }
 
   /**
+   * Updates the pillbox count display
+   */
+  public updatePillboxCount(count: number) {
+    if (!this.pillboxCountElement) return;
+    
+    this.pillboxCountElement.textContent = `Pillboxes: ${count}`;
+    
+    // Show/hide the place pillbox button based on count
+    if (count > 0) {
+      this.placePillboxButton.style.display = 'block';
+    } else {
+      this.placePillboxButton.style.display = 'none';
+    }
+  }
+
+  /**
    * Updates the UI based on the current game state
    */
   public update() {
     if (this.gameScene.currentPlayer) {
       this.updateHealthBar(this.gameScene.currentPlayer.health);
+      this.updatePillboxCount(this.gameScene.currentPlayer.pillboxCount);
     }
     
     // Update build buttons based on building state
@@ -159,6 +211,16 @@ export class GameUI {
     } else {
       this.buildButton.style.display = 'block';
       this.cancelBuildButton.style.display = 'none';
+    }
+    
+    // Update place pillbox button visibility based on selection
+    const hasSelection = this.gameScene.selectedTiles.length > 0;
+    const hasPillboxes = this.gameScene.currentPlayer && this.gameScene.currentPlayer.pillboxCount > 0;
+    
+    if (hasSelection && hasPillboxes && !this.gameScene.isBuilding) {
+      this.placePillboxButton.style.display = 'block';
+    } else if (!hasSelection || this.gameScene.isBuilding) {
+      this.placePillboxButton.style.display = 'none';
     }
     
     // Regularly check if the canvas position/size has changed

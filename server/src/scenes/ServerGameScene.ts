@@ -189,12 +189,51 @@ export class ServerGameScene extends GameScene {
     return teamStations[randomIndex];
   }
   
+  // Create a new pillbox at the specified location
+  createPillbox(x: number, y: number, team: number): ServerPillbox {
+    // Generate a unique ID for the pillbox
+    const id = `pillbox_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    
+    // Create the pillbox
+    const pillbox = new ServerPillbox(this, x, y, team);
+    this.pillboxes.push(pillbox);
+    
+    // Set its ID and update schema
+    pillbox.schema.id = id;
+    pillbox.schema.state = "placed";
+    pillbox.updateSchema();
+    
+    // Add to room state
+    this.room.state.pillboxes.set(pillbox.schema.id, pillbox.schema);
+    
+    return pillbox;
+  }
+  
   update(time: number, delta: number): void {
     super.update(time, delta);
     
     // Update schemas for all players
     this.players.forEach(tank => {
       tank.updateSchema();
+      
+      // Check for collisions with pickup state pillboxes
+      this.pillboxes.forEach(p => {
+        if (!(p instanceof ServerPillbox)) return;
+        
+        const pillbox = p as ServerPillbox;
+        if (pillbox.schema.state === "pickup") {
+          // Calculate distance between tank and pillbox
+          const distance = Phaser.Math.Distance.Between(
+            tank.x, tank.y, 
+            pillbox.x, pillbox.y
+          );
+          
+          // If close enough, collect the pillbox
+          if (distance < (tank.width + pillbox.width) / 2) {
+            tank.pickupPillbox(pillbox);
+          }
+        }
+      });
     });
     
     // Update schemas for all ServerPillbox instances

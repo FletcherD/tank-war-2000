@@ -1,6 +1,6 @@
 import { Pillbox } from "../../../shared/objects/Pillbox";
 import { PillboxSchema } from "../../../server/src/schemas/PillboxSchema";
-import { TEAM_COLORS, VISUALS } from "../../../shared/constants";
+import { VISUALS, PHYSICS, COLLISION_CATEGORIES, TEAM_COLORS } from "../../../shared/constants";
 import { Tank } from "../../../shared/objects/Tank";
 
 export class ClientPillbox extends Pillbox {
@@ -52,13 +52,29 @@ export class ClientPillbox extends Pillbox {
         super(scene, x, y, team);
     }
     
+    // State property to track client-side state
+    state: string = "placed";
+    
     // Update pillbox from server schema
     updateFromServer(pillboxSchema: PillboxSchema) {
         console.log("Updating pillbox:", pillboxSchema);
-        // Update position if needed (though pillboxes generally don't move)
+        
+        // Check if the state has changed
+        if (this.state !== pillboxSchema.state) {
+            this.handleStateChange(this.state, pillboxSchema.state);
+            this.state = pillboxSchema.state;
+        }
+        
+        // Update position if needed (pillboxes move when in pickup state)
         if (this.x !== pillboxSchema.x || this.y !== pillboxSchema.y) {
             this.x = pillboxSchema.x;
             this.y = pillboxSchema.y;
+            
+            // Update top sprite position
+            if (this.topSprite && this.topSprite.active) {
+                this.topSprite.x = this.x;
+                this.topSprite.y = this.y;
+            }
         }
         
         // Update team if needed
@@ -66,15 +82,15 @@ export class ClientPillbox extends Pillbox {
             this.team = pillboxSchema.team;
             
             // Update appearance based on team
-            if (this.team > 0 && TEAM_COLORS[this.team]) {
+            if (this.team > 0 && TEAM_COLORS[this.team] && this.topSprite) {
                 this.topSprite.setTint(TEAM_COLORS[this.team]);
-            } else {
+            } else if (this.topSprite) {
                 this.topSprite.clearTint();
             }
         }
         
-        // Update health if needed
-        if (this.health !== pillboxSchema.health) {
+        // Update health if needed (only relevant in placed state)
+        if (this.state === "placed" && this.health !== pillboxSchema.health) {
             // Store old health for damage comparison
             const oldHealth = this.health;
             this.health = pillboxSchema.health;
@@ -84,11 +100,55 @@ export class ClientPillbox extends Pillbox {
                 // We pass 0 as the amount since we already updated the health directly
                 this.takeDamage(0);
             }
+        }
+    }
+    
+    // Handle state transitions on the client
+    handleStateChange(oldState: string, newState: string) {
+        console.log(`Pillbox state changing from ${oldState} to ${newState}`);
+        
+        if (newState === "pickup") {
+            // Change to pickup appearance
+            // Use pillbox1.png tinted green for pickup state
+            this.clearTint(); // Clear any tint on base sprite
             
-            // If health is zero, destroy the pillbox
-            if (this.health <= 0) {
-                this.destroy();
+            // Set the top sprite to green
+            if (this.topSprite) {
+                this.topSprite.setTint(0x00ff00); // Green tint
             }
+            
+            // Make sure physics body matches server
+            this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS / 2);
+            this.setStatic(false);
+            this.setCollidesWith([COLLISION_CATEGORIES.PLAYER]);
+            this.setCollisionCategory(COLLISION_CATEGORIES.PICKUP);
+        }
+        else if (newState === "held") {
+            // Hide the pillbox when it's held by a player
+            this.setVisible(false);
+            if (this.topSprite) {
+                this.topSprite.setVisible(false);
+            }
+        }
+        else if (newState === "placed") {
+            // Return to normal appearance if coming from another state
+            this.setVisible(true);
+            if (this.topSprite) {
+                this.topSprite.setVisible(true);
+                
+                // Reset tint based on team
+                if (this.team > 0 && TEAM_COLORS[this.team]) {
+                    this.topSprite.setTint(TEAM_COLORS[this.team]);
+                } else {
+                    this.topSprite.clearTint();
+                }
+            }
+            
+            // Restore normal hitbox
+            this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS);
+            this.setStatic(true);
+            this.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER, COLLISION_CATEGORIES.PROJECTILE]);
+            this.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
         }
     }
 }

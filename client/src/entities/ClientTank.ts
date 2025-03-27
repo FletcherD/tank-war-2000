@@ -46,7 +46,9 @@ export class ClientTank extends Tank {
     health: number;
     team: number;
     tick: number;
+    pillboxCount: number;
   };
+  pillboxCount: number = 0;
   inputBuffer: InputData[] = [];
   pendingInputs: InputData[] = [];
   
@@ -61,7 +63,8 @@ export class ClientTank extends Tank {
       speed: 0,
       health: 100,
       team: 0,
-      tick: 0
+      tick: 0,
+      pillboxCount: 0
     };
 
     // Set up tread frames
@@ -79,8 +82,22 @@ export class ClientTank extends Tank {
       speed: data.speed,
       health: data.health,
       team: data.team,
-      tick: data.tick
+      tick: data.tick,
+      pillboxCount: data.pillboxCount || 0
     };
+    
+    // Update pillbox count
+    if (this.pillboxCount !== data.pillboxCount) {
+      this.pillboxCount = data.pillboxCount || 0;
+      
+      // If this is the local player, we might want to update the UI
+      if (this.isLocalPlayer) {
+        const gameScene = this.scene as ClientGameScene;
+        if (gameScene.gameUI) {
+          gameScene.gameUI.updatePillboxCount(this.pillboxCount);
+        }
+      }
+    }
 
     // For non-local players, directly update position
     if (!this.isLocalPlayer) {

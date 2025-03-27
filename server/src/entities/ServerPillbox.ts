@@ -2,7 +2,7 @@ import { Pillbox } from "../../../shared/objects/Pillbox";
 import { PillboxSchema } from "../schemas/PillboxSchema";
 import { ServerGameScene } from "../scenes/ServerGameScene";
 import { Tank } from "../../../shared/objects/Tank";
-import { VISUALS } from "../../../shared/constants";
+import { VISUALS, PHYSICS, COLLISION_CATEGORIES } from "../../../shared/constants";
 
 export class ServerPillbox extends Pillbox {
     // Schema to be synced with clients
@@ -22,12 +22,64 @@ export class ServerPillbox extends Pillbox {
         this.schema.y = this.y;
         this.schema.team = this.team;
         this.schema.health = this.health;
+        // State and ownerId already handled in state transition methods
     }
     
     // Override takeDamage to update schema when damage is taken
     takeDamage(amount: number) {
         super.takeDamage(amount);
+        
+        // Check if health is at or below 0 but we're still active (about to be destroyed)
+        if (this.health <= 0 && this.active) {
+            // Transition to pickup state
+            this.convertToPickup();
+        }
+        
         this.updateSchema();
+    }
+    
+    // Convert from placed to pickup state
+    convertToPickup() {
+        console.log("Converting pillbox to pickup state");
+        // Update schema state
+        this.schema.state = "pickup";
+        
+        // Change collider properties for pickup state
+        // Remove existing body
+        this.setBody(null);
+        
+        // Create a smaller hitbox for the pickup
+        this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS / 2);
+        
+        // Change from static to dynamic for pickup physics
+        this.setStatic(false);
+        
+        // Keep it from rolling around but allow it to be pushed
+        this.setFriction(0.8);
+        this.setFrictionAir(0.2);
+        
+        // Only collide with players for pickup
+        this.setCollidesWith([COLLISION_CATEGORIES.PLAYER]);
+        this.setCollisionCategory(COLLISION_CATEGORIES.PICKUP);
+        
+        // Make sure it doesn't get destroyed
+        this.health = 1;
+        
+        // Update schema
+        this.updateSchema();
+    }
+    
+    // Override destroy to handle removal based on state
+    override destroy() {
+        // If we're in "placed" state, transition to pickup instead of destroying
+        if (this.schema.state === "placed" && this.health <= 0) {
+            // Don't call super.destroy(), instead transition to pickup
+            this.convertToPickup();
+            return;
+        }
+        
+        // For other states, perform normal destruction
+        super.destroy();
     }
     
     // Override team setter to update schema when team changes
@@ -35,9 +87,49 @@ export class ServerPillbox extends Pillbox {
         super.team = value;
         this.updateSchema();
     }
+
+    preUpdate(time: number, delta: number) {
+        // Update firing timer
+        this.firingTimer -= delta;
+        
+        // Find nearest tank within range
+        const targetTank = this.findTargetTank();
+        
+        // If a target is found and cooldown is complete, fire
+        if (targetTank && this.firingTimer <= 0) {
+        this.fireAtTarget(targetTank);
+        this.firingTimer = this.firingCooldown;
+        }
+    }
+
+    findTargetTank(): Tank | null {
+        const gameScene = this.scene as any; // We'll cast to access the playerEntities
+        if (!gameScene.playerEntities) return null;
+        
+        let closestTank: Tank | null = null;
+        let closestDistance = this.detectionRange;
+        
+        // Check all tanks in the scene
+        for (const sessionId in gameScene.playerEntities) {
+            const tank = gameScene.playerEntities[sessionId];
+            
+            // Skip tanks on the same team
+            if (tank.team === this.team && this.team !== 0) continue;
+            
+            // Calculate distance
+            const distance = Phaser.Math.Distance.Between(this.x, this.y, tank.x, tank.y);
+            
+            // If in range and closer than previous closest
+            if (distance <= closestDistance) {
+                closestTank = tank;
+                closestDistance = distance;
+            }
+        }
+        
+        return closestTank;
+    }
     
-    // Override fireAtTarget to use ServerBullet
-    override fireAtTarget(target: Tank) {
+    fireAtTarget(target: Tank) {
         // Skip if not active
         if (!this.active) return;
         

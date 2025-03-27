@@ -54,4 +54,41 @@ export class ServerTank extends Tank {
     super.preUpdate(time, delta);
     this.updateSchema();
   }
+  
+  // Add a pillbox to the tank's inventory
+  pickupPillbox(pillbox: any): void {
+    // Increment the pillbox count
+    this.schema.pillboxCount++;
+    
+    // Update the pillbox state to held
+    pillbox.schema.state = "held";
+    pillbox.schema.ownerId = this.sessionId;
+    
+    // Update the schema to notify clients
+    this.updateSchema();
+    pillbox.updateSchema();
+    
+    console.log(`Tank ${this.sessionId} picked up pillbox. Now has ${this.schema.pillboxCount} pillboxes.`);
+  }
+  
+  // Create a pillbox at the specified location
+  placePillbox(x: number, y: number): boolean {
+    // Verify the tank has a pillbox to place
+    if (this.schema.pillboxCount <= 0) {
+      return false;
+    }
+    
+    // Decrement the pillbox count
+    this.schema.pillboxCount--;
+    
+    // Create a new pillbox at the specified location
+    const scene = this.scene as ServerGameScene;
+    const pillbox = scene.createPillbox(x, y, this.team);
+    
+    // Update schema
+    this.updateSchema();
+    
+    console.log(`Tank ${this.sessionId} placed pillbox at (${x}, ${y}). Has ${this.schema.pillboxCount} pillboxes left.`);
+    return true;
+  }
 }
