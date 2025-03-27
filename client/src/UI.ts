@@ -75,7 +75,6 @@ export class GameUI {
     
     // Create ammo bar container - positioned below health bar
     this.ammoBarContainer = document.createElement('div');
-    this.ammoBarContainer.style.marginTop = '5px';
     this.healthBarContainer.appendChild(this.ammoBarContainer);
     
     // Create ammo bar outer container
@@ -200,7 +199,7 @@ export class GameUI {
     // Create expand button
     this.newswireExpandButton = document.createElement('button');
     this.newswireExpandButton.id = 'newswireExpandButton';
-    this.newswireExpandButton.textContent = '▲';
+    this.newswireExpandButton.textContent = '▼';
     this.newswireExpandButton.className = 'button';
     this.newswireExpandButton.style.pointerEvents = 'auto';
     this.newswireContainer.appendChild(this.newswireExpandButton);
@@ -210,10 +209,10 @@ export class GameUI {
       this.isNewswireExpanded = !this.isNewswireExpanded;
       if (this.isNewswireExpanded) {
         this.newswire.classList.add('expanded');
-        this.newswireExpandButton.textContent = '▼';
+        this.newswireExpandButton.textContent = '▲';
       } else {
         this.newswire.classList.remove('expanded');
-        this.newswireExpandButton.textContent = '▲';
+        this.newswireExpandButton.textContent = '▼';
       }
     };
     
