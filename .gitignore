@@ -4,3 +4,5 @@ node_modules
 phaser-docs
 client/dist
 CLAUDE_CODE_LOG.txt
+
+**/CLAUDE.local.md

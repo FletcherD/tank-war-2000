@@ -54,6 +54,7 @@ export class ClientPillbox extends Pillbox {
     
     // Update pillbox from server schema
     updateFromServer(pillboxSchema: PillboxSchema) {
+        console.log("Updating pillbox:", pillboxSchema);
         // Update position if needed (though pillboxes generally don't move)
         if (this.x !== pillboxSchema.x || this.y !== pillboxSchema.y) {
             this.x = pillboxSchema.x;
@@ -74,12 +75,15 @@ export class ClientPillbox extends Pillbox {
         
         // Update health if needed
         if (this.health !== pillboxSchema.health) {
+            // Store old health for damage comparison
+            const oldHealth = this.health;
             this.health = pillboxSchema.health;
             
-            // Update frame based on health
-            const frame = Math.max(0, 6 - Math.ceil(this.health));
-            this.setFrame(frame);
-            this.topSprite.setFrame(frame);
+            // Call takeDamage to update the pie chart
+            if (oldHealth > this.health) {
+                // We pass 0 as the amount since we already updated the health directly
+                this.takeDamage(0);
+            }
             
             // If health is zero, destroy the pillbox
             if (this.health <= 0) {

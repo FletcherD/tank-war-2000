@@ -25,11 +25,13 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
   
   constructor(scene: Phaser.Scene, x: number, y: number, team: number = 0) {
     // Using pillbox0 for the base sprite
-    super(scene.matter.world, x, y, 'pillbox0', 0);
+    super(scene.matter.world, x, y, 'pillbox0');
     scene.add.existing(this);
+    this.setDepth(100);
     
     // Create the top sprite that will be tinted
-    this.topSprite = scene.add.sprite(x, y, 'pillbox1', 0);
+    this.topSprite = scene.add.sprite(x, y, 'pillbox1');
+    this.topSprite.setDepth(101);
     
     // Set up pillbox physics body
     this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS);
@@ -44,7 +46,7 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
     
     // Apply team color if it's not neutral
     if (team > 0 && TEAM_COLORS[team]) {
-      this.setTint(TEAM_COLORS[team]);
+      this.topSprite.setTint(TEAM_COLORS[team]);
     }
   }
   
@@ -133,26 +135,28 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
   takeDamage(amount: number) {
     this.health -= amount;
     
-    // Update the frame based on health
-    // We have 7 frames (0-6) for each damage level
-    // Map health from 8-0 to frame 0-6
-    const baseFrame = Math.max(0, 6 - Math.ceil(this.health));
-    this.setFrame(baseFrame);
-    this.topSprite.setFrame(baseFrame);
+    // Calculate damage percentage for the pie chart
+    const maxHealth = PHYSICS.PILLBOX_HEALTH;
+    const damagePct = 1 - (this.health / maxHealth);
+    
+    // Update damage indicator pie chart
+    if (this.health < maxHealth && this.health > 0) {
+      const healthFraction = 255.0 * this.health / maxHealth;
+      this.setTint(Phaser.Display.Color.GetColor(healthFraction, healthFraction, healthFraction));
+    }
     
     if (this.health <= 0) {
-      // Destroy both sprites
-      if (this.topSprite && this.topSprite.active) {
-        this.topSprite.destroy();
-      }
       this.destroy();
     }
   }
   
   destroy() {
-    // Ensure the top sprite is destroyed when the base is destroyed
+    // Ensure all related sprites are destroyed when the base is destroyed
     if (this.topSprite && this.topSprite.active) {
       this.topSprite.destroy();
+    }
+    if (this.damageIndicator && this.damageIndicator.active) {
+      this.damageIndicator.destroy();
     }
     super.destroy();
   }
