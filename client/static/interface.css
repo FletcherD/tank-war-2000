@@ -206,7 +206,7 @@ p {
     max-width: 100%;
 	position: absolute;
 	left: 0;
-	top:62px;
+	top: 0;
 	z-index:1;
 }
 #newswire {
@@ -220,6 +220,8 @@ p {
     max-width: 100%;
     min-height: 20px;
     display: inline-block;
+    overflow:hidden;
+    white-space: nowrap;
 }
 #newswire.expanded {
     min-height: 100px;
@@ -233,7 +235,6 @@ p {
     height: 100%;
     width: 24px;
     padding:0;
-    bottom: 0;
     background-color:#444;
     content: '▼';
 }

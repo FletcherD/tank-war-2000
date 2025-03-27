@@ -200,7 +200,7 @@ export class GameUI {
     // Create expand button
     this.newswireExpandButton = document.createElement('button');
     this.newswireExpandButton.id = 'newswireExpandButton';
-    this.newswireExpandButton.textContent = '▼';
+    this.newswireExpandButton.textContent = '▲';
     this.newswireExpandButton.className = 'button';
     this.newswireExpandButton.style.pointerEvents = 'auto';
     this.newswireContainer.appendChild(this.newswireExpandButton);
@@ -210,12 +210,15 @@ export class GameUI {
       this.isNewswireExpanded = !this.isNewswireExpanded;
       if (this.isNewswireExpanded) {
         this.newswire.classList.add('expanded');
-        this.newswireExpandButton.textContent = '▲';
+        this.newswireExpandButton.textContent = '▼';
       } else {
         this.newswire.classList.remove('expanded');
-        this.newswireExpandButton.textContent = '▼';
+        this.newswireExpandButton.textContent = '▲';
       }
     };
+    
+    // Make sure scroll and resize work (needs pointer-events: auto)
+    this.newswire.style.pointerEvents = 'auto';
 
     // Update UI container position when window resizes
     window.addEventListener('resize', () => this.updateUIPosition());
@@ -433,6 +436,12 @@ export class GameUI {
     while (this.newswireText.children.length > this.maxNewswireMessages) {
       // Remove oldest message (last child)
       this.newswireText.removeChild(this.newswireText.lastChild);
+    }
+    
+    // Update the main newswire content to display at least the most recent message
+    // when not expanded
+    if (!this.isNewswireExpanded && messageElement.textContent) {
+      this.newswire.setAttribute('title', messageElement.textContent);
     }
   }
   
