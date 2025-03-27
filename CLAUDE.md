@@ -46,7 +46,8 @@ Players can build roads and walls by selecting a tile on the map with the mouse,
 - Colyseus manages creation and destruction of game rooms on the server based on players joining or leaving. When a game room is created, a ServerGameScene is as well.
 - Many game functions happen only on the server, with the client simply updating the game world based on these events. This includes bullets firing, stations being captured, pillboxes being destroyed and built, and other tiles being built.
 - Client prediction with rollback is used on the client.
-- The game world is initialized on the server, with the world map being read from a JSON file. The client initialized its game world based on the room schema received from the server.
+- The game world is initialized on the server, with the world map being read from a JSON file. The client initializes its game world based on the room schema received from the server.
+- On the client, there is a UI drawn above the game canvas. This is done using HTML elements in a separate div superimposed on the canvas. The UI functionality is implemented in UI.ts. The CSS styles for the UI are defined in interface.css. The UI includes health and ammo bars, buttons to build tiles and place pillboxes, and a message log to broadcast important game events and chat with other players.
 
 ## Documentation
 - Documentation for the Phaser game engine can be found in phaser-docs.

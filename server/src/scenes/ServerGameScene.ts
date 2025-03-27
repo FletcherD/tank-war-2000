@@ -2,7 +2,7 @@ import { GameScene } from "../../../shared/scenes/Game";
 import { ServerTank } from "../entities/ServerTank";
 import { InputData } from "../../../shared/objects/Tank";
 import { Room } from "colyseus";
-import { MyRoomState } from "../rooms/GameRoom";
+import { MyRoomState, NewswireMessage } from "../rooms/GameRoom";
 import { ServerMap } from "../scenes/ServerMap";
 import { StationSchema } from "../schemas/StationSchema";
 import { PillboxSchema } from "../schemas/PillboxSchema";
@@ -146,6 +146,15 @@ export class ServerGameScene extends GameScene {
     const tank = this.players.get(sessionId);
     if (tank) {
       tank.updateInput(input);
+    }
+  }
+  
+  /**
+   * Sends a newswire message to all clients
+   */
+  sendNewswire(message: NewswireMessage) {
+    if (this.room) {
+      this.room.broadcastNewswire(message);
     }
   }
 

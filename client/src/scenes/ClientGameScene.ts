@@ -24,6 +24,15 @@ import { ClientStation } from "../entities/ClientStation";
 import { ClientPillbox } from "../entities/ClientPillbox";
 import { ClientBullet } from "../entities/ClientBullet";
 
+// Define the newswire message type
+export interface NewswireMessage {
+  type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed';
+  playerId?: string;
+  team?: number;
+  position?: { x: number, y: number };
+  message: string;
+}
+
 export class ClientGameScene extends GameScene {
     room: Room<MyRoomState>;
 
@@ -313,6 +322,42 @@ export class ClientGameScene extends GameScene {
                     }
                 }
             });
+            
+            // Listen for newswire messages from server
+            this.room.onMessage("newswire", (message: NewswireMessage) => {
+                if (this.gameUI) {
+                    // Map message types to UI message types
+                    let messageType: 'info' | 'warning' | 'error' | 'success' = 'info';
+                    
+                    switch(message.type) {
+                        case 'station_capture':
+                            messageType = 'success';
+                            break;
+                        case 'pillbox_destroyed':
+                            messageType = 'warning';
+                            break;
+                        case 'player_join':
+                            messageType = 'info';
+                            break;
+                        case 'player_leave':
+                            messageType = 'info';
+                            break;
+                        case 'pillbox_placed':
+                            messageType = 'success';
+                            break;
+                    }
+                    
+                    this.gameUI.addNewswireMessage(message.message, messageType);
+                }
+            });
+            
+            // Add initial welcome message once UI is ready
+            setTimeout(() => {
+                if (this.gameUI) {
+                    this.gameUI.addNewswireMessage("Welcome to Tank Battle! Use the newswire to stay updated on game events.", 'info');
+                    this.gameUI.addNewswireMessage("Capture stations and build pillboxes to control the map.", 'info');
+                }
+            }, 500);
 
         } catch (e) {
             // couldn't connect

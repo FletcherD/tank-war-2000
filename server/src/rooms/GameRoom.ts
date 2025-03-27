@@ -22,6 +22,15 @@ export class MyRoomState extends Schema {
   @type({ map: BulletSchema }) bullets = new MapSchema<BulletSchema>();
 }
 
+// Define the newswire message interface
+export interface NewswireMessage {
+  type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed';
+  playerId?: string;
+  team?: number;
+  position?: { x: number, y: number };
+  message: string;
+}
+
 export class GameRoom extends Room<MyRoomState> {
   state = new MyRoomState();
   fixedTimeStep = 1000 / 60;
@@ -80,6 +89,18 @@ export class GameRoom extends Room<MyRoomState> {
           y: data.y,
           reason: success ? "Pillbox placed successfully" : "Failed to place pillbox"
         });
+        
+        // If successful, send newswire message
+        if (success) {
+          const teamName = tank.team === 1 ? "Blue" : "Red";
+          this.broadcastNewswire({
+            type: 'pillbox_placed',
+            playerId: client.sessionId,
+            team: tank.team,
+            position: { x: pillboxX, y: pillboxY },
+            message: `Player ${client.sessionId.substr(0, 4)} from Team ${teamName} placed a pillbox.`
+          });
+        }
       }
     });
 
@@ -126,6 +147,13 @@ export class GameRoom extends Room<MyRoomState> {
     });
   }
 
+  /**
+   * Broadcasts a newswire message to all connected clients
+   */
+  broadcastNewswire(message: NewswireMessage) {
+    this.broadcast("newswire", message);
+  }
+
   onJoin(client: Client, options: any) {
     console.log(client.sessionId, "joined!");
 
@@ -162,16 +190,38 @@ export class GameRoom extends Room<MyRoomState> {
     this.state.players.set(client.sessionId, playerState);
     
     console.log(`Player ${client.sessionId} joined at position ${spawnPos.x.toFixed(2)}, ${spawnPos.y.toFixed(2)}, team: ${team}`);
+    
+    // Send newswire message for player join
+    const teamName = team === 1 ? "Blue" : "Red";
+    this.broadcastNewswire({
+      type: 'player_join',
+      playerId: client.sessionId,
+      team: team,
+      position: spawnPos,
+      message: `Player ${client.sessionId.substr(0, 4)} joined Team ${teamName}.`
+    });
   }
 
   onLeave(client: Client, consented: boolean) {
     console.log(client.sessionId, "left!");
+    
+    // Get player team before removing
+    const team = this.state.players.get(client.sessionId)?.tank.team;
+    const teamName = team === 1 ? "Blue" : team === 2 ? "Red" : "Unknown";
     
     // Remove player from game world
     this.gameScene.removePlayer(client.sessionId);
     
     // Remove player from state
     this.state.players.delete(client.sessionId);
+    
+    // Send newswire message for player leave
+    this.broadcastNewswire({
+      type: 'player_leave',
+      playerId: client.sessionId,
+      team: team,
+      message: `Player ${client.sessionId.substr(0, 4)} from Team ${teamName} left the game.`
+    });
   }
 
   onDispose() {

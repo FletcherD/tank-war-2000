@@ -1,6 +1,6 @@
 # Tank War
 
-A 2D tank game where players team up to fight for control of the map. Players drive their tank and try to destroy the enemy team and capture their stations. Players can collect resources and use them to build structures on the map to help their team and hinder the enemy. Players can build walls to block the enemy and protect their stations, roads to allow faster travel, and pillboxes which automatically target the nearest enemy. Ammunition is limited, and players must stop to resupply at a station. Strategy and teamwork are key to success.
+Tank War is a 2D tank game where players team up to fight for control of the map. Players drive their tank and try to destroy the enemy team and capture their stations. Players can collect resources and use them to build structures on the map to help their team and hinder the enemy. Players can build walls to block the enemy and protect their stations, roads to allow faster travel, and pillboxes which automatically target the nearest enemy. Ammunition is limited, and players must stop to resupply at a station. Strategy and teamwork are key to success.
 
 # Game Mechanics
 

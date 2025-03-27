@@ -13,6 +13,14 @@ export class GameUI {
   private messageElement: HTMLDivElement;
   private messageTimeout: number | null = null;
   private gameScene: ClientGameScene;
+  
+  // Newswire elements
+  private newswireContainer: HTMLDivElement;
+  private newswire: HTMLDivElement;
+  private newswireText: HTMLDivElement;
+  private newswireExpandButton: HTMLButtonElement;
+  private isNewswireExpanded: boolean = false;
+  private maxNewswireMessages: number = 20;
 
   constructor(gameScene: ClientGameScene) {
     this.gameScene = gameScene;
@@ -173,6 +181,41 @@ export class GameUI {
     this.messageElement.style.display = 'none';
     this.messageElement.style.zIndex = '20';
     this.uiContainer.appendChild(this.messageElement);
+
+    // Create newswire container at the bottom of the screen
+    this.newswireContainer = document.createElement('div');
+    this.newswireContainer.id = 'newswireContainer';
+    this.uiContainer.appendChild(this.newswireContainer);
+    
+    // Create newswire
+    this.newswire = document.createElement('div');
+    this.newswire.id = 'newswire';
+    this.newswireContainer.appendChild(this.newswire);
+    
+    // Create newswire text container
+    this.newswireText = document.createElement('div');
+    this.newswireText.id = 'newswireText';
+    this.newswire.appendChild(this.newswireText);
+    
+    // Create expand button
+    this.newswireExpandButton = document.createElement('button');
+    this.newswireExpandButton.id = 'newswireExpandButton';
+    this.newswireExpandButton.textContent = '▼';
+    this.newswireExpandButton.className = 'button';
+    this.newswireExpandButton.style.pointerEvents = 'auto';
+    this.newswireContainer.appendChild(this.newswireExpandButton);
+    
+    // Add click handler to expand/collapse the newswire
+    this.newswireExpandButton.onclick = () => {
+      this.isNewswireExpanded = !this.isNewswireExpanded;
+      if (this.isNewswireExpanded) {
+        this.newswire.classList.add('expanded');
+        this.newswireExpandButton.textContent = '▲';
+      } else {
+        this.newswire.classList.remove('expanded');
+        this.newswireExpandButton.textContent = '▼';
+      }
+    };
 
     // Update UI container position when window resizes
     window.addEventListener('resize', () => this.updateUIPosition());
@@ -367,5 +410,36 @@ export class GameUI {
       this.messageElement.style.display = 'none';
       this.messageTimeout = null;
     }, duration);
+  }
+  
+  /**
+   * Adds a message to the newswire
+   * @param message The message to add to the newswire
+   * @param type Optional type for styling (info, warning, error, success)
+   */
+  public addNewswireMessage(message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info') {
+    // Create a message element
+    const messageElement = document.createElement('div');
+    messageElement.className = `newswire-message ${type}`;
+    
+    // Add timestamp
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    messageElement.textContent = `[${timestamp}] ${message}`;
+    
+    // Add to newswire at the beginning (newest messages at the top)
+    this.newswireText.insertBefore(messageElement, this.newswireText.firstChild);
+    
+    // Limit the number of messages
+    while (this.newswireText.children.length > this.maxNewswireMessages) {
+      // Remove oldest message (last child)
+      this.newswireText.removeChild(this.newswireText.lastChild);
+    }
+  }
+  
+  /**
+   * Clears all messages from the newswire
+   */
+  public clearNewswire() {
+    this.newswireText.innerHTML = '';
   }
 }

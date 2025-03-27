@@ -2,6 +2,8 @@ import { Station } from "../../../shared/objects/Station";
 import { StationSchema } from "../schemas/StationSchema";
 import { TEAM_COLORS } from "../../../shared/constants";
 import { PHYSICS } from "../../../shared/constants";
+import { ServerGameScene } from "../scenes/ServerGameScene";
+import { NewswireMessage } from "../rooms/GameRoom";
 
 export class ServerStation extends Station {
   // Schema to be synced with clients
@@ -59,16 +61,37 @@ export class ServerStation extends Station {
   
   // Override capture function for server-side logic
   override capture(newTeam: number): void {
-    console.log(`Station ${this.schema.id} captured by team ${newTeam}, from ${this.team}`);
-    this.team = newTeam;
+    // Only broadcast if team actually changed
+    const oldTeam = this.team;
     
-    // Update the top sprite tint
-    if (this.team > 0 && TEAM_COLORS[this.team]) {
-      this.topSprite.setTint(TEAM_COLORS[this.team]);
-    } else {
-      this.topSprite.clearTint();
+    if (oldTeam !== newTeam) {
+      console.log(`Station ${this.schema.id} captured by team ${newTeam}, from ${oldTeam}`);
+      this.team = newTeam;
+      
+      // Update the top sprite tint
+      if (this.team > 0 && TEAM_COLORS[this.team]) {
+        this.topSprite.setTint(TEAM_COLORS[this.team]);
+      } else {
+        this.topSprite.clearTint();
+      }
+      
+      this.updateSchema();
+      
+      // Send newswire message for station capture
+      const gameScene = this.scene as ServerGameScene;
+      if (gameScene.room) {
+        const oldTeamName = oldTeam === 0 ? "Neutral" : oldTeam === 1 ? "Blue" : "Red";
+        const newTeamName = newTeam === 0 ? "Neutral" : newTeam === 1 ? "Blue" : "Red";
+        
+        const message: NewswireMessage = {
+          type: 'station_capture',
+          team: newTeam,
+          position: { x: this.x, y: this.y },
+          message: `Station captured by Team ${newTeamName} from Team ${oldTeamName}!`
+        };
+        
+        gameScene.room.broadcastNewswire(message);
+      }
     }
-    
-    this.updateSchema();
   }
 }

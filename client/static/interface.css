@@ -258,6 +258,25 @@ p {
     display: inline-block;
 }
 
+/* Newswire message types */
+.newswire-message {
+    margin: 2px 0;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+.newswire-message.info {
+    color: #ffffff;
+}
+.newswire-message.success {
+    color: #4caf50;
+}
+.newswire-message.warning {
+    color: #ff9800;
+}
+.newswire-message.error {
+    color: #f44336;
+}
+
 /* Panel for showing health & ammo */
 #statusContainer {	 
 	border-style: outset;

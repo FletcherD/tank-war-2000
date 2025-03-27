@@ -3,6 +3,7 @@ import { PillboxSchema } from "../schemas/PillboxSchema";
 import { ServerGameScene } from "../scenes/ServerGameScene";
 import { Tank } from "../../../shared/objects/Tank";
 import { VISUALS, PHYSICS, COLLISION_CATEGORIES } from "../../../shared/constants";
+import { NewswireMessage } from "../rooms/GameRoom";
 
 export class ServerPillbox extends Pillbox {
     // Schema to be synced with clients
@@ -77,6 +78,21 @@ export class ServerPillbox extends Pillbox {
         this.updateSchema();
         
         console.log(`Pillbox converted to pickup at (${this.x}, ${this.y})`);
+        
+        // Send newswire message for pillbox destruction
+        const gameScene = this.scene as ServerGameScene;
+        if (gameScene.room) {
+            const teamName = this.team === 0 ? "Neutral" : this.team === 1 ? "Blue" : "Red";
+            
+            const message: NewswireMessage = {
+                type: 'pillbox_destroyed',
+                team: this.team,
+                position: { x: this.x, y: this.y },
+                message: `A ${teamName} pillbox was destroyed!`
+            };
+            
+            gameScene.room.broadcastNewswire(message);
+        }
     }
     
     // Override destroy to handle removal based on state
