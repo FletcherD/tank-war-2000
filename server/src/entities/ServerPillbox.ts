@@ -41,11 +41,17 @@ export class ServerPillbox extends Pillbox {
     // Convert from placed to pickup state
     convertToPickup() {
         console.log("Converting pillbox to pickup state");
+        
         // Update schema state
         this.schema.state = "pickup";
         
-        // Change collider properties for pickup state
-        // Remove existing body
+        // Completely rebuild the physics body
+        // First remove existing body to avoid lingering physics objects
+        if (this.body) {
+            this.scene.matter.world.remove(this.body);
+        }
+        
+        // Reset the body completely
         this.setBody(null);
         
         // Create a smaller hitbox for the pickup
@@ -65,8 +71,12 @@ export class ServerPillbox extends Pillbox {
         // Make sure it doesn't get destroyed
         this.health = 1;
         
-        // Update schema
+        // Update schema - ensure position is accurate
+        this.schema.x = this.x;
+        this.schema.y = this.y;
         this.updateSchema();
+        
+        console.log(`Pillbox converted to pickup at (${this.x}, ${this.y})`);
     }
     
     // Override destroy to handle removal based on state
@@ -78,7 +88,21 @@ export class ServerPillbox extends Pillbox {
             return;
         }
         
-        // For other states, perform normal destruction
+        // For held state or when explicitly destroying a pickup
+        if (this.body) {
+            // Ensure we completely remove the physics body from the world
+            this.scene.matter.world.remove(this.body);
+        }
+        
+        console.log(`Pillbox destroyed in ${this.schema.state} state at (${this.x}, ${this.y})`);
+        
+        // For room state cleanup, if this is a held pillbox being destroyed
+        const scene = this.scene as ServerGameScene;
+        if (scene.room && scene.room.state.pillboxes.has(this.schema.id)) {
+            scene.room.state.pillboxes.delete(this.schema.id);
+        }
+        
+        // Perform normal destruction for the sprite and any remaining components
         super.destroy();
     }
     

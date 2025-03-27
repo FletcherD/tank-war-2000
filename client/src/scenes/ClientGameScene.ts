@@ -139,10 +139,17 @@ export class ClientGameScene extends GameScene {
         
         // Handle pillboxes
         $(this.room.state).pillboxes.onAdd((pillboxSchema, pillboxId) => {
-            console.log(`Pillbox added: ${pillboxId} at (${pillboxSchema.x}, ${pillboxSchema.y}), team: ${pillboxSchema.team}, health: ${pillboxSchema.health}`);
+            console.log(`Pillbox added: ${pillboxId} at (${pillboxSchema.x}, ${pillboxSchema.y}), team: ${pillboxSchema.team}, health: ${pillboxSchema.health}, state: ${pillboxSchema.state}`);
+            
+            // Don't create a visual pillbox for "held" state
+            if (pillboxSchema.state === "held") {
+                console.log(`Skipping visual creation for held pillbox ${pillboxId}`);
+                return;
+            }
             
             // Create a client pillbox at the given position
             const pillbox = new ClientPillbox(this, pillboxSchema.x, pillboxSchema.y, pillboxSchema.team);
+            pillbox.schemaId = pillboxId;
             this.pillboxes.push(pillbox);
             
             // Initial update from server schema
@@ -150,8 +157,42 @@ export class ClientGameScene extends GameScene {
             
             // Listen for changes to this pillbox
             $(pillboxSchema).onChange(() => {
+                // If state changes to "held", remove the pillbox from the scene
+                if (pillboxSchema.state === "held" && pillbox.state !== "held") {
+                    console.log(`Pillbox ${pillboxId} became held, removing from scene`);
+                    
+                    // Find and remove from pillboxes array
+                    const pillboxIndex = this.pillboxes.indexOf(pillbox);
+                    if (pillboxIndex !== -1) {
+                        this.pillboxes.splice(pillboxIndex, 1);
+                    }
+                    
+                    // Destroy the Phaser object
+                    pillbox.destroy();
+                    return;
+                }
+                
+                // For other state changes, update normally
                 pillbox.updateFromServer(pillboxSchema);
             });
+        });
+        
+        // Handle pillbox removal
+        $(this.room.state).pillboxes.onRemove((pillboxSchema, pillboxId) => {
+            console.log(`Pillbox removed: ${pillboxId}`);
+            
+            // Find and remove the pillbox
+            const pillbox = this.pillboxes.find(p => p.schemaId === pillboxId);
+            if (pillbox) {
+                // Remove from array
+                const pillboxIndex = this.pillboxes.indexOf(pillbox);
+                if (pillboxIndex !== -1) {
+                    this.pillboxes.splice(pillboxIndex, 1);
+                }
+                
+                // Destroy the Phaser object
+                pillbox.destroy();
+            }
         });
 
         $(this.room.state).players.onAdd((player, sessionId) => {

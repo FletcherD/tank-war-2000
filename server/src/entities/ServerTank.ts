@@ -69,6 +69,20 @@ export class ServerTank extends Tank {
     pillbox.updateSchema();
     
     console.log(`Tank ${this.sessionId} picked up pillbox. Now has ${this.schema.pillboxCount} pillboxes.`);
+    
+    // We need to keep the pillbox schema in the state for syncing to clients, 
+    // but we should destroy the actual physics object to avoid having invisible
+    // bodies left in the scene
+    if (pillbox.body) {
+      pillbox.scene.matter.world.remove(pillbox.body);
+    }
+    
+    // Remove from the scene but keep the schema
+    const scene = this.scene as ServerGameScene;
+    const pillboxIndex = scene.pillboxes.indexOf(pillbox);
+    if (pillboxIndex !== -1) {
+      scene.pillboxes.splice(pillboxIndex, 1);
+    }
   }
   
   // Create a pillbox at the specified location

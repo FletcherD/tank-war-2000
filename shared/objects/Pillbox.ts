@@ -73,7 +73,15 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
     // Ensure all related sprites are destroyed when the base is destroyed
     if (this.topSprite && this.topSprite.active) {
       this.topSprite.destroy();
+      this.topSprite = null;
     }
+    
+    // Make sure the physics body is properly removed from the world
+    if (this.body) {
+      this.scene.matter.world.remove(this.body);
+    }
+    
+    // Call parent destroy method
     super.destroy();
   }
 }

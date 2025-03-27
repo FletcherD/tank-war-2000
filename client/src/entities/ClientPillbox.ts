@@ -55,6 +55,9 @@ export class ClientPillbox extends Pillbox {
     // State property to track client-side state
     state: string = "placed";
     
+    // ID from the schema for tracking
+    schemaId: string = "";
+    
     // Update pillbox from server schema
     updateFromServer(pillboxSchema: PillboxSchema) {
         console.log("Updating pillbox:", pillboxSchema);
@@ -108,47 +111,101 @@ export class ClientPillbox extends Pillbox {
         console.log(`Pillbox state changing from ${oldState} to ${newState}`);
         
         if (newState === "pickup") {
-            // Change to pickup appearance
-            // Use pillbox1.png tinted green for pickup state
-            this.clearTint(); // Clear any tint on base sprite
+            // Completely rebuild the object for pickup state
             
-            // Set the top sprite to green
-            if (this.topSprite) {
-                this.topSprite.setTint(0x00ff00); // Green tint
+            // First destroy any existing physics body to prevent lingering objects
+            if (this.body) {
+                this.scene.matter.world.remove(this.body);
+                this.setBody(null);
             }
             
-            // Make sure physics body matches server
+            // Change to pickup appearance
+            this.setVisible(false);
+            
+            // Handle the top sprite - destroy and recreate it to ensure clean state
+            if (this.topSprite && this.topSprite.active) {
+                this.topSprite.destroy();
+            }
+            
+            // Create a new top sprite with green tint
+            this.topSprite = this.scene.add.sprite(this.x, this.y, 'pillbox1');
+            this.topSprite.setDepth(101);
+            this.topSprite.setTint(0x00ff00); // Green tint
+            
+            // Create new physics body for pickup
             this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS / 2);
             this.setStatic(false);
             this.setCollidesWith([COLLISION_CATEGORIES.PLAYER]);
             this.setCollisionCategory(COLLISION_CATEGORIES.PICKUP);
+            this.setFriction(0.8);
+            this.setFrictionAir(0.2);
+            
+            console.log(`Client pillbox converted to pickup at (${this.x}, ${this.y})`);
         }
         else if (newState === "held") {
+            // First clean up any existing physics body and sprites
+            if (this.body) {
+                this.scene.matter.world.remove(this.body);
+                this.setBody(null);
+            }
+            
             // Hide the pillbox when it's held by a player
             this.setVisible(false);
-            if (this.topSprite) {
+            
+            if (this.topSprite && this.topSprite.active) {
                 this.topSprite.setVisible(false);
             }
         }
         else if (newState === "placed") {
             // Return to normal appearance if coming from another state
-            this.setVisible(true);
-            if (this.topSprite) {
-                this.topSprite.setVisible(true);
-                
-                // Reset tint based on team
-                if (this.team > 0 && TEAM_COLORS[this.team]) {
-                    this.topSprite.setTint(TEAM_COLORS[this.team]);
-                } else {
-                    this.topSprite.clearTint();
-                }
+            
+            // First clean up any existing physics body to prevent ghosts
+            if (this.body) {
+                this.scene.matter.world.remove(this.body);
+                this.setBody(null);
             }
             
-            // Restore normal hitbox
+            // Set visibility
+            this.setVisible(true);
+            
+            // Handle the top sprite - destroy and recreate it to ensure clean state
+            if (this.topSprite && this.topSprite.active) {
+                this.topSprite.destroy();
+            }
+            
+            // Create a fresh top sprite
+            this.topSprite = this.scene.add.sprite(this.x, this.y, 'pillbox1');
+            this.topSprite.setDepth(101);
+            this.topSprite.setVisible(true);
+            
+            // Set tint based on team
+            if (this.team > 0 && TEAM_COLORS[this.team]) {
+                this.topSprite.setTint(TEAM_COLORS[this.team]);
+            }
+            
+            // Create new physics body for placed state
             this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS);
             this.setStatic(true);
             this.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER, COLLISION_CATEGORIES.PROJECTILE]);
             this.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
         }
+    }
+    
+    // Override destroy to ensure complete cleanup
+    override destroy() {
+        // Properly destroy the topSprite
+        if (this.topSprite && this.topSprite.active) {
+            this.topSprite.destroy();
+        }
+        
+        // Make sure the physics body is removed
+        if (this.body) {
+            this.scene.matter.world.remove(this.body);
+        }
+        
+        console.log(`Client pillbox destroyed in ${this.state} state at (${this.x}, ${this.y})`);
+        
+        // Call parent destroy method
+        super.destroy();
     }
 }
