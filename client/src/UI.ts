@@ -217,8 +217,26 @@ export class GameUI {
     const hasSelection = this.gameScene.selectedTiles.length > 0;
     const hasPillboxes = this.gameScene.currentPlayer && this.gameScene.currentPlayer.pillboxCount > 0;
     
+    // Check if the selection is valid for a pillbox (2x2 area of valid tiles)
+    let isValidSelection = false;
     if (hasSelection && hasPillboxes && !this.gameScene.isBuilding) {
+      isValidSelection = (this.gameScene.gameMap as any).isSelectionValidForPillbox(this.gameScene.selectedTiles);
+      
+      // Show button but make it disabled if selection is invalid
       this.placePillboxButton.style.display = 'block';
+      
+      if (isValidSelection) {
+        this.placePillboxButton.style.backgroundColor = '#9c27b0'; // Purple
+        this.placePillboxButton.style.opacity = '1';
+        this.placePillboxButton.style.cursor = 'pointer';
+        this.placePillboxButton.disabled = false;
+      } else {
+        // Grey out the button if selection is invalid
+        this.placePillboxButton.style.backgroundColor = '#888888'; // Grey
+        this.placePillboxButton.style.opacity = '0.6';
+        this.placePillboxButton.style.cursor = 'not-allowed';
+        this.placePillboxButton.disabled = true;
+      }
     } else if (!hasSelection || this.gameScene.isBuilding) {
       this.placePillboxButton.style.display = 'none';
     }

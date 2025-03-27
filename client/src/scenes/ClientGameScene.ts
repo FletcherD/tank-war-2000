@@ -265,7 +265,9 @@ export class ClientGameScene extends GameScene {
                     this.clearSelection();
                 } else {
                     if (this.gameUI) {
-                        this.gameUI.showMessage("Failed to place pillbox.");
+                        // Display the reason for failure if provided
+                        const message = response.reason ? response.reason : "Failed to place pillbox.";
+                        this.gameUI.showMessage(message);
                     }
                 }
             });
@@ -378,7 +380,8 @@ export class ClientGameScene extends GameScene {
         const tileXY = this.gameMap.groundLayer.worldToTileXY(pointer.worldX, pointer.worldY);
         this.selectionEndTile = { x: tileXY.x, y: tileXY.y };
         
-        // Limit selection to 2x2 tiles
+        // For pillbox placement, we need exactly a 2x2 area
+        // Force the end tile to create a 1x1 or 2x2 selection
         if (Math.abs(this.selectionEndTile.x - this.selectionStartTile.x) > 1) {
             this.selectionEndTile.x = this.selectionStartTile.x + 
                 (this.selectionEndTile.x > this.selectionStartTile.x ? 1 : -1);
@@ -548,13 +551,23 @@ export class ClientGameScene extends GameScene {
             return;
         }
         
-        // For simplicity, we'll just use the first selected tile
-        const tile = this.selectedTiles[0];
+        // Check if the selection is valid for a pillbox (must be exactly 2x2)
+        const isValid = (this.gameMap as any).isSelectionValidForPillbox(this.selectedTiles);
+        if (!isValid) {
+            if (this.gameUI) {
+                this.gameUI.showMessage("Invalid selection. Pillbox requires a 2x2 area of valid land tiles.");
+            }
+            return;
+        }
+        
+        // Find the top-left tile of the selection to use as the anchor point
+        const minX = Math.min(...this.selectedTiles.map(t => t.x));
+        const minY = Math.min(...this.selectedTiles.map(t => t.y));
         
         // Convert tile coordinates to world coordinates
-        const worldPos = this.gameMap.groundLayer.tileToWorldXY(tile.x, tile.y);
-        const centerX = worldPos.x + 16; // Center of the tile
-        const centerY = worldPos.y + 16;
+        const worldPos = this.gameMap.groundLayer.tileToWorldXY(minX, minY);
+        const centerX = worldPos.x + 32; // Center of the 2x2 area
+        const centerY = worldPos.y + 32; 
         
         // Calculate distance from player to selection
         const distance = Phaser.Math.Distance.Between(
@@ -564,8 +577,13 @@ export class ClientGameScene extends GameScene {
         
         // Check if player is close enough
         if (distance <= 100) { // Using the same distance as for building roads
-            // Send placement request to server
-            this.room.send("placePillbox", { x: centerX, y: centerY });
+            // Send placement request to server with the top-left tile coordinates
+            this.room.send("placePillbox", { 
+                x: centerX, 
+                y: centerY, 
+                tileX: minX, 
+                tileY: minY 
+            });
             
             // Show message
             if (this.gameUI) {
@@ -574,7 +592,7 @@ export class ClientGameScene extends GameScene {
         } else {
             // Show message that player is too far
             if (this.gameUI) {
-                this.gameUI.showMessage("Too far to place pillbox! Move closer to the selected tile.");
+                this.gameUI.showMessage("Too far to place pillbox! Move closer to the selected area.");
             }
         }
     }

@@ -374,4 +374,70 @@ export class GameMap {
             }
         }
     }
+    
+    // Check if a 2x2 area is valid for pillbox placement
+    isPillboxPlacementValid(startX: number, startY: number): boolean {
+        // A valid pillbox placement requires:
+        // 1. A 2x2 area of tiles
+        // 2. None of the tiles can be water or wall
+        // 3. None of the tiles can have collision
+        
+        // Check all 4 tiles in the 2x2 area
+        for (let dy = 0; dy < 2; dy++) {
+            for (let dx = 0; dx < 2; dx++) {
+                const x = startX + dx;
+                const y = startY + dy;
+                
+                // Get the tile at this position
+                const groundTile = this.groundLayer.getTileAt(x, y);
+                const decorationTile = this.decorationLayer.getTileAt(x, y);
+                
+                // Check ground tile
+                if (groundTile) {
+                    // Check if it's water (tileIndex 1*64 = 64)
+                    if (this.getBaseTileType(groundTile) === 64) {
+                        return false;
+                    }
+                    
+                    // Check if it has collision
+                    if (groundTile.properties?.hasCollision) {
+                        return false;
+                    }
+                }
+                
+                // Check decoration tile
+                if (decorationTile) {
+                    // Check if it has collision
+                    if (decorationTile.properties?.hasCollision) {
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        // If we made it here, the area is valid
+        return true;
+    }
+    
+    // Check if the selection is a valid 2x2 area for pillbox placement
+    isSelectionValidForPillbox(selectedTiles: { x: number, y: number }[]): boolean {
+        // Check if we have exactly 4 tiles
+        if (selectedTiles.length !== 4) {
+            return false;
+        }
+        
+        // Find the min and max x and y to see if we have a 2x2 area
+        const minX = Math.min(...selectedTiles.map(t => t.x));
+        const maxX = Math.max(...selectedTiles.map(t => t.x));
+        const minY = Math.min(...selectedTiles.map(t => t.y));
+        const maxY = Math.max(...selectedTiles.map(t => t.y));
+        
+        // Check if it's a 2x2 area
+        if (maxX - minX !== 1 || maxY - minY !== 1) {
+            return false;
+        }
+        
+        // Check if all 4 tiles are valid for placement
+        return this.isPillboxPlacementValid(minX, minY);
+    }
 }

@@ -48,13 +48,33 @@ export class GameRoom extends Room<MyRoomState> {
     });
     
     // Handle pillbox placement requests
-    this.onMessage("placePillbox", (client, data: { x: number, y: number }) => {
+    this.onMessage("placePillbox", (client, data: { x: number, y: number, tileX: number, tileY: number }) => {
       const tank = this.gameScene.players.get(client.sessionId);
       if (tank) {
-        // Validate position for placing pillbox
+        // First validate that the 2x2 area is valid for pillbox placement
+        const isValid = (this.gameScene.gameMap as any).isPillboxPlacementValid(data.tileX, data.tileY);
+        
+        if (!isValid) {
+          // If the area is not valid, inform the client
+          this.send(client, "pillboxPlaced", { 
+            success: false, 
+            x: data.x, 
+            y: data.y,
+            reason: "Invalid placement area. Pillboxes require a 2x2 area of land."
+          });
+          return;
+        }
+        
+        // Validate position for placing pillbox and attempt to place it
         const success = tank.placePillbox(data.x, data.y);
+        
         // Inform client of success/failure
-        this.send(client, "pillboxPlaced", { success, x: data.x, y: data.y });
+        this.send(client, "pillboxPlaced", { 
+          success, 
+          x: data.x, 
+          y: data.y,
+          reason: success ? "Pillbox placed successfully" : "Failed to place pillbox"
+        });
       }
     });
 
