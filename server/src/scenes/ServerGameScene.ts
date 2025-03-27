@@ -9,6 +9,7 @@ import { PillboxSchema } from "../schemas/PillboxSchema";
 import { TEAM_COLORS, PHYSICS } from "../../../shared/constants";
 import { ServerPillbox } from "../entities/ServerPillbox";
 import { ServerBullet } from "../entities/ServerBullet";
+import { ServerStation } from "../entities/ServerStation";
 
 export class ServerGameScene extends GameScene {
   // Map of players by session ID
@@ -56,20 +57,14 @@ export class ServerGameScene extends GameScene {
     if (mapData.stations) {
         console.log("Adding stations from map data:", mapData.stations);
         const stationLocations = mapData.stations;
+        
         for (let i = 0; i < stationLocations.length; i++) {
             const location = stationLocations[i];
             const worldLocation = this.gameMap.groundLayer.tileToWorldXY(location[0]*2+1, location[1]*2+1);
-            const station = this.addStation(worldLocation.x, worldLocation.y, 0); // Neutral station initially
+            const station = this.addStation(worldLocation.x, worldLocation.y, "stn_" + i.toString(), 0); // Neutral station initially
             
-            // Create and add station schema
-            const stationSchema = new StationSchema();
-            stationSchema.x = station.x;
-            stationSchema.y = station.y;
-            stationSchema.team = station.team;
-            stationSchema.id = `station_${i}`;
-            
-            // Add to room state
-            this.room.state.stations.set(stationSchema.id, stationSchema);
+            // Add schema to room state
+            this.room.state.stations.set(station.schema.id, station.schema);
         }
         
         // Assign one random station to each team
@@ -80,25 +75,13 @@ export class ServerGameScene extends GameScene {
             
             // Assign team 1 station
             const team1StationIndex = indices[0];
-            this.stations[team1StationIndex].team = 1;
-            this.stations[team1StationIndex].topSprite.setTint(TEAM_COLORS[1]);
-            
-            // Update schema
-            const team1StationId = `station_${team1StationIndex}`;
-            if (this.room.state.stations.has(team1StationId)) {
-                this.room.state.stations.get(team1StationId).team = 1;
-            }
+            const station1 = this.stations[team1StationIndex] as ServerStation;
+            station1.capture(1); // Use capture method
             
             // Assign team 2 station
             const team2StationIndex = indices[1];
-            this.stations[team2StationIndex].team = 2;
-            this.stations[team2StationIndex].topSprite.setTint(TEAM_COLORS[2]);
-            
-            // Update schema
-            const team2StationId = `station_${team2StationIndex}`;
-            if (this.room.state.stations.has(team2StationId)) {
-                this.room.state.stations.get(team2StationId).team = 2;
-            }
+            const station2 = this.stations[team2StationIndex] as ServerStation;
+            station2.capture(2); // Use capture method
             
             console.log(`Assigned team stations: Team 1 at index ${team1StationIndex}, Team 2 at index ${team2StationIndex}`);
         }
@@ -181,6 +164,30 @@ export class ServerGameScene extends GameScene {
   createBulletAt(x: number, y: number, angle: number, ownerId: string = "") {
     return this.createBullet(x, y, angle, ownerId);
   }
+
+
+  addStation(x: number, y: number, id: string, team: number = 0): ServerStation {
+    const station = new ServerStation(this, x, y, id, team);
+    this.stations.push(station);
+    
+    // Add to team stations list
+    if (!this.teamStations[team]) {
+      this.teamStations[team] = [];
+    }
+    this.teamStations[team].push(station);
+    
+    return station;
+  }
+  
+  getRandomStationForTeam(team: number): ServerStation | null {
+    const teamStations = this.teamStations[team];
+    if (!teamStations || teamStations.length === 0) {
+      return null;
+    }
+    
+    const randomIndex = Phaser.Math.Between(0, teamStations.length - 1);
+    return teamStations[randomIndex];
+  }
   
   update(time: number, delta: number): void {
     super.update(time, delta);
@@ -194,6 +201,13 @@ export class ServerGameScene extends GameScene {
     this.pillboxes.forEach(pillbox => {
       if (pillbox instanceof ServerPillbox) {
         pillbox.updateSchema();
+      }
+    });
+    
+    // Update schemas for all ServerStation instances
+    this.stations.forEach(station => {
+      if (station instanceof ServerStation) {
+        station.updateSchema();
       }
     });
     

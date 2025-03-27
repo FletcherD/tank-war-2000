@@ -41,28 +41,6 @@ export class GameScene extends Phaser.Scene {
       return pillbox;
     }
     
-    addStation(x: number, y: number, team: number = 0): Station {
-      const station = new Station(this, x, y, team);
-      this.stations.push(station);
-      
-      // Add to team stations list
-      if (!this.teamStations[team]) {
-        this.teamStations[team] = [];
-      }
-      this.teamStations[team].push(station);
-      
-      return station;
-    }
-    
-    getRandomStationForTeam(team: number): Station | null {
-      const teamStations = this.teamStations[team];
-      if (!teamStations || teamStations.length === 0) {
-        return null;
-      }
-      
-      const randomIndex = Phaser.Math.Between(0, teamStations.length - 1);
-      return teamStations[randomIndex];
-    }
 
     async create() {
         // Set up collision event handler
@@ -145,9 +123,9 @@ export class GameScene extends Phaser.Scene {
             const bodyA = pair.bodyA;
             const bodyB = pair.bodyB;
             
-            // One object is Tank and one is Wall - determine which is which
+            // First, check for bullet collisions
             let bullet: Bullet | null = null;
-            let otherBody: Phaser.GameObjects.GameObject | null = null;
+            let otherBody: any = null;
             
             if (bodyA.gameObject instanceof Bullet) {
                 bullet = bodyA.gameObject as Bullet;
@@ -156,6 +134,7 @@ export class GameScene extends Phaser.Scene {
                 bullet = bodyB.gameObject as Bullet;
                 otherBody = bodyA;
             }
+            
             if (bullet) {
                 if (otherBody.gameObject instanceof Tank) {
                     const tank = otherBody.gameObject as Tank;
@@ -167,6 +146,32 @@ export class GameScene extends Phaser.Scene {
                     bullet.destroy();
                 } else {
                     this.handleWallBulletCollision(bullet, otherBody);
+                }
+                continue; // Skip to next collision pair after handling bullet
+            }
+            
+            // Now check for tank-station collisions (no bullets involved)
+            let tank: Tank | null = null;
+            let station: Station | null = null;
+            
+            if (bodyA.gameObject instanceof Tank) {
+                tank = bodyA.gameObject as Tank;
+                if (bodyB.gameObject instanceof Station) {
+                    station = bodyB.gameObject as Station;
+                }
+            } else if (bodyB.gameObject instanceof Tank) {
+                tank = bodyB.gameObject as Tank;
+                if (bodyA.gameObject instanceof Station) {
+                    station = bodyA.gameObject as Station;
+                }
+            }
+            
+            // Handle tank-station collision (station capture)
+            if (tank && station) {
+                // Only capture if tank and station are on different teams
+                if (tank.team !== station.team) {
+                    // Call the station's capture method (will be implemented on server)
+                    station.capture(tank.team);
                 }
             }
         }

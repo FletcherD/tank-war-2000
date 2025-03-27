@@ -18,7 +18,10 @@ export const PHYSICS = {
   PILLBOX_DETECTION_RANGE: 256, // pixels
   PILLBOX_FIRE_COOLDOWN: 1000, // milliseconds
   PILLBOX_HEALTH: 8,
-  PILLBOX_HITBOX_RADIUS: 14, // pixels
+  PILLBOX_HITBOX_RADIUS: 16, // pixels
+
+  // Station
+  STATION_CAPTURE_RANGE: 16, // pixels
 
   // Game timing
   FIXED_TIMESTEP: 1000 / 60, // 60 FPS

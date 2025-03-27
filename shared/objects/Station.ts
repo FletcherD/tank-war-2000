@@ -19,7 +19,9 @@ export class Station extends Phaser.Physics.Matter.Sprite {
     this.setStatic(true);
     
     // Set collision category and what it collides with
-    this.setCollidesWith([]);
+    // Allow collisions with tanks (PLAYER category) to enable station capture
+    this.setCollisionCategory(COLLISION_CATEGORIES.PICKUP);
+    this.setCollidesWith([COLLISION_CATEGORIES.PLAYER]);
     
     // Set team
     this.team = team;
@@ -31,11 +33,11 @@ export class Station extends Phaser.Physics.Matter.Sprite {
   }
   
   preUpdate(time: number, delta: number) {
-    // Make sure the top sprite follows the base sprite
-    if (this.topSprite && this.topSprite.active) {
-      this.topSprite.x = this.x;
-      this.topSprite.y = this.y;
-    }
+  }
+  
+  // Base capture method - to be overridden by ServerStation
+  capture(newTeam: number): void {
+    // Does nothing in base class, will be overridden by server implementation
   }
   
   destroy() {

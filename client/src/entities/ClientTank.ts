@@ -232,8 +232,6 @@ export class ClientTank extends Tank {
 
       this.leftTread.setFrame(Math.floor(this.leftTreadPosition));
       this.rightTread.setFrame(Math.floor(this.rightTreadPosition) + framesPerRow);
-
-      console.log(`Left tread: ${this.leftTreadPosition}, Right tread: ${this.rightTreadPosition}`)
     }
   }
 }

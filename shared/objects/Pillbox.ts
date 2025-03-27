@@ -127,7 +127,7 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
     );
     
     // Create bullet at pillbox position with the calculated lead angle
-    const fireLocation = new Phaser.Math.Vector2(VISUALS.FIRING_OFFSET, 0.0).rotate(angle);
+    const fireLocation = new Phaser.Math.Vector2(PHYSICS.PILLBOX_HITBOX_RADIUS + 2, 0.0).rotate(angle);
     const bullet = new Bullet(this.scene as any, this.x + fireLocation.x, this.y + fireLocation.y, angle);
     this.scene.add.existing(bullet);
   }
@@ -154,9 +154,6 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
     // Ensure all related sprites are destroyed when the base is destroyed
     if (this.topSprite && this.topSprite.active) {
       this.topSprite.destroy();
-    }
-    if (this.damageIndicator && this.damageIndicator.active) {
-      this.damageIndicator.destroy();
     }
     super.destroy();
   }

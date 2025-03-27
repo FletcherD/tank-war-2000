@@ -20,7 +20,7 @@ import { ClientTank } from "../entities/ClientTank";
 import { GameUI } from "../UI";
 import { VISUALS, TEAM_COLORS } from "../../../shared/constants";
 import { ClientMap } from "./ClientMap";
-import { Station } from "../../../shared/objects/Station";
+import { ClientStation } from "../entities/ClientStation";
 import { ClientPillbox } from "../entities/ClientPillbox";
 import { ClientBullet } from "../entities/ClientBullet";
 
@@ -123,22 +123,16 @@ export class ClientGameScene extends GameScene {
         $(this.room.state).stations.onAdd((stationSchema, stationId) => {
             console.log(`Station added: ${stationId} at (${stationSchema.x}, ${stationSchema.y}), team: ${stationSchema.team}`);
             
-            // Create a station at the given position
-            const station = this.addStation(stationSchema.x, stationSchema.y, stationSchema.team);
+            // Create a client station at the given position
+            const station = new ClientStation(this, stationSchema.x, stationSchema.y, stationSchema.team);
+            this.stations.push(station);
+            
+            // Initial update from server schema
+            station.updateFromServer(stationSchema);
             
             // Listen for changes to this station
             $(stationSchema).onChange(() => {
-                // Update the station's team if it changed
-                if (station.team !== stationSchema.team) {
-                    station.team = stationSchema.team;
-                    
-                    // Update the station's appearance based on team
-                    if (station.team > 0 && TEAM_COLORS[station.team]) {
-                        station.topSprite.setTint(TEAM_COLORS[station.team]);
-                    } else {
-                        station.topSprite.clearTint();
-                    }
-                }
+                station.updateFromServer(stationSchema);
             });
         });
         
@@ -146,19 +140,9 @@ export class ClientGameScene extends GameScene {
         $(this.room.state).pillboxes.onAdd((pillboxSchema, pillboxId) => {
             console.log(`Pillbox added: ${pillboxId} at (${pillboxSchema.x}, ${pillboxSchema.y}), team: ${pillboxSchema.team}, health: ${pillboxSchema.health}`);
             
-            // Override addPillbox for this specific case to create ClientPillbox instances
-            const oldAddPillbox = this.addPillbox;
-            this.addPillbox = (x, y, team) => {
-                const pillbox = new ClientPillbox(this, x, y, team);
-                this.pillboxes.push(pillbox);
-                return pillbox;
-            };
-            
             // Create a client pillbox at the given position
-            const pillbox = this.addPillbox(pillboxSchema.x, pillboxSchema.y, pillboxSchema.team) as ClientPillbox;
-            
-            // Restore original method
-            this.addPillbox = oldAddPillbox;
+            const pillbox = new ClientPillbox(this, pillboxSchema.x, pillboxSchema.y, pillboxSchema.team);
+            this.pillboxes.push(pillbox);
             
             // Initial update from server schema
             pillbox.updateFromServer(pillboxSchema);
