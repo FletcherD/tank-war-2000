@@ -26,6 +26,7 @@ export class ServerTank extends Tank {
     if (this.schema.heading !== this.heading) this.schema.heading = this.heading;
     if (this.schema.speed !== this.speed) this.schema.speed = this.speed;
     if (this.schema.health !== this.health) this.schema.health = this.health;
+    if (this.schema.ammo !== this.ammo) this.schema.ammo = this.ammo;
     if (this.schema.team !== this.team) this.schema.team = this.team;
     if (this.schema.left !== this.currentInput.left) this.schema.left = this.currentInput.left;
     if (this.schema.right !== this.currentInput.right) this.schema.right = this.currentInput.right;
@@ -36,18 +37,29 @@ export class ServerTank extends Tank {
   }
 
   override fire() {
+    // Check if we have enough ammo
+    if (!this.canFire()) {
+      return;
+    }
+    
+    // Consume ammo
+    this.useAmmo();
+
     // Only fire if cooldown is complete
-      const scene = this.scene as ServerGameScene;      
+    const scene = this.scene as ServerGameScene;      
 
     const fireLocation = new Phaser.Math.Vector2(VISUALS.FIRING_OFFSET, 0.0).rotate(this.heading);
 
-      const bulletX = this.x + fireLocation.x; 
-      const bulletY = this.y + fireLocation.y;
-      
-      // Create a server bullet with this tank as owner
-      scene.createBullet(bulletX, bulletY, this.heading, this.sessionId);
+    const bulletX = this.x + fireLocation.x; 
+    const bulletY = this.y + fireLocation.y;
+    
+    // Create a server bullet with this tank as owner
+    scene.createBullet(bulletX, bulletY, this.heading, this.sessionId);
 
-      console.log(`Fired bullet at (${bulletX}, ${bulletY}, ${this.heading})`);
+    // Update the schema to sync ammo change
+    this.updateSchema();
+
+    console.log(`Fired bullet at (${bulletX}, ${bulletY}, ${this.heading}), ammo left: ${this.ammo}`);
   }
 
   override preUpdate(time: number, delta: number): void {

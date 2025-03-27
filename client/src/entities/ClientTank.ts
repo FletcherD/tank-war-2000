@@ -1,41 +1,9 @@
 import { Tank, InputData } from "../../../shared/objects/Tank";
 import { GameScene } from "../../../shared/scenes/Game";
 import { ClientGameScene } from "../scenes/ClientGameScene";
-import { VISUALS } from "../../../shared/constants";
+import { VISUALS, PHYSICS } from "../../../shared/constants";
 
 export class ClientTank extends Tank {
-  // Override fire() to do nothing - server will handle bullet creation
-  override fire(): void {
-    // Only play firing effects if cooldown is ready
-    if (this.firingCooldown <= 0) {
-      // Reset cooldown timer
-      this.firingCooldown = this.firingRate;
-      
-      // Flash effect for firing
-      this.setTint(0xFFFFFF);
-      this.scene.time.delayedCall(50, () => {
-        this.clearTint();
-      });
-      
-      // Add firing visual effects only (no actual bullet)
-      const angle = this.rotation;
-      const fireLocation = new Phaser.Math.Vector2(VISUALS.FIRING_OFFSET, 0).rotate(angle);
-      
-      // Add muzzle flash particle effect
-      const particles = this.scene.add.particles(this.x + fireLocation.x, this.y + fireLocation.y, 'bullet', {
-        speed: 100,
-        scale: { start: 0.5, end: 0 },
-        blendMode: 'ADD',
-        lifespan: 100,
-        quantity: 1
-      });
-      
-      // Destroy the emitter after a short time
-      this.scene.time.delayedCall(100, () => {
-        particles.destroy();
-      });
-    }
-  }
   sessionId: string;
   isLocalPlayer: boolean;
   lastServerState: {
@@ -44,6 +12,7 @@ export class ClientTank extends Tank {
     heading: number;
     speed: number;
     health: number;
+    ammo: number;
     team: number;
     tick: number;
     pillboxCount: number;
@@ -51,6 +20,8 @@ export class ClientTank extends Tank {
   pillboxCount: number = 0;
   inputBuffer: InputData[] = [];
   pendingInputs: InputData[] = [];
+  firingCooldown: number = 0;
+  firingRate: number = PHYSICS.TANK_FIRE_COOLDOWN;
   
   constructor(scene: ClientGameScene, x: number, y: number, sessionId: string, isLocalPlayer: boolean = false) {
     super(scene, x, y);
@@ -62,6 +33,7 @@ export class ClientTank extends Tank {
       heading: 0,
       speed: 0,
       health: 100,
+      ammo: PHYSICS.TANK_MAX_AMMO,
       team: 0,
       tick: 0,
       pillboxCount: 0
@@ -81,10 +53,17 @@ export class ClientTank extends Tank {
       heading: data.heading,
       speed: data.speed,
       health: data.health,
+      ammo: data.ammo,
       team: data.team,
       tick: data.tick,
       pillboxCount: data.pillboxCount || 0
     };
+    
+    // Update ammunition from server
+    if (this.ammo !== data.ammo) {
+      this.ammo = data.ammo;
+    }
+    console.log(`Updated ammo for ${this.sessionId}: ${this.ammo}`);
     
     // Update pillbox count
     if (this.pillboxCount !== data.pillboxCount) {
@@ -107,7 +86,6 @@ export class ClientTank extends Tank {
       this.speed = data.speed;
       this.health = data.health;
       this.team = data.team;
-
       // Update input state
       this.currentInput.left = data.left;
       this.currentInput.right = data.right;
@@ -250,5 +228,9 @@ export class ClientTank extends Tank {
       this.leftTread.setFrame(Math.floor(this.leftTreadPosition));
       this.rightTread.setFrame(Math.floor(this.rightTreadPosition) + framesPerRow);
     }
+  }
+
+  // Override fire() to do nothing - server will handle bullet creation
+  override fire(): void { 
   }
 }

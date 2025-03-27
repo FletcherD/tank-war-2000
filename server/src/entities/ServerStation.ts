@@ -30,15 +30,28 @@ export class ServerStation extends Station {
     for (const sessionId of this.scene.players.keys()) {
       const tank = this.scene.players.get(sessionId);
       
-      // Skip tanks on the same team
+      // Calculate distance
+      const distance = Phaser.Math.Distance.Between(this.x, this.y, tank.x, tank.y);
+      
+      // Handle station capture
+      // Skip tanks on the same team for capturing
       if (tank.team != this.team) {
-        // Calculate distance
-        const distance = Phaser.Math.Distance.Between(this.x, this.y, tank.x, tank.y);
-        
         // If in range, capture the station
         if (distance <= PHYSICS.STATION_CAPTURE_RANGE) {
           this.capture(tank.team);
           break;
+        }
+      }
+      
+      // Handle ammunition refill - any tank at a station gets ammo refilled
+      if (distance <= PHYSICS.STATION_CAPTURE_RANGE) {
+        // Calculate ammo to refill based on time
+        const ammoToRefill = PHYSICS.STATION_REFILL_RATE * (delta / 1000);
+        
+        // Refill ammo if not at max
+        if (tank.ammo < PHYSICS.TANK_MAX_AMMO) {
+          tank.refillAmmo(ammoToRefill);
+          tank.updateSchema();
         }
       }
     }

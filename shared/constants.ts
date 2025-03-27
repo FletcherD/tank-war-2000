@@ -5,6 +5,8 @@ export const PHYSICS = {
   TANK_ROTATION_SPEED: 0.002, // radians/msec
   TANK_ACCELERATION: 0.005, // meters/msec^2
   TANK_HEALTH: 100,
+  TANK_MAX_AMMO: 20,
+  TANK_AMMO_PER_SHOT: 1,
   TANK_FIRE_COOLDOWN: 1000, // milliseconds
   TANK_HITBOX_RADIUS: 14, // pixels
 
@@ -22,6 +24,7 @@ export const PHYSICS = {
 
   // Station
   STATION_CAPTURE_RANGE: 16, // pixels
+  STATION_REFILL_RATE: 5, // ammo per second
 
   // Game timing
   FIXED_TIMESTEP: 1000 / 60, // 60 FPS

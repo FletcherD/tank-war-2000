@@ -1,4 +1,5 @@
 import { ClientGameScene } from "./scenes/ClientGameScene";
+import { PHYSICS } from "../../shared/constants";
 
 export class GameUI {
   private uiContainer: HTMLDivElement;
@@ -17,6 +18,10 @@ export class GameUI {
     this.gameScene = gameScene;
     this.createUI();
   }
+
+  private ammoBarContainer: HTMLDivElement;
+  private ammoBarElement: HTMLDivElement;
+  private ammoTextElement: HTMLDivElement;
 
   private createUI() {
     // Get the canvas element
@@ -59,6 +64,29 @@ export class GameUI {
     this.healthTextElement.style.fontFamily = "'Courier Prime', monospace";
     this.healthTextElement.style.fontWeight = "700";
     healthBarOuter.appendChild(this.healthTextElement);
+    
+    // Create ammo bar container - positioned below health bar
+    this.ammoBarContainer = document.createElement('div');
+    this.ammoBarContainer.style.marginTop = '5px';
+    this.healthBarContainer.appendChild(this.ammoBarContainer);
+    
+    // Create ammo bar outer container
+    const ammoBarOuter = document.createElement('div');
+    ammoBarOuter.className = 'progress';
+    this.ammoBarContainer.appendChild(ammoBarOuter);
+    
+    // Create ammo bar
+    this.ammoBarElement = document.createElement('div');
+    this.ammoBarElement.id = 'ammoBar';
+    this.ammoBarElement.style.backgroundColor = '#999'; // Grey color for ammo
+    ammoBarOuter.appendChild(this.ammoBarElement);
+    
+    // Create ammo text
+    this.ammoTextElement = document.createElement('div');
+    this.ammoTextElement.className = 'percent';
+    this.ammoTextElement.style.fontFamily = "'Courier Prime', monospace";
+    this.ammoTextElement.style.fontWeight = "700";
+    ammoBarOuter.appendChild(this.ammoTextElement);
     
     // Create Build Road button
     this.buildButton = document.createElement('button');
@@ -151,6 +179,7 @@ export class GameUI {
 
     // Initial update
     this.updateHealthBar(100);
+    this.updateAmmoBar(PHYSICS.TANK_MAX_AMMO, PHYSICS.TANK_MAX_AMMO);
   }
 
   /**
@@ -178,6 +207,31 @@ export class GameUI {
     // Update health text
     this.healthTextElement.textContent = `Health:\u00A0${health}%`;
   }
+  
+  /**
+   * Updates the ammo bar with the current player's ammunition
+   */
+  public updateAmmoBar(currentAmmo: number, maxAmmo: number) {
+    if (!this.ammoBarElement || !this.ammoTextElement) return;
+    
+    // Calculate percentage
+    const ammoPercentage = Math.floor((currentAmmo / maxAmmo) * 100);
+    
+    // Update ammo bar width
+    this.ammoBarElement.style.width = `${ammoPercentage}%`;
+    
+    // Update ammo text
+    this.ammoTextElement.textContent = `Ammo:\u00A0${Math.floor(currentAmmo)}/${maxAmmo}`;
+    
+    // Change color based on ammo level
+    if (ammoPercentage < 25) {
+      this.ammoBarElement.style.backgroundColor = '#cc3333'; // Red when low
+    } else if (ammoPercentage < 50) {
+      this.ammoBarElement.style.backgroundColor = '#cc9933'; // Orange when medium
+    } else {
+      this.ammoBarElement.style.backgroundColor = '#999999'; // Grey when high
+    }
+  }
 
   /**
    * Updates the pillbox count display
@@ -201,6 +255,7 @@ export class GameUI {
   public update() {
     if (this.gameScene.currentPlayer) {
       this.updateHealthBar(this.gameScene.currentPlayer.health);
+      this.updateAmmoBar(this.gameScene.currentPlayer.ammo, PHYSICS.TANK_MAX_AMMO);
       this.updatePillboxCount(this.gameScene.currentPlayer.pillboxCount);
     }
     

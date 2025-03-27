@@ -15,6 +15,7 @@ export class Tank extends Phaser.GameObjects.Container
 {
   team: number = 0;
   health: number = PHYSICS.TANK_HEALTH;
+  ammo: number = PHYSICS.TANK_MAX_AMMO;
 
   // Tank sprites
   tankBody: Phaser.GameObjects.Sprite;
@@ -133,7 +134,7 @@ export class Tank extends Phaser.GameObjects.Container
       this.setVelocity(this.speed * Math.cos(this.heading), this.speed * Math.sin(this.heading));
       
       // Handle fire cooldown
-      if (this.currentInput.fire && this.fireCooldownTimer <= 0) {
+      if (this.currentInput.fire && this.fireCooldownTimer <= 0 && this.canFire()) {
         this.fire();
         this.fireCooldownTimer = this.cooldownDuration;
       }
@@ -155,5 +156,21 @@ export class Tank extends Phaser.GameObjects.Container
     if (this.health <= 0) {
       this.destroy();
     }
+  }
+
+  canFire(): boolean {
+    return this.ammo >= PHYSICS.TANK_AMMO_PER_SHOT;
+  }
+
+  useAmmo(amount: number = PHYSICS.TANK_AMMO_PER_SHOT): boolean {
+    if (this.ammo >= amount) {
+      this.ammo -= amount;
+      return true;
+    }
+    return false;
+  }
+
+  refillAmmo(amount: number): void {
+    this.ammo = Math.min(this.PHYSICS.TANK_MAX_AMMO, this.ammo + amount);
   }
 }
