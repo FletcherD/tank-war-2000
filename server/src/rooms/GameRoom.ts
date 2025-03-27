@@ -66,7 +66,12 @@ export class GameRoom extends Room<MyRoomState> {
         }
         
         // Validate position for placing pillbox and attempt to place it
-        const success = tank.placePillbox(data.x, data.y);
+        // Calculate the world position from tile coordinates
+        const worldPos = this.gameScene.gameMap.groundLayer.tileToWorldXY(data.tileX, data.tileY);
+        const pillboxX = worldPos.x + 16; // Center of 2x2 area
+        const pillboxY = worldPos.y + 16;
+        
+        const success = tank.placePillbox(pillboxX, pillboxY);
         
         // Inform client of success/failure
         this.send(client, "pillboxPlaced", { 

@@ -101,6 +101,7 @@ export class ClientGameScene extends GameScene {
         this.selectionRect.setStrokeStyle(2, 0xffff00);
         this.selectionRect.setVisible(false);
         this.selectionRect.setDepth(100); // Make sure it's above everything else
+        this.selectionRect.setOrigin(0, 0); // Set origin to top-left for easier positioning
         
         // Set up mouse input for tile selection
         this.input.on('pointerdown', this.startTileSelection, this);
@@ -430,15 +431,12 @@ export class ClientGameScene extends GameScene {
         const startPoint = this.gameMap.groundLayer.tileToWorldXY(startX, startY);
         const endPoint = this.gameMap.groundLayer.tileToWorldXY(endX + 1, endY + 1);
         
-        // Set rectangle position to the center of the selected area
-        const centerX = (startPoint.x + endPoint.x) / 2;
-        const centerY = (startPoint.y + endPoint.y) / 2;
-        
-        // Set rectangle size
+        // Set rectangle size and position (using top-left origin)
         const width = endPoint.x - startPoint.x;
         const height = endPoint.y - startPoint.y;
         
-        this.selectionRect.setPosition(centerX, centerY);
+        // Position is top-left point since origin is (0,0)
+        this.selectionRect.setPosition(startPoint.x, startPoint.y);
         this.selectionRect.setSize(width, height);
     }
     
@@ -564,10 +562,11 @@ export class ClientGameScene extends GameScene {
         const minX = Math.min(...this.selectedTiles.map(t => t.x));
         const minY = Math.min(...this.selectedTiles.map(t => t.y));
         
-        // Convert tile coordinates to world coordinates
+        // Convert tile coordinates to world coordinates for distance calculation
         const worldPos = this.gameMap.groundLayer.tileToWorldXY(minX, minY);
-        const centerX = worldPos.x + 32; // Center of the 2x2 area
-        const centerY = worldPos.y + 32; 
+        // Use center of 2x2 area for distance calculation
+        const centerX = worldPos.x + 16; 
+        const centerY = worldPos.y + 16;
         
         // Calculate distance from player to selection
         const distance = Phaser.Math.Distance.Between(

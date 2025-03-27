@@ -219,26 +219,72 @@ export class GameUI {
     
     // Check if the selection is valid for a pillbox (2x2 area of valid tiles)
     let isValidSelection = false;
+    let isInRange = false;
+    
     if (hasSelection && hasPillboxes && !this.gameScene.isBuilding) {
       isValidSelection = (this.gameScene.gameMap as any).isSelectionValidForPillbox(this.gameScene.selectedTiles);
       
-      // Show button but make it disabled if selection is invalid
+      // Check if player is close enough to the selection
+      if (isValidSelection && this.gameScene.currentPlayer) {
+        // Find the center of the 2x2 selection
+        const minX = Math.min(...this.gameScene.selectedTiles.map(t => t.x));
+        const minY = Math.min(...this.gameScene.selectedTiles.map(t => t.y));
+        const worldPos = this.gameScene.gameMap.groundLayer.tileToWorldXY(minX, minY);
+        const centerX = worldPos.x + 32; // Center of the 2x2 area
+        const centerY = worldPos.y + 32;
+        
+        // Calculate distance
+        const distance = Phaser.Math.Distance.Between(
+          this.gameScene.currentPlayer.x, this.gameScene.currentPlayer.y,
+          centerX, centerY
+        );
+        
+        // Check if close enough (using the same distance as in placePillbox)
+        isInRange = distance <= 100;
+      }
+      
+      // Show button but make it disabled if selection is invalid or too far
       this.placePillboxButton.style.display = 'block';
       
-      if (isValidSelection) {
+      if (isValidSelection && isInRange) {
+        // Selection is valid and in range - enable button
         this.placePillboxButton.style.backgroundColor = '#9c27b0'; // Purple
         this.placePillboxButton.style.opacity = '1';
         this.placePillboxButton.style.cursor = 'pointer';
         this.placePillboxButton.disabled = false;
       } else {
-        // Grey out the button if selection is invalid
+        // Grey out button if selection is invalid or too far
         this.placePillboxButton.style.backgroundColor = '#888888'; // Grey
         this.placePillboxButton.style.opacity = '0.6';
         this.placePillboxButton.style.cursor = 'not-allowed';
         this.placePillboxButton.disabled = true;
+        
+        // Update the tooltip/title to explain why it's disabled
+        if (!isValidSelection) {
+          this.placePillboxButton.title = "Invalid selection. Need 2x2 area of valid land.";
+        } else if (!isInRange) {
+          this.placePillboxButton.title = "Too far away. Move closer to the selected area.";
+        }
       }
     } else if (!hasSelection || this.gameScene.isBuilding) {
       this.placePillboxButton.style.display = 'none';
+    }
+    
+    // Also pass range information to the selection renderer
+    if (this.gameScene.selectionRect && hasSelection) {
+      if (!isInRange && isValidSelection) {
+        // Selection is valid but out of range - color it grey
+        this.gameScene.selectionRect.setStrokeStyle(2, 0x888888);
+        this.gameScene.selectionRect.setFillStyle(0x888888, 0.3);
+      } else if (isValidSelection && isInRange) {
+        // Selection is valid and in range - color it green
+        this.gameScene.selectionRect.setStrokeStyle(2, 0x00ff00);
+        this.gameScene.selectionRect.setFillStyle(0x00ff00, 0.3);
+      } else {
+        // Selection is invalid - color it yellow
+        this.gameScene.selectionRect.setStrokeStyle(2, 0xffff00);
+        this.gameScene.selectionRect.setFillStyle(0xffff00, 0.3);
+      }
     }
     
     // Regularly check if the canvas position/size has changed
