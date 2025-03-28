@@ -18,6 +18,17 @@ export class ServerMap extends GameMap {
       const width = this.groundLayer.width;
       const index = y * width + x;
       this.schema.tileIndices[index] = tileIndex;
+      
+      // Broadcast tile change message to all clients
+      const scene = this.scene as any;
+      if (scene.room) {
+        scene.room.broadcast("tileChanged", {
+          x: x,
+          y: y,
+          tileIndex: tileIndex,
+          index: index
+        });
+      }
     }
     
     return tile;

@@ -323,6 +323,89 @@ export class ClientGameScene extends GameScene {
                 }
             });
             
+            // Listen for response from server on road building
+            this.room.onMessage("roadBuildStarted", (response) => {
+                if (response.success) {
+                    this.isBuilding = true;
+                    this.buildQueue = [];
+                    
+                    // Add visual indicators for each tile in the build queue
+                    for (const tile of response.tiles) {
+                        const worldPos = this.gameMap.groundLayer.tileToWorldXY(tile.x, tile.y);
+                        
+                        // Create a progress indicator for this tile
+                        const indicator = this.add.circle(
+                            worldPos.x + 16, // Center of tile (assuming 32x32 tiles)
+                            worldPos.y + 16, 
+                            10, // Radius
+                            0x00ff00, // Color
+                            0.1 // Alpha (start almost transparent)
+                        );
+                        indicator.setDepth(110); // Ensure it's visible above other elements
+                        
+                        // Add to build queue
+                        this.buildQueue.push({
+                            tile: tile,
+                            progress: 0,
+                            indicator: indicator,
+                            worldX: worldPos.x + 16,
+                            worldY: worldPos.y + 16
+                        });
+                    }
+                    
+                    if (this.gameUI) {
+                        this.gameUI.showMessage("Road construction started!");
+                    }
+                    this.clearSelection();
+                } else {
+                    if (this.gameUI) {
+                        const message = response.reason ? response.reason : "Failed to start road construction.";
+                        this.gameUI.showMessage(message);
+                    }
+                }
+            });
+            
+            // Listen for road build progress updates
+            this.room.onMessage("roadBuildProgress", (data) => {
+                // Find the corresponding tile in our queue
+                const queueItem = this.buildQueue.find(item => 
+                    item.tile.x === data.tile.x && item.tile.y === data.tile.y);
+                    
+                if (queueItem) {
+                    // Update progress percentage
+                    queueItem.progress = this.BUILD_TIME_PER_TILE * data.progress;
+                }
+            });
+            
+            // Listen for road build completion
+            this.room.onMessage("roadBuildComplete", (data) => {
+                // Find and remove the tile from our queue
+                const index = this.buildQueue.findIndex(item => 
+                    item.tile.x === data.tile.x && item.tile.y === data.tile.y);
+                    
+                if (index !== -1) {
+                    // Remove the indicator
+                    this.buildQueue[index].indicator.destroy();
+                    this.buildQueue.splice(index, 1);
+                    
+                    // If queue is empty, building is complete
+                    if (this.buildQueue.length === 0) {
+                        this.isBuilding = false;
+                        if (this.gameUI) {
+                            this.gameUI.showMessage("Road construction complete!");
+                        }
+                    }
+                }
+            });
+            
+            // Listen for direct tile change messages from server
+            this.room.onMessage("tileChanged", (data) => {
+                if (this.gameMap && this.gameMap.map) {
+                    // Update the tile directly in the client map
+                    this.gameMap.setTile(data.x, data.y, data.tileIndex, true);
+                }
+            });
+            
             // Listen for newswire messages from server
             this.room.onMessage("newswire", (message: NewswireMessage) => {
                 if (this.gameUI) {
@@ -425,9 +508,6 @@ export class ClientGameScene extends GameScene {
         
         // If the tile is complete
         if (currentTile.progress >= this.BUILD_TIME_PER_TILE) {
-            // Build the tile
-            this.gameMap.setTile(currentTile.tile.x, currentTile.tile.y, 256, true);
-            
             // Remove from queue and destroy the indicator
             currentTile.indicator.destroy();
             this.buildQueue.shift();
@@ -552,37 +632,14 @@ export class ClientGameScene extends GameScene {
         );
         
         if (distance <= this.MAX_BUILD_DISTANCE) {
-            // Initialize build queue
-            this.buildQueue = [];
-            this.isBuilding = true;
+            // Send buildRoad request to server with selected tiles
+            this.room.send("buildRoad", { 
+                tiles: this.selectedTiles
+            });
             
-            // Add each selected tile to the build queue
-            for (const tile of this.selectedTiles) {
-                const worldPos = this.gameMap.groundLayer.tileToWorldXY(tile.x, tile.y);
-                
-                // Create a progress indicator for this tile
-                const indicator = this.add.circle(
-                    worldPos.x + 16, // Center of tile (assuming 32x32 tiles)
-                    worldPos.y + 16, 
-                    10, // Radius
-                    0x00ff00, // Color
-                    0.1 // Alpha (start almost transparent)
-                );
-                indicator.setDepth(110); // Ensure it's visible above other elements
-                
-                // Add to build queue
-                this.buildQueue.push({
-                    tile: tile,
-                    progress: 0,
-                    indicator: indicator,
-                    worldX: worldPos.x + 16,
-                    worldY: worldPos.y + 16
-                });
-            }
-            
-            // Message to show build started
+            // Show message to user
             if (this.gameUI) {
-                this.gameUI.showMessage("Road construction started!");
+                this.gameUI.showMessage("Road construction request sent to server...");
             }
             
             // Clear selection rectangle but keep selected tiles stored

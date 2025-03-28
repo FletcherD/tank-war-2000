@@ -3,9 +3,19 @@ import { TankSchema } from "../schemas/TankSchema";
 import { ServerGameScene } from "../scenes/ServerGameScene";
 import { VISUALS } from "../../../shared/constants";
 
+// Define the build queue item type
+export interface BuildQueueItem {
+    tile: { x: number, y: number };
+    progress: number;
+    buildTime: number;
+    playerId: string;
+}
+
 export class ServerTank extends Tank {
   sessionId: string;
   schema: TankSchema;
+  // Road building queue
+  buildQueue: BuildQueueItem[] = [];
   
   constructor(scene: ServerGameScene, x: number, y: number, sessionId: string) {
     super(scene, x, y);
@@ -65,6 +75,36 @@ export class ServerTank extends Tank {
   override preUpdate(time: number, delta: number): void {
     super.preUpdate(time, delta);
     this.updateSchema();
+  }
+  
+  // Update build queue progress
+  updateBuildQueue(delta: number) {
+    if (!this.buildQueue.length) return;
+    
+    // Process the first item in the queue
+    const currentBuild = this.buildQueue[0];
+    currentBuild.progress += delta / currentBuild.buildTime;
+    
+    // Send progress update to all clients
+    const scene = this.scene as ServerGameScene;
+    scene.room.broadcast("roadBuildProgress", {
+        tile: currentBuild.tile,
+        progress: currentBuild.progress
+    });
+    
+    // If building is complete
+    if (currentBuild.progress >= 1) {
+        // Set the tile on the map
+        scene.gameMap.setTile(currentBuild.tile.x, currentBuild.tile.y, 256, true);
+        
+        // Notify clients about completion
+        scene.room.broadcast("roadBuildComplete", {
+            tile: currentBuild.tile
+        });
+        
+        // Remove from queue
+        this.buildQueue.shift();
+    }
   }
   
   // Add a pillbox to the tank's inventory

@@ -225,6 +225,11 @@ export class ServerGameScene extends GameScene {
     this.players.forEach(tank => {
       tank.updateSchema();
       
+      // Update build queues if present
+      if (tank.buildQueue && tank.buildQueue.length > 0) {
+        tank.updateBuildQueue(delta);
+      }
+      
       // Check for collisions with pickup state pillboxes
       this.pillboxes.forEach(p => {
         if (!(p instanceof ServerPillbox)) return;

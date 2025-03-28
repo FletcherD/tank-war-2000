@@ -56,6 +56,46 @@ export class GameRoom extends Room<MyRoomState> {
       this.gameScene.handlePlayerInput(client.sessionId, input);
     });
     
+    // Handle road building requests
+    this.onMessage("buildRoad", (client, data: { tiles: { x: number, y: number }[] }) => {
+      const tank = this.gameScene.players.get(client.sessionId);
+      if (!tank) return;
+      
+      // Validate tiles for road building (ensure they are valid terrain types)
+      const validTiles = [];
+      for (const tile of data.tiles) {
+        // Get the current tile and check if it can be built on
+        const currentTile = this.gameScene.gameMap.groundLayer.getTileAt(tile.x, tile.y);
+        if (currentTile && !currentTile.properties?.hasCollision && this.gameScene.gameMap.getBaseTileType(currentTile) !== 64) {
+          // Not water and not a wall
+          validTiles.push(tile);
+        }
+      }
+      
+      // If no valid tiles, send failure response
+      if (validTiles.length === 0) {
+        this.send(client, "roadBuildStarted", {
+          success: false,
+          reason: "No valid tiles for road building."
+        });
+        return;
+      }
+      
+      // Add to player's build queue
+      tank.buildQueue = validTiles.map(tile => ({
+        tile,
+        progress: 0,
+        buildTime: 1500, // Same as client BUILD_TIME_PER_TILE
+        playerId: client.sessionId
+      }));
+      
+      // Send success response with the valid tiles
+      this.send(client, "roadBuildStarted", {
+        success: true,
+        tiles: validTiles
+      });
+    });
+    
     // Handle pillbox placement requests
     this.onMessage("placePillbox", (client, data: { x: number, y: number, tileX: number, tileY: number }) => {
       const tank = this.gameScene.players.get(client.sessionId);
