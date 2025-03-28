@@ -229,6 +229,7 @@ export class ClientGameScene extends GameScene {
                 this.remoteRef = this.add.rectangle(0, 0, entity.width, entity.height);
                 this.remoteRef.setStrokeStyle(1, 0xff0000);
 
+                entity.setDepth(200);
                 this.cameras.main.startFollow(entity);
                 
                 // Initialize the UI once we have the current player, with a slight delay to ensure the canvas is ready
@@ -249,6 +250,9 @@ export class ClientGameScene extends GameScene {
                 });
 
             } else {
+                if(entity.team === this.currentPlayer.team) {
+                    entity.setDepth(200);
+                }
                 // listening for server updates
                 // Listen for changes on the tank schema directly
                 $(player.tank).onChange(() => {
