@@ -1,7 +1,7 @@
 import { Tank, InputData } from "../../../shared/objects/Tank";
 import { TankSchema } from "../schemas/TankSchema";
 import { ServerGameScene } from "../scenes/ServerGameScene";
-import { VISUALS } from "../../../shared/constants";
+import { VISUALS, TILE_INDICES } from "../../../shared/constants";
 
 // Define the build queue item type
 export interface BuildQueueItem {
@@ -9,6 +9,7 @@ export interface BuildQueueItem {
     progress: number;
     buildTime: number;
     playerId: string;
+    tileType: string;
 }
 
 export class ServerTank extends Tank {
@@ -94,16 +95,17 @@ export class ServerTank extends Tank {
     
     // If building is complete
     if (currentBuild.progress >= 1) {
-        // Set the tile on the map
-        scene.gameMap.setTile(currentBuild.tile.x, currentBuild.tile.y, 256, true);
-        
-        // Notify clients about completion
-        scene.room.broadcast("roadBuildComplete", {
-            tile: currentBuild.tile
-        });
-        
-        // Remove from queue
-        this.buildQueue.shift();
+      const tileIndex = (currentBuild.tileType === "road") ? TILE_INDICES.ROAD : TILE_INDICES.WALL;
+      // Set the tile on the map
+      scene.gameMap.setTile(currentBuild.tile.x, currentBuild.tile.y, tileIndex, true);
+      
+      // Notify clients about completion
+      scene.room.broadcast("roadBuildComplete", {
+          tile: currentBuild.tile
+      });
+      
+      // Remove from queue
+      this.buildQueue.shift();
     }
   }
   

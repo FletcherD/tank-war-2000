@@ -57,3 +57,14 @@ export const DAMAGE = {
   BULLET_TO_TANK: 1,
   BULLET_TO_PILLBOX: 1,
 };
+
+export const TILE_INDICES = {
+  WALL: 0,
+  WATER: 64,
+  SWAMP: 128,
+  CRATER: 192,
+  ROAD: 256,
+  FOREST: 320,
+  GRASS: 384,
+  DEEP_SEA: 448,
+};

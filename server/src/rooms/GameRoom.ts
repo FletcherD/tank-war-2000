@@ -56,12 +56,12 @@ export class GameRoom extends Room<MyRoomState> {
       this.gameScene.handlePlayerInput(client.sessionId, input);
     });
     
-    // Handle road building requests
-    this.onMessage("buildRoad", (client, data: { tiles: { x: number, y: number }[] }) => {
+    // Handle tile building requests
+    this.onMessage("buildTile", (client, data: { tiles: { x: number, y: number }[], tileType: string }) => {
       const tank = this.gameScene.players.get(client.sessionId);
       if (!tank) return;
       
-      // Validate tiles for road building (ensure they are valid terrain types)
+      // Validate tiles for building (ensure they are valid terrain types)
       const validTiles = [];
       for (const tile of data.tiles) {
         // Get the current tile and check if it can be built on
@@ -74,9 +74,9 @@ export class GameRoom extends Room<MyRoomState> {
       
       // If no valid tiles, send failure response
       if (validTiles.length === 0) {
-        this.send(client, "roadBuildStarted", {
+        this.send(client, "tileBuildStarted", {
           success: false,
-          reason: "No valid tiles for road building."
+          reason: `No valid tiles for ${data.tileType} building.`
         });
         return;
       }
@@ -86,13 +86,15 @@ export class GameRoom extends Room<MyRoomState> {
         tile,
         progress: 0,
         buildTime: 1500, // Same as client BUILD_TIME_PER_TILE
-        playerId: client.sessionId
+        playerId: client.sessionId,
+        tileType: data.tileType // Add the tile type to the build queue
       }));
       
       // Send success response with the valid tiles
-      this.send(client, "roadBuildStarted", {
+      this.send(client, "tileBuildStarted", {
         success: true,
-        tiles: validTiles
+        tiles: validTiles,
+        tileType: data.tileType
       });
     });
     

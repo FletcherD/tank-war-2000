@@ -7,6 +7,7 @@ export class GameUI {
   private healthBarElement: HTMLDivElement;
   private healthTextElement: HTMLDivElement;
   private buildButton: HTMLButtonElement;
+  private buildWallButton: HTMLButtonElement;
   private cancelBuildButton: HTMLButtonElement;
   private placePillboxButton: HTMLButtonElement;
   private pillboxCountElement: HTMLDivElement;
@@ -110,15 +111,33 @@ export class GameUI {
     this.buildButton.style.fontFamily = "'Courier Prime', monospace";
     this.buildButton.style.fontWeight = "700";
     this.buildButton.style.pointerEvents = 'auto'; // Allow button clicks
-    this.buildButton.onclick = () => this.gameScene.buildRoad();
+    this.buildButton.onclick = () => this.gameScene.buildTile('road');
     this.uiContainer.appendChild(this.buildButton);
+    
+    // Create Build Wall button
+    this.buildWallButton = document.createElement('button');
+    this.buildWallButton.textContent = 'Build Wall';
+    this.buildWallButton.style.position = 'absolute';
+    this.buildWallButton.style.bottom = '20px';
+    this.buildWallButton.style.right = '125px'; // Position to the left of Build Road button
+    this.buildWallButton.style.padding = '10px 20px';
+    this.buildWallButton.style.backgroundColor = '#2196F3'; // Blue color for wall button
+    this.buildWallButton.style.color = 'white';
+    this.buildWallButton.style.border = 'none';
+    this.buildWallButton.style.borderRadius = '5px';
+    this.buildWallButton.style.cursor = 'pointer';
+    this.buildWallButton.style.fontFamily = "'Courier Prime', monospace";
+    this.buildWallButton.style.fontWeight = "700";
+    this.buildWallButton.style.pointerEvents = 'auto'; // Allow button clicks
+    this.buildWallButton.onclick = () => this.gameScene.buildTile('wall');
+    this.uiContainer.appendChild(this.buildWallButton);
     
     // Create Cancel Build button (initially hidden)
     this.cancelBuildButton = document.createElement('button');
     this.cancelBuildButton.textContent = 'Cancel Build';
     this.cancelBuildButton.style.position = 'absolute';
     this.cancelBuildButton.style.bottom = '20px';
-    this.cancelBuildButton.style.right = '150px'; // Position to the left of build button
+    this.cancelBuildButton.style.right = '230px'; // Position to the left of other build buttons
     this.cancelBuildButton.style.padding = '10px 20px';
     this.cancelBuildButton.style.backgroundColor = '#f44336'; // Red
     this.cancelBuildButton.style.color = 'white';
@@ -307,9 +326,11 @@ export class GameUI {
     // Update build buttons based on building state
     if (this.gameScene.isBuilding) {
       this.buildButton.style.display = 'none';
+      this.buildWallButton.style.display = 'none';
       this.cancelBuildButton.style.display = 'block';
     } else {
       this.buildButton.style.display = 'block';
+      this.buildWallButton.style.display = 'block';
       this.cancelBuildButton.style.display = 'none';
     }
     

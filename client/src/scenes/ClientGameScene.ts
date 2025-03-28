@@ -60,13 +60,14 @@ export class ClientGameScene extends GameScene {
     selectionRect: Phaser.GameObjects.Rectangle | null = null;
     selectedTiles: { x: number, y: number }[] = [];
     
-    // Road building properties
+    // Tile building properties
     buildQueue: { 
         tile: { x: number, y: number }, 
         progress: number, 
         indicator: Phaser.GameObjects.Arc,
         worldX: number,
-        worldY: number
+        worldY: number,
+        tileType?: string // Add type of tile being built
     }[] = [];
     isBuilding: boolean = false;
     BUILD_TIME_PER_TILE: number = 1500; // milliseconds per tile
@@ -323,8 +324,8 @@ export class ClientGameScene extends GameScene {
                 }
             });
             
-            // Listen for response from server on road building
-            this.room.onMessage("roadBuildStarted", (response) => {
+            // Listen for response from server on tile building
+            this.room.onMessage("tileBuildStarted", (response) => {
                 if (response.success) {
                     this.isBuilding = true;
                     this.buildQueue = [];
@@ -354,18 +355,31 @@ export class ClientGameScene extends GameScene {
                     }
                     
                     if (this.gameUI) {
-                        this.gameUI.showMessage("Road construction started!");
+                        const tileType = response.tileType || 'tile';
+                        this.gameUI.showMessage(`${tileType.charAt(0).toUpperCase() + tileType.slice(1)} construction started!`);
                     }
                     this.clearSelection();
                 } else {
                     if (this.gameUI) {
-                        const message = response.reason ? response.reason : "Failed to start road construction.";
+                        const message = response.reason ? response.reason : "Failed to start construction.";
                         this.gameUI.showMessage(message);
                     }
                 }
             });
             
-            // Listen for road build progress updates
+            // Listen for tile build progress updates
+            this.room.onMessage("tileBuildProgress", (data) => {
+                // Find the corresponding tile in our queue
+                const queueItem = this.buildQueue.find(item => 
+                    item.tile.x === data.tile.x && item.tile.y === data.tile.y);
+                    
+                if (queueItem) {
+                    // Update progress percentage
+                    queueItem.progress = this.BUILD_TIME_PER_TILE * data.progress;
+                }
+            });
+            
+            // Also listen for the old message name for backward compatibility
             this.room.onMessage("roadBuildProgress", (data) => {
                 // Find the corresponding tile in our queue
                 const queueItem = this.buildQueue.find(item => 
@@ -377,7 +391,29 @@ export class ClientGameScene extends GameScene {
                 }
             });
             
-            // Listen for road build completion
+            // Listen for tile build completion
+            this.room.onMessage("tileBuildComplete", (data) => {
+                // Find and remove the tile from our queue
+                const index = this.buildQueue.findIndex(item => 
+                    item.tile.x === data.tile.x && item.tile.y === data.tile.y);
+                    
+                if (index !== -1) {
+                    // Remove the indicator
+                    this.buildQueue[index].indicator.destroy();
+                    this.buildQueue.splice(index, 1);
+                    
+                    // If queue is empty, building is complete
+                    if (this.buildQueue.length === 0) {
+                        this.isBuilding = false;
+                        if (this.gameUI) {
+                            const tileType = data.tileType || 'Tile';
+                            this.gameUI.showMessage(`${tileType.charAt(0).toUpperCase() + tileType.slice(1)} construction complete!`);
+                        }
+                    }
+                }
+            });
+            
+            // Also listen for the old message name for backward compatibility
             this.room.onMessage("roadBuildComplete", (data) => {
                 // Find and remove the tile from our queue
                 const index = this.buildQueue.findIndex(item => 
@@ -606,8 +642,8 @@ export class ClientGameScene extends GameScene {
         this.selectionRect.setSize(width, height);
     }
     
-    // Function to start building road on selected tiles
-    buildRoad() {
+    // Function to start building tile on selected tiles
+    buildTile(tileType: string = 'road') {
         // Check if already building or no tiles selected
         if (this.isBuilding || !this.selectedTiles.length || !this.currentPlayer) return;
         
@@ -632,14 +668,15 @@ export class ClientGameScene extends GameScene {
         );
         
         if (distance <= this.MAX_BUILD_DISTANCE) {
-            // Send buildRoad request to server with selected tiles
-            this.room.send("buildRoad", { 
-                tiles: this.selectedTiles
+            // Send buildTile request to server with selected tiles and tile type
+            this.room.send("buildTile", { 
+                tiles: this.selectedTiles,
+                tileType: tileType
             });
             
             // Show message to user
             if (this.gameUI) {
-                this.gameUI.showMessage("Road construction request sent to server...");
+                this.gameUI.showMessage(`${tileType.charAt(0).toUpperCase() + tileType.slice(1)} construction request sent to server...`);
             }
             
             // Clear selection rectangle but keep selected tiles stored
