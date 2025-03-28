@@ -16,8 +16,10 @@ export class ClientTank extends Tank {
     team: number;
     tick: number;
     pillboxCount: number;
+    steel: number;
   };
   pillboxCount: number = 0;
+  steel: number = 0;
   inputBuffer: InputData[] = [];
   pendingInputs: InputData[] = [];
   firingCooldown: number = 0;
@@ -36,7 +38,8 @@ export class ClientTank extends Tank {
       ammo: PHYSICS.TANK_MAX_AMMO,
       team: 0,
       tick: 0,
-      pillboxCount: 0
+      pillboxCount: 0,
+      steel: 0
     };
 
     // Set up tread frames
@@ -74,6 +77,19 @@ export class ClientTank extends Tank {
         const gameScene = this.scene as ClientGameScene;
         if (gameScene.gameUI) {
           gameScene.gameUI.updatePillboxCount(this.pillboxCount);
+        }
+      }
+    }
+    
+    // Update steel count
+    if (this.steel !== data.steel) {
+      this.steel = data.steel || 0;
+      
+      // If this is the local player, update the UI
+      if (this.isLocalPlayer) {
+        const gameScene = this.scene as ClientGameScene;
+        if (gameScene.gameUI) {
+          gameScene.gameUI.updateSteelCount(this.steel);
         }
       }
     }

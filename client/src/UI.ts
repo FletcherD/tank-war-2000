@@ -11,6 +11,7 @@ export class GameUI {
   private cancelBuildButton: HTMLButtonElement;
   private placePillboxButton: HTMLButtonElement;
   private pillboxCountElement: HTMLDivElement;
+  private steelCountElement: HTMLDivElement;
   private messageElement: HTMLDivElement;
   private messageTimeout: number | null = null;
   private gameScene: ClientGameScene;
@@ -184,6 +185,20 @@ export class GameUI {
     this.pillboxCountElement.textContent = 'Pillboxes: 0';
     this.uiContainer.appendChild(this.pillboxCountElement);
     
+    // Create steel count display
+    this.steelCountElement = document.createElement('div');
+    this.steelCountElement.style.position = 'absolute';
+    this.steelCountElement.style.top = '70px';
+    this.steelCountElement.style.right = '20px';
+    this.steelCountElement.style.padding = '5px 10px';
+    this.steelCountElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    this.steelCountElement.style.color = 'white';
+    this.steelCountElement.style.borderRadius = '5px';
+    this.steelCountElement.style.fontFamily = "'Courier Prime', monospace";
+    this.steelCountElement.style.fontWeight = "700";
+    this.steelCountElement.textContent = 'Steel: 0';
+    this.uiContainer.appendChild(this.steelCountElement);
+    
     // Create message element for notifications
     this.messageElement = document.createElement('div');
     this.messageElement.style.position = 'absolute';
@@ -312,6 +327,32 @@ export class GameUI {
       this.placePillboxButton.style.display = 'none';
     }
   }
+  
+  /**
+   * Updates the steel count display
+   */
+  public updateSteelCount(count: number) {
+    if (!this.steelCountElement) return;
+    
+    this.steelCountElement.textContent = `Steel: ${count}`;
+    
+    // Update build buttons based on available steel
+    if (count >= PHYSICS.STEEL_COST_ROAD) {
+      this.buildButton.style.opacity = '1';
+      this.buildButton.disabled = false;
+    } else {
+      this.buildButton.style.opacity = '0.6';
+      this.buildButton.disabled = true;
+    }
+    
+    if (count >= PHYSICS.STEEL_COST_WALL) {
+      this.buildWallButton.style.opacity = '1';
+      this.buildWallButton.disabled = false;
+    } else {
+      this.buildWallButton.style.opacity = '0.6';
+      this.buildWallButton.disabled = true;
+    }
+  }
 
   /**
    * Updates the UI based on the current game state
@@ -321,6 +362,7 @@ export class GameUI {
       this.updateHealthBar(this.gameScene.currentPlayer.health);
       this.updateAmmoBar(this.gameScene.currentPlayer.ammo, PHYSICS.TANK_MAX_AMMO);
       this.updatePillboxCount(this.gameScene.currentPlayer.pillboxCount);
+      this.updateSteelCount(this.gameScene.currentPlayer.steel);
     }
     
     // Update build buttons based on building state

@@ -23,6 +23,7 @@ import { ClientMap } from "./ClientMap";
 import { ClientStation } from "../entities/ClientStation";
 import { ClientPillbox } from "../entities/ClientPillbox";
 import { ClientBullet } from "../entities/ClientBullet";
+import { ClientSteel } from "../entities/ClientSteel";
 
 // Define the newswire message type
 export interface NewswireMessage {
@@ -38,6 +39,7 @@ export class ClientGameScene extends GameScene {
 
     // Map of players by session ID
     clientBullets: Map<string, ClientBullet> = new Map();
+    steelResources: Map<string, ClientSteel> = new Map();
     players: Map<string, ClientTank> = new Map();
     currentPlayer: ClientTank;
     
@@ -294,6 +296,32 @@ export class ClientGameScene extends GameScene {
                 this.clientBullets.delete(bulletId);
             }
         });
+        
+        // Handle steel resources
+        $(this.room.state.map).steelResources.onAdd((steelSchema, steelId) => {
+            console.log(`Steel added: ${steelId} at (${steelSchema.x}, ${steelSchema.y}), value: ${steelSchema.value}`);
+            
+            // Create a client steel at the given position
+            const steel = new ClientSteel(this, steelSchema.x, steelSchema.y, steelSchema.value, steelId);
+            this.steelResources.set(steelId, steel);
+            
+            // Listen for changes to this steel
+            $(steelSchema).onChange(() => {
+                steel.updateFromServer(steelSchema);
+            });
+        });
+        
+        // Handle steel removal
+        $(this.room.state.map).steelResources.onRemove((steelSchema, steelId) => {
+            console.log(`Steel removed: ${steelId}`);
+            
+            // Destroy the steel if it exists
+            if (this.steelResources.has(steelId)) {
+                const steel = this.steelResources.get(steelId);
+                steel.pickup(); // Trigger pickup animation before destroying
+                this.steelResources.delete(steelId);
+            }
+        });
     }
 
     async connect() {
@@ -442,7 +470,7 @@ export class ClientGameScene extends GameScene {
             this.room.onMessage("tileChanged", (data) => {
                 if (this.gameMap && this.gameMap.map) {
                     // Update the tile directly in the client map
-                    this.gameMap.setTile(data.x, data.y, data.tileIndex, true);
+                    this.gameMap.setTile(data.x, data.y, data.tileIndex, false);
                 }
             });
             
@@ -650,6 +678,15 @@ export class ClientGameScene extends GameScene {
     buildTile(tileType: string = 'road') {
         // Check if already building or no tiles selected
         if (this.isBuilding || !this.selectedTiles.length || !this.currentPlayer) return;
+        
+        // Check if player has enough steel for the requested build type
+        const steelCost = tileType === 'road' ? PHYSICS.STEEL_COST_ROAD : PHYSICS.STEEL_COST_WALL;
+        if (this.currentPlayer.steel < steelCost) {
+            if (this.gameUI) {
+                this.gameUI.showMessage(`Not enough steel! Need ${steelCost} steel to build ${tileType}.`);
+            }
+            return;
+        }
         
         // Check if the selection is close enough to the player
         // Calculate the center of the selection

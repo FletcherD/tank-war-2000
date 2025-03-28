@@ -8,6 +8,7 @@ import { WorldMapSchema } from "../schemas/WorldMapSchema";
 import { StationSchema } from "../schemas/StationSchema";
 import { PillboxSchema } from "../schemas/PillboxSchema";
 import { BulletSchema } from "../schemas/BulletSchema";
+import { PHYSICS } from "../../../shared/constants";
 
 export class PlayerState extends Schema {
   @type(TankSchema) tank: TankSchema = new TankSchema();
@@ -61,6 +62,16 @@ export class GameRoom extends Room<MyRoomState> {
       const tank = this.gameScene.players.get(client.sessionId);
       if (!tank) return;
       
+      // Check if player has enough steel for the requested build type
+      const steelCost = data.tileType === 'road' ? PHYSICS.STEEL_COST_ROAD : PHYSICS.STEEL_COST_WALL;
+      if (tank.steel < steelCost) {
+        this.send(client, "tileBuildStarted", {
+          success: false,
+          reason: `Not enough steel. Need ${steelCost} steel to build ${data.tileType}.`
+        });
+        return;
+      }
+      
       // Validate tiles for building (ensure they are valid terrain types)
       const validTiles = [];
       for (const tile of data.tiles) {
@@ -79,6 +90,13 @@ export class GameRoom extends Room<MyRoomState> {
           reason: `No valid tiles for ${data.tileType} building.`
         });
         return;
+      }
+      
+      // Deduct steel cost (use appropriate method based on the building type)
+      if (data.tileType === 'wall') {
+        tank.buildWall(0, 0); // The coordinates don't matter here, we just want to deduct the cost
+      } else {
+        tank.buildRoad(0, 0); // The coordinates don't matter here, we just want to deduct the cost
       }
       
       // Add to player's build queue
@@ -182,6 +200,7 @@ export class GameRoom extends Room<MyRoomState> {
         if (playerState.tank.fire !== schema.fire) playerState.tank.fire = schema.fire;
         if (playerState.tank.tick !== schema.tick) playerState.tank.tick = schema.tick;
         if (playerState.tank.pillboxCount !== schema.pillboxCount) playerState.tank.pillboxCount = schema.pillboxCount;
+        if (playerState.tank.steel !== schema.steel) playerState.tank.steel = schema.steel;
         
         // Add debugging to check if updates are happening on the server side
         //console.log(`Player ${sessionId} position: ${schema.x.toFixed(2)}, ${schema.y.toFixed(2)}`);

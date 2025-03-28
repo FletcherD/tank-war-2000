@@ -25,7 +25,15 @@ export const PHYSICS = {
   // Station
   STATION_CAPTURE_RANGE: 16, // pixels
   STATION_REFILL_RATE: 5, // ammo per second
-
+  
+  // Steel
+  STEEL_DECAY_TIME: 30000, // milliseconds before steel disappears
+  STEEL_PICKUP_RANGE: 16, // pixels
+  STEEL_FROM_TANK: 25, // steel dropped from destroyed tank
+  STEEL_FROM_WALL: 10, // steel dropped from destroyed wall
+  STEEL_COST_WALL: 25, // steel needed to build a wall
+  STEEL_COST_ROAD: 10, // steel needed to build a road
+  
   // Game timing
   FIXED_TIMESTEP: 1000 / 60, // 60 FPS
 };

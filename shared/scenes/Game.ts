@@ -107,10 +107,6 @@ export class GameScene extends Phaser.Scene {
         this.currentTick++;
     }
 
-    /**
-     * Handles collision between tank and wall
-     * Prints debug information about the collision
-     */
     handleCollision(event: Phaser.Physics.Matter.Events.CollisionStartEvent) {
         // Get colliding pairs
         const pairs = event.pairs;
@@ -178,13 +174,10 @@ export class GameScene extends Phaser.Scene {
     }
 
     handleWallBulletCollision(bullet: Bullet, wall: MatterJS.Body) {
+        console.log("Wall bullet collision");
         bullet.destroy();
-        const wallTilePos = wall.position;
-        this.gameMap.map.setLayer(0);
-        const wallTile = this.gameMap.map.getTileAtWorldXY(wallTilePos.x, wallTilePos.y);
-
-        // Adding 192 gets us the 'crater' tile with the same wang index
-        const newTileIndex = wallTile.index+192;
-        this.gameMap.setTile(wallTile.x, wallTile.y, newTileIndex);
+        this.destroyWall(wall);
     }
+
+    destroyWall(wall: MatterJS.Body) {}
 }

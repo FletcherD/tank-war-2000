@@ -17,6 +17,7 @@ export class ServerTank extends Tank {
   schema: TankSchema;
   // Road building queue
   buildQueue: BuildQueueItem[] = [];
+  steel: number = 0;
   
   constructor(scene: ServerGameScene, x: number, y: number, sessionId: string) {
     super(scene, x, y);
@@ -45,6 +46,7 @@ export class ServerTank extends Tank {
     if (this.schema.down !== this.currentInput.down) this.schema.down = this.currentInput.down;
     if (this.schema.fire !== this.currentInput.fire) this.schema.fire = this.currentInput.fire;
     if (this.schema.tick !== this.currentInput.tick) this.schema.tick = this.currentInput.tick;
+    if (this.schema.steel !== this.steel) this.schema.steel = this.steel;
   }
 
   override fire() {
@@ -71,6 +73,16 @@ export class ServerTank extends Tank {
     this.updateSchema();
 
     console.log(`Fired bullet at (${bulletX}, ${bulletY}, ${this.heading}), ammo left: ${this.ammo}`);
+  }
+  
+  // Override destroy to drop steel when tank is destroyed
+  override destroy(fromScene?: boolean): void {
+    // Drop steel at the tank's position when destroyed
+    const scene = this.scene as ServerGameScene;
+    scene.createSteel(this.x, this.y, PHYSICS.STEEL_FROM_TANK);
+    
+    // Call parent destroy method
+    super.destroy(fromScene);
   }
 
   override preUpdate(time: number, delta: number): void {
@@ -157,6 +169,69 @@ export class ServerTank extends Tank {
     this.updateSchema();
     
     console.log(`Tank ${this.sessionId} placed pillbox at (${x}, ${y}). Has ${this.schema.pillboxCount} pillboxes left.`);
+    return true;
+  }
+  
+  // Steel resource methods
+  pickupSteel(steel: any): void {
+    // Add steel value to tank's inventory
+    this.steel += steel.value;
+    
+    // Update schema to sync with clients
+    this.updateSchema();
+    
+    console.log(`Tank ${this.sessionId} picked up ${steel.value} steel. Now has ${this.steel} steel.`);
+  }
+  
+  // Build a wall using steel
+  buildWall(x: number, y: number): boolean {
+    // Check if we have enough steel
+    if (this.steel < PHYSICS.STEEL_COST_WALL) {
+      return false;
+    }
+    
+    // Deduct steel cost
+    this.steel -= PHYSICS.STEEL_COST_WALL;
+    
+    // Create wall tile
+    const scene = this.scene as ServerGameScene;
+    scene.gameMap.setTile(x, y, TILE_INDICES.WALL, true);
+    
+    // Update schema
+    this.updateSchema();
+    
+    // Notify clients
+    scene.room.broadcast("wallBuildComplete", {
+      tile: { x, y }
+    });
+    
+    console.log(`Tank ${this.sessionId} built wall at (${x}, ${y}). Steel remaining: ${this.steel}`);
+    return true;
+  }
+  
+  // Build a road using steel
+  buildRoad(x: number, y: number): boolean {
+    // Check if we have enough steel
+    if (this.steel < PHYSICS.STEEL_COST_ROAD) {
+      return false;
+    }
+    
+    // Deduct steel cost
+    this.steel -= PHYSICS.STEEL_COST_ROAD;
+    
+    // Add to build queue (uses same mechanism as existing road building)
+    this.buildQueue.push({
+      tile: { x, y },
+      progress: 0,
+      buildTime: 5000, // 5 seconds to build
+      playerId: this.sessionId,
+      tileType: "road"
+    });
+    
+    // Update schema
+    this.updateSchema();
+    
+    console.log(`Tank ${this.sessionId} started building road at (${x}, ${y}). Steel remaining: ${this.steel}`);
     return true;
   }
 }

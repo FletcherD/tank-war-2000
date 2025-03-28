@@ -154,6 +154,7 @@ export class Tank extends Phaser.GameObjects.Container
   takeDamage(amount: number) {
     this.health -= amount;
     if (this.health <= 0) {
+      // The actual steel drop is handled in ServerTank
       this.destroy();
     }
   }
