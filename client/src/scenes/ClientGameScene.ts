@@ -24,6 +24,12 @@ import { ClientStation } from "../entities/ClientStation";
 import { ClientPillbox } from "../entities/ClientPillbox";
 import { ClientBullet } from "../entities/ClientBullet";
 
+// import @geckos.io/snapshot-interpolation
+import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
+
+// initialize the library (add your server's fps)
+const SI = new SnapshotInterpolation(60)
+
 // Define the newswire message type
 export interface NewswireMessage {
   type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed';
@@ -481,6 +487,10 @@ export class ClientGameScene extends GameScene {
                     
                     this.gameUI.addNewswireMessage(message.message, messageType);
                 }
+            });
+
+            this.room.onMessage("snapshot", (snapshot: any) => {
+                SI.snapshot.add(snapshot);
             });
             
             // Add initial welcome message once UI is ready

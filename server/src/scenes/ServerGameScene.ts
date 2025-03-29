@@ -217,6 +217,17 @@ export class ServerGameScene extends GameScene {
     
     return pillbox;
   }
+
+  sendSnapshots(): void {
+    let playersState = [];
+    this.players.forEach(tank => {
+      playersState.push(tank.schema);
+    });
+
+    const snapshot = this.room.SI.snapshot.create(playersState);
+
+    this.room.broadcast("snapshot", snapshot);
+  }
   
   update(time: number, delta: number): void {
     super.update(time, delta);
@@ -277,5 +288,7 @@ export class ServerGameScene extends GameScene {
         this.room.state.bullets.delete(bullet.schema.id);
       }
     }
+
+    this.sendSnapshots();
   }
 }

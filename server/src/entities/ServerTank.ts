@@ -159,29 +159,6 @@ export class ServerTank extends Tank {
     }
   }
   
-  // Add wood to the tank's inventory
-  addWood(amount: number): void {
-    this.schema.wood += amount;
-    console.log(`Tank ${this.sessionId} collected wood. Now has ${this.schema.wood} wood.`);
-    
-    // Update the schema to notify clients
-    this.updateSchema();
-  }
-  
-  // Use wood from the tank's inventory
-  useWood(amount: number): boolean {
-    if (this.schema.wood < amount) {
-      return false; // Not enough wood
-    }
-    
-    this.schema.wood -= amount;
-    console.log(`Tank ${this.sessionId} used ${amount} wood. Has ${this.schema.wood} wood left.`);
-    
-    // Update the schema to notify clients
-    this.updateSchema();
-    return true;
-  }
-  
   // Create a pillbox at the specified location
   placePillbox(x: number, y: number): boolean {
     // Verify the tank has a pillbox to place

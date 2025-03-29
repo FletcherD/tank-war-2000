@@ -2,6 +2,7 @@ import { Schema, type } from "@colyseus/schema";
 import { PHYSICS } from "../../../shared/constants";
 
 export class TankSchema extends Schema {
+  @type("string") id: string = "";
   @type("number") x: number = 0;
   @type("number") y: number = 0;
   @type("number") heading: number = 0;

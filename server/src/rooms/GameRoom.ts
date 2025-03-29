@@ -10,6 +10,8 @@ import { PillboxSchema } from "../schemas/PillboxSchema";
 import { BulletSchema } from "../schemas/BulletSchema";
 import { TILE_INDICES } from "../../../shared/constants";
 
+import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
+
 export class PlayerState extends Schema {
   @type(TankSchema) tank: TankSchema = new TankSchema();
 }
@@ -37,6 +39,7 @@ export class GameRoom extends Room<MyRoomState> {
   fixedTimeStep = 1000 / 60;
   gameScene: ServerGameScene;
   phaserServer: PhaserServer;
+  SI: SnapshotInterpolation = new SnapshotInterpolation();
 
   onCreate(options: any) {
     console.log("GameRoom created");
