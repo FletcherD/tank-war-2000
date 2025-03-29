@@ -11,10 +11,24 @@ import { ServerPillbox } from "../entities/ServerPillbox";
 import { ServerBullet } from "../entities/ServerBullet";
 import { ServerStation } from "../entities/ServerStation";
 
+export interface WorldState {
+  players: ServerTank[];
+  bullets: ServerBullet[];
+  pillboxes: ServerPillbox[];
+  stations: ServerStation[];
+}
+
 export class ServerGameScene extends GameScene {
   // Map of players by session ID
   players: Map<string, ServerTank> = new Map();
   room: Room<MyRoomState>;
+
+  worldState: WorldState = {
+    players: [],
+    bullets: [],
+    pillboxes: [],
+    stations: [],
+  };
   
   // Track server-managed bullets
   serverBullets: ServerBullet[] = [];
@@ -219,12 +233,14 @@ export class ServerGameScene extends GameScene {
   }
 
   sendSnapshots(): void {
-    let playersState = [];
+    this.worldState.players = [];
     this.players.forEach(tank => {
-      playersState.push(tank.schema);
+      let thisPlayerState = tank.schema;
+      thisPlayerState.id = tank.sessionId;
+      this.worldState.players.push(thisPlayerState);
     });
 
-    const snapshot = this.room.SI.snapshot.create(playersState);
+    const snapshot = this.room.SI.snapshot.create(this.worldState);
 
     this.room.broadcast("snapshot", snapshot);
   }

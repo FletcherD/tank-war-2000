@@ -25,7 +25,7 @@ import { ClientPillbox } from "../entities/ClientPillbox";
 import { ClientBullet } from "../entities/ClientBullet";
 
 // import @geckos.io/snapshot-interpolation
-import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
+import { SnapshotInterpolation, Snapshot } from '@geckos.io/snapshot-interpolation'
 
 // initialize the library (add your server's fps)
 const SI = new SnapshotInterpolation(60)
@@ -46,6 +46,8 @@ export class ClientGameScene extends GameScene {
     clientBullets: Map<string, ClientBullet> = new Map();
     players: Map<string, ClientTank> = new Map();
     currentPlayer: ClientTank;
+
+    snapshot: Snapshot;
     
     // UI instance
     gameUI: GameUI;
@@ -248,7 +250,7 @@ export class ClientGameScene extends GameScene {
                     //console.log("Current player tank state changed:", player.tank);
                     
                     // Update client's position based on server state
-                    this.currentPlayer.updateFromServer(player.tank);
+                    //this.currentPlayer.updateFromServer(player.tank);
                     
                     // Update debug rectangle position
                     this.remoteRef.x = player.tank.x;
@@ -265,7 +267,7 @@ export class ClientGameScene extends GameScene {
                     //console.log("Other player tank state changed:", player.tank);
                     
                     // Update entity based on the changed tank data
-                    entity.updateFromServer(player.tank);
+                    //entity.updateFromServer(player.tank);
                 });
 
             }
@@ -301,6 +303,8 @@ export class ClientGameScene extends GameScene {
             }
         });
     }
+        
+    
 
     async connect() {
         // add connection status text
@@ -317,6 +321,11 @@ export class ClientGameScene extends GameScene {
             // connection successful!
             connectionStatusText.destroy();
             console.log("Connected to server!");
+
+            this.room.onMessage("snapshot", (snapshot) => {
+                console.log("Received snapshot:", snapshot);
+                SI.snapshot.add(snapshot)
+            });
             
             // Listen for response from server on pillbox placement
             this.room.onMessage("pillboxPlaced", (response) => {
@@ -508,9 +517,25 @@ export class ClientGameScene extends GameScene {
 
     }
 
+    doInterpolation() {
+        
+        this.snapshot = SI.calcInterpolation('x y speed heading(rad) ', 'players');
+        const playerStates = this.snapshot.state;
+
+        for (const player of playerStates) {
+            const tank = this.players.get(player.id);
+            if (tank) {
+                tank.updateFromServer(player);
+            }
+        }
+    }
+    
+
     update(time: number, delta: number): void {
         // skip loop if not connected yet.
         if (!this.currentPlayer) { return; }
+
+        this.doInterpolation();
 
         this.elapsedTime += delta;
         while (this.elapsedTime >= this.fixedTimeStep) {
@@ -845,7 +870,7 @@ export class ClientGameScene extends GameScene {
         // Apply input to current player for client-side prediction
         if (this.currentPlayer && this.currentPlayer.active) {
             // Use sendInput to properly handle input buffering and prediction
-            this.currentPlayer.sendInput({...this.inputPayload});
+            //this.currentPlayer.sendInput({...this.inputPayload});
         }
     }
 
