@@ -8,6 +8,7 @@ import { WorldMapSchema } from "../schemas/WorldMapSchema";
 import { StationSchema } from "../schemas/StationSchema";
 import { PillboxSchema } from "../schemas/PillboxSchema";
 import { BulletSchema } from "../schemas/BulletSchema";
+import { TILE_INDICES } from "../../../shared/constants";
 
 export class PlayerState extends Schema {
   @type(TankSchema) tank: TankSchema = new TankSchema();
@@ -24,7 +25,7 @@ export class MyRoomState extends Schema {
 
 // Define the newswire message interface
 export interface NewswireMessage {
-  type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed';
+  type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed' | 'wood_harvested';
   playerId?: string;
   team?: number;
   position?: { x: number, y: number };
@@ -60,15 +61,34 @@ export class GameRoom extends Room<MyRoomState> {
     this.onMessage("buildTile", (client, data: { tiles: { x: number, y: number }[], tileType: string }) => {
       const tank = this.gameScene.players.get(client.sessionId);
       if (!tank) return;
+      console.log(`Received tile build request from ${client.sessionId}:`, data);
       
       // Validate tiles for building (ensure they are valid terrain types)
       const validTiles = [];
+      let isHarvesting = false;
+      let woodCost = 0;
+      
       for (const tile of data.tiles) {
         // Get the current tile and check if it can be built on
-        const currentTile = this.gameScene.gameMap.groundLayer.getTileAt(tile.x, tile.y);
-        if (currentTile && !currentTile.properties?.hasCollision && this.gameScene.gameMap.getBaseTileType(currentTile) !== 64) {
+        const currentTile = this.gameScene.gameMap.getTileAt(tile.x, tile.y);
+        if (!currentTile) continue;
+        
+        const baseTileType = this.gameScene.gameMap.getBaseTileType(currentTile);
+        
+        // Check if this is a forest tile (for harvesting wood)
+        if (data.tileType === "forest") {
+          validTiles.push(tile);
+          isHarvesting = true;
+        } 
+        // For roads and walls, check if tile is valid for building and not water
+        else if (baseTileType !== TILE_INDICES.WATER && baseTileType !== TILE_INDICES.WALL) {
           // Not water and not a wall
           validTiles.push(tile);
+          
+          // Count wood cost for roads and walls
+          if (data.tileType === "road" || data.tileType === "wall") {
+            woodCost += 1; // 1 wood per tile
+          }
         }
       }
       
@@ -81,20 +101,40 @@ export class GameRoom extends Room<MyRoomState> {
         return;
       }
       
+      // If building roads or walls, check wood resource
+      if (!isHarvesting && woodCost > 0) {
+        // Check if player has enough wood
+        if (tank.schema.wood < woodCost) {
+          this.send(client, "tileBuildStarted", {
+            success: false,
+            reason: `Not enough wood. Need ${woodCost}, have ${tank.schema.wood}.`
+          });
+          return;
+        }
+        
+        // Deduct wood for building
+        tank.useWood(woodCost);
+      }
+
+      console.log(`Starting tile construction for ${client.sessionId} - ${data.tileType}`);
+      
       // Add to player's build queue
       tank.buildQueue = validTiles.map(tile => ({
         tile,
         progress: 0,
         buildTime: 1500, // Same as client BUILD_TIME_PER_TILE
         playerId: client.sessionId,
-        tileType: data.tileType // Add the tile type to the build queue
+        tileType: data.tileType, // Add the tile type to the build queue
+        isHarvesting: isHarvesting // Mark as harvesting if forest tiles
       }));
       
       // Send success response with the valid tiles
       this.send(client, "tileBuildStarted", {
         success: true,
         tiles: validTiles,
-        tileType: data.tileType
+        tileType: data.tileType,
+        isHarvesting: isHarvesting,
+        woodCost: woodCost
       });
     });
     
@@ -182,6 +222,7 @@ export class GameRoom extends Room<MyRoomState> {
         if (playerState.tank.fire !== schema.fire) playerState.tank.fire = schema.fire;
         if (playerState.tank.tick !== schema.tick) playerState.tank.tick = schema.tick;
         if (playerState.tank.pillboxCount !== schema.pillboxCount) playerState.tank.pillboxCount = schema.pillboxCount;
+        if (playerState.tank.wood !== schema.wood) playerState.tank.wood = schema.wood;
         
         // Add debugging to check if updates are happening on the server side
         //console.log(`Player ${sessionId} position: ${schema.x.toFixed(2)}, ${schema.y.toFixed(2)}`);

@@ -11,6 +11,8 @@ export class GameUI {
   private cancelBuildButton: HTMLButtonElement;
   private placePillboxButton: HTMLButtonElement;
   private pillboxCountElement: HTMLDivElement;
+  private woodCountElement: HTMLDivElement;
+  private harvestWoodButton: HTMLButtonElement;
   private messageElement: HTMLDivElement;
   private messageTimeout: number | null = null;
   private gameScene: ClientGameScene;
@@ -184,6 +186,38 @@ export class GameUI {
     this.pillboxCountElement.textContent = 'Pillboxes: 0';
     this.uiContainer.appendChild(this.pillboxCountElement);
     
+    // Create wood count display
+    this.woodCountElement = document.createElement('div');
+    this.woodCountElement.style.position = 'absolute';
+    this.woodCountElement.style.top = '70px';
+    this.woodCountElement.style.right = '20px';
+    this.woodCountElement.style.padding = '5px 10px';
+    this.woodCountElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    this.woodCountElement.style.color = 'white';
+    this.woodCountElement.style.borderRadius = '5px';
+    this.woodCountElement.style.fontFamily = "'Courier Prime', monospace";
+    this.woodCountElement.style.fontWeight = "700";
+    this.woodCountElement.textContent = 'Wood: 0';
+    this.uiContainer.appendChild(this.woodCountElement);
+    
+    // Create harvest wood button
+    this.harvestWoodButton = document.createElement('button');
+    this.harvestWoodButton.textContent = 'Harvest Wood';
+    this.harvestWoodButton.style.position = 'absolute';
+    this.harvestWoodButton.style.bottom = '100px';
+    this.harvestWoodButton.style.right = '20px';
+    this.harvestWoodButton.style.padding = '10px 20px';
+    this.harvestWoodButton.style.backgroundColor = '#8D6E63'; // Brown color for wood
+    this.harvestWoodButton.style.color = 'white';
+    this.harvestWoodButton.style.border = 'none';
+    this.harvestWoodButton.style.borderRadius = '5px';
+    this.harvestWoodButton.style.cursor = 'pointer';
+    this.harvestWoodButton.style.fontFamily = "'Courier Prime', monospace";
+    this.harvestWoodButton.style.fontWeight = "700";
+    this.harvestWoodButton.style.pointerEvents = 'auto';
+    this.harvestWoodButton.onclick = () => this.gameScene.buildTile('forest'); // Use forest tile type for harvesting
+    this.uiContainer.appendChild(this.harvestWoodButton);
+    
     // Create message element for notifications
     this.messageElement = document.createElement('div');
     this.messageElement.style.position = 'absolute';
@@ -312,6 +346,15 @@ export class GameUI {
       this.placePillboxButton.style.display = 'none';
     }
   }
+  
+  /**
+   * Updates the wood count display
+   */
+  public updateWoodCount(count: number) {
+    if (!this.woodCountElement) return;
+    
+    this.woodCountElement.textContent = `Wood: ${count}`;
+  }
 
   /**
    * Updates the UI based on the current game state
@@ -321,6 +364,7 @@ export class GameUI {
       this.updateHealthBar(this.gameScene.currentPlayer.health);
       this.updateAmmoBar(this.gameScene.currentPlayer.ammo, PHYSICS.TANK_MAX_AMMO);
       this.updatePillboxCount(this.gameScene.currentPlayer.pillboxCount);
+      this.updateWoodCount(this.gameScene.currentPlayer.wood);
     }
     
     // Update build buttons based on building state

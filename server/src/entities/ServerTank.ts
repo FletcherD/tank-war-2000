@@ -10,6 +10,7 @@ export interface BuildQueueItem {
     buildTime: number;
     playerId: string;
     tileType: string;
+    isHarvesting?: boolean; // Flag for wood harvesting operations
 }
 
 export class ServerTank extends Tank {
@@ -45,6 +46,7 @@ export class ServerTank extends Tank {
     if (this.schema.down !== this.currentInput.down) this.schema.down = this.currentInput.down;
     if (this.schema.fire !== this.currentInput.fire) this.schema.fire = this.currentInput.fire;
     if (this.schema.tick !== this.currentInput.tick) this.schema.tick = this.currentInput.tick;
+    // Wood property is updated in other methods, not directly tied to tank properties
   }
 
   override fire() {
@@ -88,21 +90,39 @@ export class ServerTank extends Tank {
     
     // Send progress update to all clients
     const scene = this.scene as ServerGameScene;
-    scene.room.broadcast("roadBuildProgress", {
+    scene.room.broadcast("tileBuildProgress", {
         tile: currentBuild.tile,
         progress: currentBuild.progress
     });
     
     // If building is complete
     if (currentBuild.progress >= 1) {
-      const tileIndex = (currentBuild.tileType === "road") ? TILE_INDICES.ROAD : TILE_INDICES.WALL;
-      // Set the tile on the map
-      scene.gameMap.setTile(currentBuild.tile.x, currentBuild.tile.y, tileIndex, true);
-      
-      // Notify clients about completion
-      scene.room.broadcast("roadBuildComplete", {
-          tile: currentBuild.tile
-      });
+      if (currentBuild.isHarvesting) {
+        // For harvesting forest, convert to grass and award 1 wood
+        scene.gameMap.setTile(currentBuild.tile.x, currentBuild.tile.y, TILE_INDICES.GRASS, true);
+        
+        // Award wood resource
+        this.addWood(1);
+        
+        // Notify clients about completion
+        scene.room.broadcast("tileBuildComplete", {
+          tile: currentBuild.tile,
+          tileType: "grass",
+          isHarvesting: true,
+          woodAwarded: 1
+        });
+      } else {
+        // Normal road/wall building
+        const tileIndex = (currentBuild.tileType === "road") ? TILE_INDICES.ROAD : TILE_INDICES.WALL;
+        // Set the tile on the map
+        scene.gameMap.setTile(currentBuild.tile.x, currentBuild.tile.y, tileIndex, true);
+        
+        // Notify clients about completion
+        scene.room.broadcast("tileBuildComplete", {
+          tile: currentBuild.tile,
+          tileType: currentBuild.tileType
+        });
+      }
       
       // Remove from queue
       this.buildQueue.shift();
@@ -137,6 +157,29 @@ export class ServerTank extends Tank {
     if (pillboxIndex !== -1) {
       scene.pillboxes.splice(pillboxIndex, 1);
     }
+  }
+  
+  // Add wood to the tank's inventory
+  addWood(amount: number): void {
+    this.schema.wood += amount;
+    console.log(`Tank ${this.sessionId} collected wood. Now has ${this.schema.wood} wood.`);
+    
+    // Update the schema to notify clients
+    this.updateSchema();
+  }
+  
+  // Use wood from the tank's inventory
+  useWood(amount: number): boolean {
+    if (this.schema.wood < amount) {
+      return false; // Not enough wood
+    }
+    
+    this.schema.wood -= amount;
+    console.log(`Tank ${this.sessionId} used ${amount} wood. Has ${this.schema.wood} wood left.`);
+    
+    // Update the schema to notify clients
+    this.updateSchema();
+    return true;
   }
   
   // Create a pillbox at the specified location

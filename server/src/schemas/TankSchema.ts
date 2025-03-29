@@ -16,4 +16,5 @@ export class TankSchema extends Schema {
   @type("boolean") fire: boolean = false;
   @type("number") tick: number = 0;
   @type("number") pillboxCount: number = 0; // Number of pillboxes in inventory
+  @type("number") wood: number = 0; // Amount of wood resource collected
 }
