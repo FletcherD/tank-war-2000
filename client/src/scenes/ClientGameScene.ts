@@ -25,7 +25,8 @@ import { ClientPillbox } from "../entities/ClientPillbox";
 import { ClientBullet } from "../entities/ClientBullet";
 
 // import @geckos.io/snapshot-interpolation
-import { SnapshotInterpolation, Snapshot } from '@geckos.io/snapshot-interpolation'
+import { SnapshotInterpolation, Snapshot, Vault } from '@geckos.io/snapshot-interpolation'
+import { off } from "process";
 
 // initialize the library (add your server's fps)
 const SI = new SnapshotInterpolation(60)
@@ -47,7 +48,7 @@ export class ClientGameScene extends GameScene {
     players: Map<string, ClientTank> = new Map();
     currentPlayer: ClientTank;
 
-    snapshot: Snapshot;
+    playerVault = new Vault()
     
     // UI instance
     gameUI: GameUI;
@@ -323,7 +324,6 @@ export class ClientGameScene extends GameScene {
             console.log("Connected to server!");
 
             this.room.onMessage("snapshot", (snapshot) => {
-                console.log("Received snapshot:", snapshot);
                 SI.snapshot.add(snapshot)
             });
             
@@ -519,14 +519,57 @@ export class ClientGameScene extends GameScene {
 
     doInterpolation() {
         
-        this.snapshot = SI.calcInterpolation('x y speed heading(rad) ', 'players');
-        const playerStates = this.snapshot.state;
+        const snapshot = SI.calcInterpolation('x y speed heading(rad) ', 'players');
+        if(!snapshot) return;
+        const playerStates = snapshot.state;
 
         for (const player of playerStates) {
+            if (player.id === this.currentPlayer.sessionId) {
+                continue;
+            }
             const tank = this.players.get(player.id);
             if (tank) {
                 tank.updateFromServer(player);
             }
+        }
+    }
+
+
+    serverReconciliation() {
+        if(this.currentPlayer) {
+            const serverSnapshot = SI.vault.get()
+            if(serverSnapshot) {
+
+                const serverPos = serverSnapshot.state.players.filter(s => s.id === this.currentPlayer.sessionId)[0]
+
+                const nowTime = this.playerVault.get().time
+                console.log(nowTime - serverSnapshot.time)
+
+                this.currentPlayer.updateFromServer(serverPos)
+            }
+            
+        }
+    }
+    
+    applyInput() {
+        this.currentTick++;
+
+        // Update input payload based on keyboard state
+        this.inputPayload.left = this.cursorKeys.left.isDown;
+        this.inputPayload.right = this.cursorKeys.right.isDown;
+        this.inputPayload.up = this.cursorKeys.up.isDown;
+        this.inputPayload.down = this.cursorKeys.down.isDown;
+        this.inputPayload.fire = this.spaceKey.isDown;
+        this.inputPayload.tick = this.currentTick;
+        
+        // Send input to server with the correct message type (0) to match server handler
+        this.room.send("input", this.inputPayload);
+
+        // Apply input to current player for client-side prediction
+        if (this.currentPlayer && this.currentPlayer.active) {
+            // Use sendInput to properly handle input buffering and prediction
+            this.currentPlayer.sendInput({...this.inputPayload});
+            this.playerVault.add(SI.snapshot.create([ this.currentPlayer.getState()]))
         }
     }
     
@@ -535,14 +578,15 @@ export class ClientGameScene extends GameScene {
         // skip loop if not connected yet.
         if (!this.currentPlayer) { return; }
 
-        this.doInterpolation();
-
         this.elapsedTime += delta;
         while (this.elapsedTime >= this.fixedTimeStep) {
             this.elapsedTime -= this.fixedTimeStep;
             this.applyInput();
             this.fixedTick(time, this.fixedTimeStep);
         }
+
+        this.serverReconciliation();
+        this.doInterpolation();
         
         // Process build queue
         this.updateBuildQueue(delta);
@@ -852,26 +896,6 @@ export class ClientGameScene extends GameScene {
             this.players.delete(sessionId);
         }
     }
-    
-    applyInput() {
-        this.currentTick++;
 
-        // Update input payload based on keyboard state
-        this.inputPayload.left = this.cursorKeys.left.isDown;
-        this.inputPayload.right = this.cursorKeys.right.isDown;
-        this.inputPayload.up = this.cursorKeys.up.isDown;
-        this.inputPayload.down = this.cursorKeys.down.isDown;
-        this.inputPayload.fire = this.spaceKey.isDown;
-        this.inputPayload.tick = this.currentTick;
-        
-        // Send input to server with the correct message type (0) to match server handler
-        this.room.send("input", this.inputPayload);
-
-        // Apply input to current player for client-side prediction
-        if (this.currentPlayer && this.currentPlayer.active) {
-            // Use sendInput to properly handle input buffering and prediction
-            //this.currentPlayer.sendInput({...this.inputPayload});
-        }
-    }
 
 }

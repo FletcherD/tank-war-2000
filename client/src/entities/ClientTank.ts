@@ -46,6 +46,22 @@ export class ClientTank extends Tank {
     this.createTreadFrames(scene);
   }
 
+  applySnapshot(data) {
+    this.x = data.x;
+    this.y = data.y;
+    this.heading = data.heading;
+    this.speed = data.speed;
+    this.health = data.health;
+    this.team = data.team;
+    // Update input state
+    this.currentInput.left = data.left;
+    this.currentInput.right = data.right;
+    this.currentInput.up = data.up;
+    this.currentInput.down = data.down;
+    this.currentInput.fire = data.fire;
+    this.currentInput.tick = data.tick;
+  }
+
   updateFromServer(data: any): void {
     //console.log(`Received update for ${this.sessionId} - x:${data.x.toFixed(2)}, y:${data.y.toFixed(2)}, isLocal:${this.isLocalPlayer}`);
     
@@ -139,8 +155,8 @@ export class ClientTank extends Tank {
     // If our prediction is too far off from server state, we need to reconcile
     const needsReconciliation = distanceToServer > 10 || headingDifference > 0.1 || speedDifference > 5;
     
-    if (needsReconciliation) {
-      console.log(`Reconciling position. Distance: ${distanceToServer.toFixed(2)}, Heading diff: ${headingDifference.toFixed(2)}`);
+    //if (needsReconciliation) {
+      //console.log(`Reconciling position. Distance: ${distanceToServer.toFixed(2)}, Heading diff: ${headingDifference.toFixed(2)}`);
       
       // Rollback to server state
       this.x = this.lastServerState.x;
@@ -165,8 +181,8 @@ export class ClientTank extends Tank {
       // Restore current input
       this.currentInput = currentInput;
       
-      console.log(`After reconciliation: x=${this.x.toFixed(2)}, y=${this.y.toFixed(2)}`);
-    }
+      //console.log(`After reconciliation: x=${this.x.toFixed(2)}, y=${this.y.toFixed(2)}`);
+    //}
   }
 
   sendInput(input: InputData): void {

@@ -173,4 +173,16 @@ export class Tank extends Phaser.GameObjects.Container
   refillAmmo(amount: number): void {
     this.ammo = Math.min(PHYSICS.TANK_MAX_AMMO, this.ammo + amount);
   }
+
+  getState() {
+    return {
+      id: "0",
+      x: this.x,
+      y: this.y,
+      heading: this.heading,
+      speed: this.speed,
+      health: this.health,
+        ammo: this.ammo,
+    };
+  }
 }
