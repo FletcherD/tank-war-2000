@@ -37,6 +37,7 @@ export class Tank extends Phaser.GameObjects.Container
   };
   speed: number = 0;
   heading: number = 0;
+  lastPosition: Phaser.Math.Vector2 = new Phaser.Math.Vector2(0, 0);
 
   baseMaxSpeed: number = PHYSICS.TANK_MAX_SPEED;
   baseRotationSpeed: number = PHYSICS.TANK_ROTATION_SPEED;
@@ -81,7 +82,7 @@ export class Tank extends Phaser.GameObjects.Container
       scene.add.existing(this);
   }
 
-  preUpdate(time: number, delta: number)
+  preUpdate(time: number, delta: number, isSimulated: boolean = false)
   {
       const gameScene = this.scene as GameScene;
       
@@ -90,11 +91,7 @@ export class Tank extends Phaser.GameObjects.Container
       const maxSpeed = this.baseMaxSpeed * speedMultiplier;
       const rotationSpeed = this.baseRotationSpeed * speedMultiplier;
       
-      // Debug output for tile speed
       if (this === gameScene.currentPlayer) {
-          gameScene.debugText = `Tile Speed: ${speedMultiplier.toFixed(2)}`;
-          
-          // Show crosshair only for current player
           this.crosshair.setVisible(true);
       }
   
@@ -140,8 +137,9 @@ export class Tank extends Phaser.GameObjects.Container
       }
       this.fireCooldownTimer -= delta;
       
-      // Animate treads based on tank speed
       this.animate(delta, this.speed, rotationSpeed);
+
+      this.lastPosition = new Phaser.Math.Vector2(this.x, this.y);
   }
   
 
@@ -182,7 +180,14 @@ export class Tank extends Phaser.GameObjects.Container
       heading: this.heading,
       speed: this.speed,
       health: this.health,
-        ammo: this.ammo,
+      ammo: this.ammo,
+      team: this.team,
+      left: this.currentInput.left,
+      right: this.currentInput.right,
+      up: this.currentInput.up,
+      down: this.currentInput.down,
+      fire: this.currentInput.fire,
+      tick: this.currentInput.tick
     };
   }
 }

@@ -175,7 +175,7 @@ export class ClientTank extends Tank {
       // Re-apply each pending input
       for (const input of this.pendingInputs) {
         this.currentInput = input;
-        super.preUpdate(0, delta);
+        super.preUpdate(0, delta, true);
       }
       
       // Restore current input
@@ -231,14 +231,23 @@ export class ClientTank extends Tank {
   // Helper method to animate treads based on speed and direction
   override animate(delta: number, speed: number, rotationSpeed: number) {
     const framesPerRow: number = 31;
-    const animationSpeed: number = -0.02;
+    const framesPerRotation: number = 60;
+    const animationSpeed: number = 0.5;
     const turningSpeed: number = -10;
 
-    if (Math.abs(speed) > 0 || Math.abs(rotationSpeed) > 0) {
+    const positionDiff = this.lastPosition.subtract(new Phaser.Math.Vector2(this.x, this.y));
+    const effectiveDistanceTraveled = positionDiff.dot(new Phaser.Math.Vector2(1, 0).rotate(this.heading));
+
+    function getTreadFrameForPosition(position: number): number {
+      if (position > framesPerRow) return 0;
+      return Math.floor(position);
+    }
+
+    if (Math.abs(effectiveDistanceTraveled) > 0 || Math.abs(rotationSpeed) > 0) {
       // Calculate frame increment based on speed
       // Faster speed = faster animation
-      let frameIncrementL = (speed * delta) * animationSpeed;
-      let frameIncrementR = (speed * delta) * animationSpeed;
+      let frameIncrementL = effectiveDistanceTraveled * animationSpeed;
+      let frameIncrementR = effectiveDistanceTraveled * animationSpeed;
       
       // Handle turning - treads move in opposite directions when turning
       if (this.currentInput.left) {
@@ -255,11 +264,12 @@ export class ClientTank extends Tank {
         return ((n % m) + m) % m;
       }
 
-      this.leftTreadPosition = mod(this.leftTreadPosition + frameIncrementL, framesPerRow);
-      this.rightTreadPosition = mod(this.rightTreadPosition + frameIncrementR, framesPerRow);
+      this.leftTreadPosition = mod(this.leftTreadPosition + frameIncrementL, framesPerRotation);
+      this.rightTreadPosition = mod(this.rightTreadPosition + frameIncrementR, framesPerRotation);
+      console.log(this.leftTreadPosition, this.rightTreadPosition);
 
-      this.leftTread.setFrame(Math.floor(this.leftTreadPosition));
-      this.rightTread.setFrame(Math.floor(this.rightTreadPosition) + framesPerRow);
+      this.leftTread.setFrame(getTreadFrameForPosition(this.leftTreadPosition));
+      this.rightTread.setFrame(getTreadFrameForPosition(this.rightTreadPosition) + framesPerRow);
     }
   }
 
