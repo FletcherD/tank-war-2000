@@ -33,11 +33,12 @@ const SI = new SnapshotInterpolation(60)
 
 // Define the newswire message type
 export interface NewswireMessage {
-  type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed';
+  type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed' | 'chat';
   playerId?: string;
   team?: number;
   position?: { x: number, y: number };
   message: string;
+  isTeamChat?: boolean;
 }
 
 export class ClientGameScene extends GameScene {
@@ -98,6 +99,20 @@ export class ClientGameScene extends GameScene {
 
         this.cursorKeys = this.input.keyboard.createCursorKeys();
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        
+        // Prevent game inputs while chat is active by capturing key events
+        this.input.keyboard.on('keydown', (event) => {
+            // Skip input capturing if gameUI isn't initialized yet
+            if (!this.gameUI) return;
+            
+            // If chat is active, stop event propagation for WASD and arrow keys
+            if (this.gameUI.isChatActive) {
+                // Allow only Escape and Enter to pass through for chat controls
+                if (event.key !== 'Escape' && event.key !== 'Enter') {
+                    event.stopPropagation();
+                }
+            }
+        });
         this.debugFPS = this.add.text(4, 4, "", { 
             color: "#ff0000", 
             fontFamily: "'Courier Prime', monospace",
@@ -473,28 +488,42 @@ export class ClientGameScene extends GameScene {
             // Listen for newswire messages from server
             this.room.onMessage("newswire", (message: NewswireMessage) => {
                 if (this.gameUI) {
-                    // Map message types to UI message types
-                    let messageType: 'info' | 'warning' | 'error' | 'success' = 'info';
-                    
-                    switch(message.type) {
-                        case 'station_capture':
-                            messageType = 'success';
-                            break;
-                        case 'pillbox_destroyed':
-                            messageType = 'warning';
-                            break;
-                        case 'player_join':
-                            messageType = 'info';
-                            break;
-                        case 'player_leave':
-                            messageType = 'info';
-                            break;
-                        case 'pillbox_placed':
-                            messageType = 'success';
-                            break;
+                    // Handle chat messages differently
+                    if (message.type === 'chat') {
+                        // Extract player name (first 4 characters of session ID)
+                        const playerName = message.playerId ? message.playerId.substr(0, 4) : 'Unknown';
+                        
+                        // Add chat message to newswire
+                        this.gameUI.addChatMessage(
+                            message.message,
+                            playerName,
+                            message.isTeamChat || false,
+                            message.team || 0
+                        );
+                    } else {
+                        // Process other newswire messages as before
+                        let messageType: 'info' | 'warning' | 'error' | 'success' = 'info';
+                        
+                        switch(message.type) {
+                            case 'station_capture':
+                                messageType = 'success';
+                                break;
+                            case 'pillbox_destroyed':
+                                messageType = 'warning';
+                                break;
+                            case 'player_join':
+                                messageType = 'info';
+                                break;
+                            case 'player_leave':
+                                messageType = 'info';
+                                break;
+                            case 'pillbox_placed':
+                                messageType = 'success';
+                                break;
+                        }
+                        
+                        this.gameUI.addNewswireMessage(message.message, messageType);
                     }
-                    
-                    this.gameUI.addNewswireMessage(message.message, messageType);
                 }
             });
 
@@ -554,12 +583,24 @@ export class ClientGameScene extends GameScene {
     applyInput() {
         this.currentTick++;
 
-        // Update input payload based on keyboard state
-        this.inputPayload.left = this.cursorKeys.left.isDown;
-        this.inputPayload.right = this.cursorKeys.right.isDown;
-        this.inputPayload.up = this.cursorKeys.up.isDown;
-        this.inputPayload.down = this.cursorKeys.down.isDown;
-        this.inputPayload.fire = this.spaceKey.isDown;
+        // Check if chat is active - skip inputs if chat is capturing keyboard
+        const isChatActive = this.gameUI && this.gameUI.isChatActive;
+        if (isChatActive) {
+            // Clear inputs when chat is active
+            this.inputPayload.left = false;
+            this.inputPayload.right = false;
+            this.inputPayload.up = false;
+            this.inputPayload.down = false;
+            this.inputPayload.fire = false;
+        } else {
+            // Update input payload based on keyboard state
+            this.inputPayload.left = this.cursorKeys.left.isDown;
+            this.inputPayload.right = this.cursorKeys.right.isDown;
+            this.inputPayload.up = this.cursorKeys.up.isDown;
+            this.inputPayload.down = this.cursorKeys.down.isDown;
+            this.inputPayload.fire = this.spaceKey.isDown;
+        }
+        
         this.inputPayload.tick = this.currentTick;
         
         // Send input to server with the correct message type (0) to match server handler

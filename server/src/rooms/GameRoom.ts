@@ -27,11 +27,12 @@ export class MyRoomState extends Schema {
 
 // Define the newswire message interface
 export interface NewswireMessage {
-  type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed' | 'wood_harvested';
+  type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed' | 'wood_harvested' | 'chat';
   playerId?: string;
   team?: number;
   position?: { x: number, y: number };
   message: string;
+  isTeamChat?: boolean;
 }
 
 export class GameRoom extends Room<MyRoomState> {
@@ -58,6 +59,45 @@ export class GameRoom extends Room<MyRoomState> {
     this.onMessage("input", (client, input: InputData) => {
       //console.log(`Received input from ${client.sessionId}:`, input);
       this.gameScene.handlePlayerInput(client.sessionId, input);
+    });
+    
+    // Handle chat messages
+    this.onMessage("chatMessage", (client, data: { message: string, isAllChat: boolean }) => {
+      const playerState = this.state.players.get(client.sessionId);
+      if (!playerState) return;
+      
+      // Get player team
+      const team = playerState.tank.team;
+      const isTeamChat = !data.isAllChat;
+      
+      // Sanitize message (remove HTML tags)
+      const sanitizedMessage = data.message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      
+      if (isTeamChat) {
+        // Send only to players on the same team
+        this.state.players.forEach((state, sessionId) => {
+          if (state.tank.team === team) {
+            const thisClient = this.clients.getById(sessionId);
+            if (!thisClient) return;
+            this.send(thisClient, "newswire", {
+              type: 'chat',
+              playerId: client.sessionId,
+              team: team,
+              message: sanitizedMessage,
+              isTeamChat: true
+            });
+          }
+        });
+      } else {
+        // Send to all players
+        this.broadcast("newswire", {
+          type: 'chat',
+          playerId: client.sessionId,
+          team: team,
+          message: sanitizedMessage,
+          isTeamChat: false
+        });
+      }
     });
     
     // Handle tile building requests

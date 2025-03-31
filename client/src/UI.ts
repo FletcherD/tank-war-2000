@@ -24,6 +24,12 @@ export class GameUI {
   private newswireExpandButton: HTMLButtonElement;
   private isNewswireExpanded: boolean = false;
   private maxNewswireMessages: number = 20;
+  
+  // Chat elements
+  private chatContainer: HTMLDivElement;
+  private chatInput: HTMLInputElement;
+  private chatButton: HTMLButtonElement;
+  private isChatActive: boolean = false;
 
   constructor(gameScene: ClientGameScene) {
     this.gameScene = gameScene;
@@ -271,6 +277,77 @@ export class GameUI {
     
     // Make sure scroll and resize work (needs pointer-events: auto)
     this.newswire.style.pointerEvents = 'auto';
+    
+    // Create chat container, will be shown/hidden as needed
+    this.chatContainer = document.createElement('div');
+    this.chatContainer.id = 'chatContainer';
+    this.chatContainer.style.position = 'absolute';
+    this.chatContainer.style.bottom = '34px'; // Position just above the newswire
+    this.chatContainer.style.left = '0';
+    this.chatContainer.style.display = 'none'; // Initially hidden
+    this.chatContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    this.chatContainer.style.padding = '5px';
+    this.chatContainer.style.width = 'auto';
+    this.chatContainer.style.pointerEvents = 'auto'; // Allow interaction
+    this.uiContainer.appendChild(this.chatContainer);
+    
+    // Create chat input field
+    this.chatInput = document.createElement('input');
+    this.chatInput.type = 'text';
+    this.chatInput.className = 'chatInput';
+    this.chatInput.placeholder = 'Team chat (Shift+Enter for all)';
+    this.chatInput.maxLength = 100; // Limit message length
+    this.chatInput.style.width = '300px';
+    this.chatContainer.appendChild(this.chatInput);
+    
+    // Create chat button
+    this.chatButton = document.createElement('button');
+    this.chatButton.id = 'chatButton';
+    this.chatButton.textContent = '💬';
+    this.chatButton.className = 'button';
+    this.chatButton.style.height = '28px';
+    this.chatButton.style.marginLeft = '5px';
+    this.chatContainer.appendChild(this.chatButton);
+    
+    // Create a chat icon button in the newswire container
+    const chatIconButton = document.createElement('button');
+    chatIconButton.id = 'newswireChatButton';
+    chatIconButton.textContent = '💬';
+    chatIconButton.className = 'button';
+    chatIconButton.style.pointerEvents = 'auto';
+    chatIconButton.style.height = '100%';
+    chatIconButton.style.width = '34px';
+    chatIconButton.style.padding = '0';
+    this.newswireContainer.appendChild(chatIconButton);
+    
+    // Add keyboard event listener for Enter key to toggle chat
+    document.addEventListener('keydown', (event) => {
+      // Don't toggle if already in chat mode and pressing Enter to send
+      if (event.key === 'Enter' && !this.isChatActive) {
+        this.toggleChat();
+        event.preventDefault();
+      } else if (event.key === 'Escape' && this.isChatActive) {
+        this.closeChat();
+        event.preventDefault();
+      } else if (event.key === 'Enter' && this.isChatActive) {
+        this.sendChatMessage(event.shiftKey);
+        event.preventDefault();
+      }
+    });
+    
+    // Add click handlers for chat buttons
+    chatIconButton.onclick = () => this.toggleChat();
+    this.chatButton.onclick = () => this.sendChatMessage(false);
+    
+    // Add blur handler to close chat when clicking outside
+    this.chatInput.onblur = (e) => {
+      // Small delay to allow button click to send message first
+      setTimeout(() => {
+        if (!this.chatContainer.contains(document.activeElement)) {
+          this.closeChat();
+        }
+      }, 200);
+    };
 
     // Update UI container position when window resizes
     window.addEventListener('resize', () => this.updateUIPosition());
@@ -514,5 +591,131 @@ export class GameUI {
    */
   public clearNewswire() {
     this.newswireText.innerHTML = '';
+  }
+  
+  /**
+   * Toggles the chat input visibility
+   */
+  public toggleChat() {
+    this.isChatActive = !this.isChatActive;
+    this.chatContainer.style.display = this.isChatActive ? 'flex' : 'none';
+    
+    if (this.isChatActive) {
+      // Focus the input field when opening
+      this.chatInput.focus();
+      
+      // Ensure newswire is expanded when chat is active
+      if (!this.isNewswireExpanded) {
+        this.isNewswireExpanded = true;
+        this.newswire.classList.add('expanded');
+        this.newswireExpandButton.textContent = '▲';
+      }
+    }
+  }
+  
+  /**
+   * Returns whether chat is currently active
+   */
+  public isChatActive(): boolean {
+    return this.isChatActive;
+  }
+  
+  /**
+   * Closes the chat input
+   */
+  public closeChat() {
+    this.isChatActive = false;
+    this.chatContainer.style.display = 'none';
+    // Clear input when closing
+    this.chatInput.value = '';
+  }
+  
+  /**
+   * Sends a chat message to the server
+   * @param isAllChat Whether the message should be sent to all players or just team
+   */
+  public sendChatMessage(isAllChat: boolean) {
+    const messageText = this.chatInput.value.trim();
+    if (messageText.length === 0) {
+      this.closeChat();
+      return;
+    }
+    
+    // Check for /all prefix overriding the isAllChat parameter
+    let finalIsAllChat = isAllChat;
+    let finalMessageText = messageText;
+    
+    if (messageText.startsWith('/all ')) {
+      finalIsAllChat = true;
+      finalMessageText = messageText.substring(5).trim();
+    }
+    
+    if (finalMessageText.length === 0) {
+      this.closeChat();
+      return;
+    }
+    
+    // Send message to server
+    this.gameScene.room.send("chatMessage", {
+      message: finalMessageText,
+      isAllChat: finalIsAllChat
+    });
+    
+    // Clear input after sending
+    this.chatInput.value = '';
+    this.closeChat();
+  }
+  
+  /**
+   * Adds a chat message to the newswire
+   * @param message The message content
+   * @param playerName The name/id of the player who sent the message
+   * @param isTeamChat Whether this is a team-only message
+   * @param team The team number of the sender
+   */
+  public addChatMessage(message: string, playerName: string, isTeamChat: boolean, team: number) {
+    // Create a message element
+    const messageElement = document.createElement('div');
+    messageElement.className = `newswire-message chat-message`;
+    
+    // Create prefix element (Team) or (All) with appropriate color
+    const prefixElement = document.createElement('span');
+    if (isTeamChat) {
+      prefixElement.textContent = '(Team) ';
+      prefixElement.style.color = '#ffcc00'; // Yellow for team chat
+    } else {
+      prefixElement.textContent = '(All) ';
+      prefixElement.style.color = '#ff3333'; // Red for all chat
+    }
+    
+    // Create player name element
+    const playerNameElement = document.createElement('span');
+    playerNameElement.textContent = playerName + ': ';
+    
+    // Set player name color based on team
+    if (team === 1) { // Blue team
+      playerNameElement.style.color = '#3333ff';
+    } else { // Red team
+      playerNameElement.style.color = '#ff3333';
+    }
+    
+    // Create message content element
+    const messageContentElement = document.createElement('span');
+    messageContentElement.textContent = message;
+    messageContentElement.style.color = '#ffffff';
+    
+    // Add all parts to the message element
+    messageElement.appendChild(prefixElement);
+    messageElement.appendChild(playerNameElement);
+    messageElement.appendChild(messageContentElement);
+    
+    // Add to newswire at the beginning (newest messages at the top)
+    this.newswireText.insertBefore(messageElement, this.newswireText.firstChild);
+    
+    // Limit the number of messages
+    while (this.newswireText.children.length > this.maxNewswireMessages) {
+      // Remove oldest message (last child)
+      this.newswireText.removeChild(this.newswireText.lastChild);
+    }
   }
 }
