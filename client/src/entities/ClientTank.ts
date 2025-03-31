@@ -1,7 +1,7 @@
 import { Tank, InputData } from "../../../shared/objects/Tank";
 import { GameScene } from "../../../shared/scenes/Game";
 import { ClientGameScene } from "../scenes/ClientGameScene";
-import { VISUALS, PHYSICS } from "../../../shared/constants";
+import { VISUALS, PHYSICS, TEAM_COLORS } from "../../../shared/constants";
 
 export class ClientTank extends Tank {
   sessionId: string;
@@ -46,6 +46,11 @@ export class ClientTank extends Tank {
       name: name
     };
 
+    // Apply team color if available
+    if (this.team > 0 && TEAM_COLORS[this.team]) {
+      this.tankBody.setTint(TEAM_COLORS[this.team]);
+    }
+
     // Set up tread frames
     this.createTreadFrames(scene);
     
@@ -72,7 +77,19 @@ export class ClientTank extends Tank {
     this.heading = data.heading;
     this.speed = data.speed;
     this.health = data.health;
-    this.team = data.team;
+    
+    // Update team and apply team color if it has changed
+    if (this.team !== data.team) {
+      this.team = data.team;
+      
+      // Apply team color if team > 0, otherwise clear tint
+      if (this.team > 0 && TEAM_COLORS[this.team]) {
+        this.tankBody.setTint(TEAM_COLORS[this.team]);
+      } else {
+        this.tankBody.clearTint();
+      }
+    }
+    
     // Update input state
     this.currentInput.left = data.left;
     this.currentInput.right = data.right;
@@ -147,7 +164,19 @@ export class ClientTank extends Tank {
       this.heading = data.heading;
       this.speed = data.speed;
       this.health = data.health;
-      this.team = data.team;
+      
+      // Update team and apply team color if it has changed
+      if (this.team !== data.team) {
+        this.team = data.team;
+        
+        // Apply team color if team > 0, otherwise clear tint
+        if (this.team > 0 && TEAM_COLORS[this.team]) {
+          this.tankBody.setTint(TEAM_COLORS[this.team]);
+        } else {
+          this.tankBody.clearTint();
+        }
+      }
+      
       // Update input state
       this.currentInput.left = data.left;
       this.currentInput.right = data.right;
@@ -170,6 +199,18 @@ export class ClientTank extends Tank {
     const MAX_BUFFER_SIZE = 100;
     if (this.inputBuffer.length > MAX_BUFFER_SIZE) {
       this.inputBuffer = this.inputBuffer.slice(-MAX_BUFFER_SIZE);
+    }
+    
+    // Update team if it has changed
+    if (this.team !== this.lastServerState.team) {
+      this.team = this.lastServerState.team;
+      
+      // Apply team color if team > 0, otherwise clear tint
+      if (this.team > 0 && TEAM_COLORS[this.team]) {
+        this.tankBody.setTint(TEAM_COLORS[this.team]);
+      } else {
+        this.tankBody.clearTint();
+      }
     }
     
     // Check if we need to correct our position

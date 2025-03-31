@@ -36,6 +36,12 @@ export class GameUI {
   private joystickContainer: HTMLDivElement;
   private joystickManager: nipplejs.JoystickManager;
   private fireButton: HTMLDivElement;
+  
+  // Context menu for building/harvesting
+  private contextMenu: HTMLDivElement;
+  private harvestWoodContextButton: HTMLDivElement;
+  private buildRoadContextButton: HTMLDivElement;
+  private buildWallContextButton: HTMLDivElement;
 
   constructor(gameScene: ClientGameScene) {
     this.gameScene = gameScene;
@@ -143,7 +149,7 @@ export class GameUI {
     this.ammoTextElement.style.fontWeight = "700";
     ammoBarOuter.appendChild(this.ammoTextElement);
     
-    // Create Build Road button
+    // Keep the old buttons but make them hidden - we'll use the context menu instead
     this.buildButton = document.createElement('button');
     this.buildButton.textContent = 'Build Road';
     this.buildButton.style.position = 'absolute';
@@ -159,6 +165,7 @@ export class GameUI {
     this.buildButton.style.fontWeight = "700";
     this.buildButton.style.pointerEvents = 'auto'; // Allow button clicks
     this.buildButton.onclick = () => this.gameScene.buildTile('road');
+    this.buildButton.style.display = 'none'; // Hide the original button
     this.uiContainer.appendChild(this.buildButton);
     
     // Create Build Wall button
@@ -177,6 +184,7 @@ export class GameUI {
     this.buildWallButton.style.fontWeight = "700";
     this.buildWallButton.style.pointerEvents = 'auto'; // Allow button clicks
     this.buildWallButton.onclick = () => this.gameScene.buildTile('wall');
+    this.buildWallButton.style.display = 'none'; // Hide the original button
     this.uiContainer.appendChild(this.buildWallButton);
     
     // Create Cancel Build button (initially hidden)
@@ -198,7 +206,7 @@ export class GameUI {
     this.cancelBuildButton.onclick = () => this.gameScene.cancelBuild("Construction canceled by player.");
     this.uiContainer.appendChild(this.cancelBuildButton);
     
-    // Create place pillbox button
+    // Create place pillbox button (will be shown in context menu when appropriate)
     this.placePillboxButton = document.createElement('button');
     this.placePillboxButton.textContent = 'Place Pillbox';
     this.placePillboxButton.style.position = 'absolute';
@@ -216,6 +224,68 @@ export class GameUI {
     this.placePillboxButton.style.display = 'none'; // Initially hidden until player has pillboxes
     this.placePillboxButton.onclick = () => this.gameScene.placePillbox();
     this.uiContainer.appendChild(this.placePillboxButton);
+    
+    // Create context menu for tile selection
+    this.contextMenu = document.createElement('div');
+    this.contextMenu.style.position = 'absolute';
+    this.contextMenu.style.display = 'none'; // Initially hidden
+    this.contextMenu.style.zIndex = '200';
+    this.contextMenu.style.pointerEvents = 'auto';
+    this.uiContainer.appendChild(this.contextMenu);
+    
+    // Create build road context button
+    this.buildRoadContextButton = document.createElement('div');
+    this.buildRoadContextButton.className = 'context-menu-button';
+    this.buildRoadContextButton.innerHTML = '🛣️'; // Road emoji
+    this.buildRoadContextButton.title = 'Build Road';
+    this.buildRoadContextButton.style.backgroundColor = '#4CAF50';
+    this.buildRoadContextButton.onclick = () => this.gameScene.buildTile('road');
+    this.contextMenu.appendChild(this.buildRoadContextButton);
+    
+    // Create build wall context button
+    this.buildWallContextButton = document.createElement('div');
+    this.buildWallContextButton.className = 'context-menu-button';
+    this.buildWallContextButton.innerHTML = '🧱'; // Brick emoji
+    this.buildWallContextButton.title = 'Build Wall';
+    this.buildWallContextButton.style.backgroundColor = '#2196F3';
+    this.buildWallContextButton.onclick = () => this.gameScene.buildTile('wall');
+    this.contextMenu.appendChild(this.buildWallContextButton);
+    
+    // Create harvest wood context button
+    this.harvestWoodContextButton = document.createElement('div');
+    this.harvestWoodContextButton.className = 'context-menu-button';
+    this.harvestWoodContextButton.innerHTML = '🪓'; // Axe emoji
+    this.harvestWoodContextButton.title = 'Harvest Wood';
+    this.harvestWoodContextButton.style.backgroundColor = '#8D6E63';
+    this.harvestWoodContextButton.onclick = () => this.gameScene.buildTile('forest');
+    this.contextMenu.appendChild(this.harvestWoodContextButton);
+    
+    // Add CSS class styling for context menu buttons
+    const style = document.createElement('style');
+    style.textContent = `
+      .context-menu-button {
+        width: 40px;
+        height: 40px;
+        border-radius: 5px;
+        margin: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        font-size: 24px;
+        color: white;
+        border: 2px solid rgba(255,255,255,0.5);
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        transition: transform 0.1s ease-in-out;
+      }
+      .context-menu-button:hover {
+        transform: scale(1.1);
+      }
+      .context-menu-button:active {
+        transform: scale(0.95);
+      }
+    `;
+    document.head.appendChild(style);
     
     // Create pillbox count display
     this.pillboxCountElement = document.createElement('div');
@@ -245,7 +315,7 @@ export class GameUI {
     this.woodCountElement.textContent = 'Wood: 0';
     this.uiContainer.appendChild(this.woodCountElement);
     
-    // Create harvest wood button
+    // Create harvest wood button (now hidden as we use the context menu)
     this.harvestWoodButton = document.createElement('button');
     this.harvestWoodButton.textContent = 'Harvest Wood';
     this.harvestWoodButton.style.position = 'absolute';
@@ -260,6 +330,7 @@ export class GameUI {
     this.harvestWoodButton.style.fontFamily = "'Courier Prime', monospace";
     this.harvestWoodButton.style.fontWeight = "700";
     this.harvestWoodButton.style.pointerEvents = 'auto';
+    this.harvestWoodButton.style.display = 'none'; // Hide it as we use context menu instead
     this.harvestWoodButton.onclick = () => this.gameScene.buildTile('forest'); // Use forest tile type for harvesting
     this.uiContainer.appendChild(this.harvestWoodButton);
     
@@ -448,7 +519,8 @@ export class GameUI {
     });
     
     // Dead zone for turning calculations
-    const DEAD_ZONE = 0.2;
+    const DEAD_ZONE = 0.5;
+    const HYSTERESIS = 0.5;
     
     // Add event listeners for joystick movements - now only controls turning
     this.joystickManager.on('move', (evt, data) => {
@@ -486,10 +558,10 @@ export class GameUI {
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
       
       // Turn based on the angle difference
-      if (angleDiff > DEAD_ZONE) {
+      if (angleDiff > HYSTERESIS) {
         // Turn right (clockwise)
         this.gameScene.virtualInputs.right = true;
-      } else if (angleDiff < -DEAD_ZONE) {
+      } else if (angleDiff < -HYSTERESIS) {
         // Turn left (counter-clockwise)
         this.gameScene.virtualInputs.left = true;
       }
@@ -805,13 +877,56 @@ export class GameUI {
     
     // Update build buttons based on building state
     if (this.gameScene.isBuilding) {
-      this.buildButton.style.display = 'none';
-      this.buildWallButton.style.display = 'none';
       this.cancelBuildButton.style.display = 'block';
+      this.contextMenu.style.display = 'none';
     } else {
-      this.buildButton.style.display = 'block';
-      this.buildWallButton.style.display = 'block';
       this.cancelBuildButton.style.display = 'none';
+      
+      // Show/hide context menu based on selection
+      const hasSelection = this.gameScene.selectedTiles.length > 0;
+      
+      if (hasSelection && !this.gameScene.isBuilding) {
+        // Show context menu near the selection
+        this.contextMenu.style.display = 'flex';
+        
+        // Calculate average position of selection to place context menu
+        let avgX = 0;
+        let avgY = 0;
+        for (const tile of this.gameScene.selectedTiles) {
+          const worldPos = this.gameScene.gameMap.groundLayer.tileToWorldXY(tile.x, tile.y);
+          avgX += worldPos.x;
+          avgY += worldPos.y;
+        }
+        avgX /= this.gameScene.selectedTiles.length;
+        avgY /= this.gameScene.selectedTiles.length;
+        
+        // Convert to screen coordinates
+        const camera = this.gameScene.cameras.main;
+        const screenX = avgX - camera.scrollX;
+        const screenY = avgY - camera.scrollY;
+        
+        // Position context menu near selection but ensure it stays on screen
+        const menuWidth = 150; // Approximate width of context menu
+        const menuHeight = 50; // Approximate height of context menu
+        const padding = 10; // Padding from selection
+        
+        // Position above the selection if possible, otherwise below
+        let menuX = screenX - menuWidth / 2;
+        let menuY = screenY - menuHeight - padding;
+        
+        // Keep menu on screen
+        menuX = Math.max(padding, Math.min(window.innerWidth - menuWidth - padding, menuX));
+        
+        // If menu would go off the top of the screen, position it below the selection
+        if (menuY < padding) {
+          menuY = screenY + 32 + padding; // 32 is tile height
+        }
+        
+        this.contextMenu.style.left = `${menuX}px`;
+        this.contextMenu.style.top = `${menuY}px`;
+      } else {
+        this.contextMenu.style.display = 'none';
+      }
     }
     
     // Update place pillbox button visibility based on selection
@@ -844,9 +959,27 @@ export class GameUI {
         isInRange = distance <= 100;
       }
       
-      // Show button but make it disabled if selection is invalid or too far
-      this.placePillboxButton.style.display = 'block';
+      // Add the pillbox button to the context menu when appropriate
+      if (isValidSelection && isInRange && !this.gameScene.isBuilding) {
+        // Create pillbox context button if it doesn't exist
+        if (!this.contextMenu.querySelector('.pillbox-button')) {
+          const pillboxContextButton = document.createElement('div');
+          pillboxContextButton.className = 'context-menu-button pillbox-button';
+          pillboxContextButton.innerHTML = '🛡️'; // Shield emoji for pillbox
+          pillboxContextButton.title = 'Place Pillbox';
+          pillboxContextButton.style.backgroundColor = '#9c27b0'; // Purple
+          pillboxContextButton.onclick = () => this.gameScene.placePillbox();
+          this.contextMenu.appendChild(pillboxContextButton);
+        }
+      } else {
+        // Remove pillbox button from context menu if it exists
+        const pillboxButton = this.contextMenu.querySelector('.pillbox-button');
+        if (pillboxButton) {
+          this.contextMenu.removeChild(pillboxButton);
+        }
+      }
       
+      // For backward compatibility, update the old hidden button too
       if (isValidSelection && isInRange) {
         // Selection is valid and in range - enable button
         this.placePillboxButton.style.backgroundColor = '#9c27b0'; // Purple
@@ -867,8 +1000,12 @@ export class GameUI {
           this.placePillboxButton.title = "Too far away. Move closer to the selected area.";
         }
       }
-    } else if (!hasSelection || this.gameScene.isBuilding) {
-      this.placePillboxButton.style.display = 'none';
+    } else {
+      // Remove pillbox button from context menu if it exists
+      const pillboxButton = this.contextMenu.querySelector('.pillbox-button');
+      if (pillboxButton) {
+        this.contextMenu.removeChild(pillboxButton);
+      }
     }
     
     // Also pass range information to the selection renderer

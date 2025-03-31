@@ -159,6 +159,8 @@ export class ServerTank extends Tank {
       scene.pillboxes.splice(pillboxIndex, 1);
     }
   }
+
+  
   
   // Create a pillbox at the specified location
   placePillbox(x: number, y: number): boolean {
@@ -178,6 +180,31 @@ export class ServerTank extends Tank {
     this.updateSchema();
     
     console.log(`Tank ${this.sessionId} placed pillbox at (${x}, ${y}). Has ${this.schema.pillboxCount} pillboxes left.`);
+    return true;
+  }
+
+
+  
+  // Add wood to the tank's inventory
+  addWood(amount: number): void {
+    this.schema.wood += amount;
+    console.log(`Tank ${this.sessionId} collected wood. Now has ${this.schema.wood} wood.`);
+    
+    // Update the schema to notify clients
+    this.updateSchema();
+  }
+  
+  // Use wood from the tank's inventory
+  useWood(amount: number): boolean {
+    if (this.schema.wood < amount) {
+      return false; // Not enough wood
+    }
+    
+    this.schema.wood -= amount;
+    console.log(`Tank ${this.sessionId} used ${amount} wood. Has ${this.schema.wood} wood left.`);
+    
+    // Update the schema to notify clients
+    this.updateSchema();
     return true;
   }
 }
