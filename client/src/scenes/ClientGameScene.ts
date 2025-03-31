@@ -65,6 +65,15 @@ export class ClientGameScene extends GameScene {
     cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
     spaceKey: Phaser.Input.Keyboard.Key;
     
+    // Virtual inputs from touch controls
+    virtualInputs: { left: boolean; right: boolean; up: boolean; down: boolean } = {
+      left: false,
+      right: false,
+      up: false,
+      down: false
+    };
+    virtualFiring: boolean = false;
+    
     // Tile selection properties
     selectionStartTile: { x: number, y: number } | null = null;
     selectionEndTile: { x: number, y: number } | null = null;
@@ -680,12 +689,12 @@ export class ClientGameScene extends GameScene {
             this.inputPayload.down = false;
             this.inputPayload.fire = false;
         } else {
-            // Update input payload based on keyboard state
-            this.inputPayload.left = this.cursorKeys.left.isDown;
-            this.inputPayload.right = this.cursorKeys.right.isDown;
-            this.inputPayload.up = this.cursorKeys.up.isDown;
-            this.inputPayload.down = this.cursorKeys.down.isDown;
-            this.inputPayload.fire = this.spaceKey.isDown;
+            // Update input payload based on keyboard state OR virtual inputs from touch controls
+            this.inputPayload.left = this.cursorKeys.left.isDown || this.virtualInputs.left;
+            this.inputPayload.right = this.cursorKeys.right.isDown || this.virtualInputs.right;
+            this.inputPayload.up = this.cursorKeys.up.isDown || this.virtualInputs.up;
+            this.inputPayload.down = this.cursorKeys.down.isDown || this.virtualInputs.down;
+            this.inputPayload.fire = this.spaceKey.isDown || this.virtualFiring;
         }
         
         this.inputPayload.tick = this.currentTick;

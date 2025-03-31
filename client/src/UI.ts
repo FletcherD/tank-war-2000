@@ -1,5 +1,6 @@
 import { ClientGameScene } from "./scenes/ClientGameScene";
 import { PHYSICS } from "../../shared/constants";
+import * as nipplejs from 'nipplejs';
 
 export class GameUI {
   private uiContainer: HTMLDivElement;
@@ -30,6 +31,11 @@ export class GameUI {
   private chatInput: HTMLInputElement;
   private chatButton: HTMLButtonElement;
   private isChatActive: boolean = false;
+  
+  // Touch controls
+  private joystickContainer: HTMLDivElement;
+  private joystickManager: nipplejs.JoystickManager;
+  private fireButton: HTMLDivElement;
 
   constructor(gameScene: ClientGameScene) {
     this.gameScene = gameScene;
@@ -59,6 +65,39 @@ export class GameUI {
     this.uiContainer.style.pointerEvents = 'none'; // Allow clicks to pass through to game
     this.uiContainer.style.zIndex = '10';
     document.body.appendChild(this.uiContainer);
+    
+    // Create joystick container for touch controls
+    this.joystickContainer = document.createElement('div');
+    this.joystickContainer.id = 'joystickContainer';
+    this.joystickContainer.style.position = 'absolute';
+    this.joystickContainer.style.bottom = '80px';
+    this.joystickContainer.style.left = '80px';
+    this.joystickContainer.style.width = '120px';
+    this.joystickContainer.style.height = '120px';
+    this.joystickContainer.style.pointerEvents = 'auto';
+    this.joystickContainer.style.zIndex = '20';
+    this.uiContainer.appendChild(this.joystickContainer);
+    
+    // Create fire button for touch controls
+    this.fireButton = document.createElement('div');
+    this.fireButton.id = 'fireButton';
+    this.fireButton.style.position = 'absolute';
+    this.fireButton.style.bottom = '80px';
+    this.fireButton.style.right = '80px';
+    this.fireButton.style.width = '100px';
+    this.fireButton.style.height = '100px';
+    this.fireButton.style.borderRadius = '50%';
+    this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+    this.fireButton.style.border = '2px solid rgba(255, 0, 0, 0.8)';
+    this.fireButton.style.display = 'flex';
+    this.fireButton.style.justifyContent = 'center';
+    this.fireButton.style.alignItems = 'center';
+    this.fireButton.style.pointerEvents = 'auto';
+    this.fireButton.style.zIndex = '20';
+    this.fireButton.style.userSelect = 'none';
+    this.fireButton.innerHTML = '🔥';
+    this.fireButton.style.fontSize = '40px';
+    this.uiContainer.appendChild(this.fireButton);
 
     // Create the status container (already defined in CSS)
     this.healthBarContainer = document.createElement('div');
@@ -355,6 +394,132 @@ export class GameUI {
     // Initial update
     this.updateHealthBar(100);
     this.updateAmmoBar(PHYSICS.TANK_MAX_AMMO, PHYSICS.TANK_MAX_AMMO);
+    
+    // Initialize the touch joystick
+    this.initJoystick();
+  }
+  
+  /**
+   * Initialize the touch controls (joystick and fire button)
+   */
+  private initJoystick(): void {
+    // Only show touch controls on touch devices
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    if (!isTouchDevice) {
+      this.joystickContainer.style.display = 'none';
+      this.fireButton.style.display = 'none';
+      return;
+    }
+    
+    // Create the nipplejs joystick
+    this.joystickManager = nipplejs.create({
+      zone: this.joystickContainer,
+      mode: 'static',
+      position: { left: '50%', top: '50%' },
+      color: 'rgba(255, 255, 255, 0.5)',
+      size: 120,
+      lockX: false,
+      lockY: false
+    });
+    
+    // Add event listeners for joystick movements
+    this.joystickManager.on('move', (evt, data) => {
+      if (!this.gameScene || !data || !data.vector) return;
+      
+      const { x, y } = data.vector;
+      
+      // Convert joystick position to key presses
+      // Reset all inputs first
+      this.gameScene.virtualInputs = {
+        left: false,
+        right: false,
+        up: false,
+        down: false
+      };
+      
+      // Apply inputs based on joystick position
+      // Allow diagonal movement
+      if (x < -0.4) this.gameScene.virtualInputs.left = true;
+      if (x > 0.4) this.gameScene.virtualInputs.right = true;
+      if (y < -0.4) this.gameScene.virtualInputs.up = true;
+      if (y > 0.4) this.gameScene.virtualInputs.down = true;
+    });
+    
+    // Reset inputs when joystick is released
+    this.joystickManager.on('end', () => {
+      if (!this.gameScene) return;
+      
+      this.gameScene.virtualInputs = {
+        left: false,
+        right: false,
+        up: false,
+        down: false
+      };
+    });
+    
+    // Set up fire button events
+    let isFiring = false;
+    
+    // Set active styles for visual feedback
+    this.fireButton.addEventListener('touchstart', (event) => {
+      event.preventDefault(); // Prevent default to avoid scrolling
+      if (!this.gameScene) return;
+      
+      isFiring = true;
+      this.gameScene.virtualFiring = true;
+      this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
+      this.fireButton.style.transform = 'scale(0.95)';
+    });
+    
+    this.fireButton.addEventListener('touchend', (event) => {
+      event.preventDefault();
+      if (!this.gameScene) return;
+      
+      isFiring = false;
+      this.gameScene.virtualFiring = false;
+      this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+      this.fireButton.style.transform = 'scale(1)';
+    });
+    
+    this.fireButton.addEventListener('touchcancel', (event) => {
+      event.preventDefault();
+      if (!this.gameScene) return;
+      
+      isFiring = false;
+      this.gameScene.virtualFiring = false;
+      this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+      this.fireButton.style.transform = 'scale(1)';
+    });
+    
+    // Handle the case where the finger moves out of the button
+    document.addEventListener('touchmove', (event) => {
+      if (!isFiring) return;
+      
+      // Check if any touch is still on the fire button
+      let touchOnButton = false;
+      for (let i = 0; i < event.touches.length; i++) {
+        const touch = event.touches[i];
+        const rect = this.fireButton.getBoundingClientRect();
+        if (
+          touch.clientX >= rect.left &&
+          touch.clientX <= rect.right &&
+          touch.clientY >= rect.top &&
+          touch.clientY <= rect.bottom
+        ) {
+          touchOnButton = true;
+          break;
+        }
+      }
+      
+      // If no touches are on the button anymore, stop firing
+      if (!touchOnButton && isFiring) {
+        isFiring = false;
+        this.gameScene.virtualFiring = false;
+        this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+        this.fireButton.style.transform = 'scale(1)';
+      }
+    });
   }
 
   /**
@@ -368,6 +533,54 @@ export class GameUI {
     this.uiContainer.style.left = canvas.offsetLeft + 'px';
     this.uiContainer.style.width = canvas.offsetWidth + 'px';
     this.uiContainer.style.height = canvas.offsetHeight + 'px';
+    
+    // Update joystick position if it exists (handle orientation changes)
+    if (this.joystickManager && this.joystickManager.get().length > 0) {
+      // Destroy and recreate the joystick to ensure proper positioning
+      this.joystickManager.destroy();
+      this.joystickManager = nipplejs.create({
+        zone: this.joystickContainer,
+        mode: 'static',
+        position: { left: '50%', top: '50%' },
+        color: 'rgba(255, 255, 255, 0.5)',
+        size: 120,
+        lockX: false,
+        lockY: false
+      });
+      
+      // Re-add event listeners
+      this.joystickManager.on('move', (evt, data) => {
+        if (!this.gameScene || !data || !data.vector) return;
+        
+        const { x, y } = data.vector;
+        
+        // Convert joystick position to key presses
+        this.gameScene.virtualInputs = {
+          left: false,
+          right: false,
+          up: false,
+          down: false
+        };
+        
+        // Apply inputs based on joystick position
+        if (x < -0.4) this.gameScene.virtualInputs.left = true;
+        if (x > 0.4) this.gameScene.virtualInputs.right = true;
+        if (y < -0.4) this.gameScene.virtualInputs.up = true;
+        if (y > 0.4) this.gameScene.virtualInputs.down = true;
+      });
+      
+      // Reset inputs when joystick is released
+      this.joystickManager.on('end', () => {
+        if (!this.gameScene) return;
+        
+        this.gameScene.virtualInputs = {
+          left: false,
+          right: false,
+          up: false,
+          down: false
+        };
+      });
+    }
   }
 
   /**

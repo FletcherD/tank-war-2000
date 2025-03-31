@@ -28,6 +28,7 @@
   "dependencies": {
     "@parcel/watcher": "^2.5.1",
     "colyseus.js": "^0.16.0",
+    "nipplejs": "^0.10.2",
     "phaser": "^3.55.2",
     "shared": "file:../shared"
   }
