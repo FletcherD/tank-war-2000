@@ -1,7 +1,7 @@
 // Game Physics & Movement Constants
 export const PHYSICS = {
   // Tank movement
-  TANK_MAX_SPEED: 2, // meters/msec
+  TANK_MAX_SPEED: 1, // meters/msec
   TANK_ROTATION_SPEED: 0.002, // radians/msec
   TANK_ACCELERATION: 0.005, // meters/msec^2
   TANK_HEALTH: 100,

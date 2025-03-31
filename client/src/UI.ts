@@ -402,6 +402,9 @@ export class GameUI {
   /**
    * Initialize the touch controls (joystick and fire button)
    */
+  // Forward button for mobile controls
+  private forwardButton: HTMLDivElement;
+  
   private initJoystick(): void {
     // Only show touch controls on touch devices
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -411,6 +414,27 @@ export class GameUI {
       this.fireButton.style.display = 'none';
       return;
     }
+    
+    // Create the forward button - positioned on the right side of the screen
+    this.forwardButton = document.createElement('div');
+    this.forwardButton.id = 'forwardButton';
+    this.forwardButton.style.position = 'absolute';
+    this.forwardButton.style.bottom = '200px'; // Position above fire button
+    this.forwardButton.style.right = '80px';
+    this.forwardButton.style.width = '100px';
+    this.forwardButton.style.height = '100px';
+    this.forwardButton.style.borderRadius = '50%';
+    this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
+    this.forwardButton.style.border = '2px solid rgba(0, 255, 0, 0.8)';
+    this.forwardButton.style.display = 'flex';
+    this.forwardButton.style.justifyContent = 'center';
+    this.forwardButton.style.alignItems = 'center';
+    this.forwardButton.style.pointerEvents = 'auto';
+    this.forwardButton.style.zIndex = '20';
+    this.forwardButton.style.userSelect = 'none';
+    this.forwardButton.innerHTML = '⬆️';
+    this.forwardButton.style.fontSize = '40px';
+    this.uiContainer.appendChild(this.forwardButton);
     
     // Create the nipplejs joystick
     this.joystickManager = nipplejs.create({
@@ -423,39 +447,124 @@ export class GameUI {
       lockY: false
     });
     
-    // Add event listeners for joystick movements
+    // Dead zone for turning calculations
+    const DEAD_ZONE = 0.2;
+    
+    // Add event listeners for joystick movements - now only controls turning
     this.joystickManager.on('move', (evt, data) => {
       if (!this.gameScene || !data || !data.vector) return;
       
       const { x, y } = data.vector;
+      const angle = data.angle.radian;
       
-      // Convert joystick position to key presses
-      // Reset all inputs first
+      // Reset tank turning inputs
       this.gameScene.virtualInputs = {
         left: false,
         right: false,
-        up: false,
+        up: this.gameScene.virtualInputs.up,
         down: false
       };
       
-      // Apply inputs based on joystick position
-      // Allow diagonal movement
-      if (x < -0.4) this.gameScene.virtualInputs.left = true;
-      if (x > 0.4) this.gameScene.virtualInputs.right = true;
-      if (y < -0.4) this.gameScene.virtualInputs.up = true;
-      if (y > 0.4) this.gameScene.virtualInputs.down = true;
+      // Skip turning in the dead zone (when joystick is near center)
+      const distance = Math.sqrt(x*x + y*y);
+      if (distance < DEAD_ZONE) return;
+      
+      // Get the current tank heading in the game
+      const tankHeading = this.gameScene.currentPlayer?.heading || 0;
+      
+      // Calculate the difference between joystick angle and tank heading
+      // First convert joystick angle to same coordinate system as tank heading
+      // In Phaser, heading 0 is to the right, increasing clockwise
+      // In nipplejs, angle 0 is to the right, increasing counter-clockwise
+      const joystickHeading = Math.PI * 2 - angle;
+      
+      // Find the smallest angle between the two directions
+      let angleDiff = joystickHeading - tankHeading;
+      
+      // Normalize to -PI to PI
+      while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+      while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+      
+      // Turn based on the angle difference
+      if (angleDiff > DEAD_ZONE) {
+        // Turn right (clockwise)
+        this.gameScene.virtualInputs.right = true;
+      } else if (angleDiff < -DEAD_ZONE) {
+        // Turn left (counter-clockwise)
+        this.gameScene.virtualInputs.left = true;
+      }
     });
     
     // Reset inputs when joystick is released
     this.joystickManager.on('end', () => {
       if (!this.gameScene) return;
       
-      this.gameScene.virtualInputs = {
-        left: false,
-        right: false,
-        up: false,
-        down: false
-      };
+      // Only reset turning inputs, not forward
+      this.gameScene.virtualInputs.left = false;
+      this.gameScene.virtualInputs.right = false;
+    });
+    
+    // Set up forward button events
+    let isMovingForward = false;
+    
+    // Set active styles for visual feedback
+    this.forwardButton.addEventListener('touchstart', (event) => {
+      event.preventDefault(); // Prevent default to avoid scrolling
+      if (!this.gameScene) return;
+      
+      isMovingForward = true;
+      this.gameScene.virtualInputs.up = true;
+      this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.8)';
+      this.forwardButton.style.transform = 'scale(0.95)';
+    });
+    
+    this.forwardButton.addEventListener('touchend', (event) => {
+      event.preventDefault();
+      if (!this.gameScene) return;
+      
+      isMovingForward = false;
+      this.gameScene.virtualInputs.up = false;
+      this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
+      this.forwardButton.style.transform = 'scale(1)';
+    });
+    
+    this.forwardButton.addEventListener('touchcancel', (event) => {
+      event.preventDefault();
+      if (!this.gameScene) return;
+      
+      isMovingForward = false;
+      this.gameScene.virtualInputs.up = false;
+      this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
+      this.forwardButton.style.transform = 'scale(1)';
+    });
+    
+    // Handle the case where the finger moves out of the forward button
+    document.addEventListener('touchmove', (event) => {
+      if (!isMovingForward) return;
+      
+      // Check if any touch is still on the forward button
+      let touchOnButton = false;
+      for (let i = 0; i < event.touches.length; i++) {
+        const touch = event.touches[i];
+        const rect = this.forwardButton.getBoundingClientRect();
+        if (
+          touch.clientX >= rect.left &&
+          touch.clientX <= rect.right &&
+          touch.clientY >= rect.top &&
+          touch.clientY <= rect.bottom
+        ) {
+          touchOnButton = true;
+          break;
+        }
+      }
+      
+      // If no touches are on the button anymore, stop moving forward
+      if (!touchOnButton && isMovingForward) {
+        isMovingForward = false;
+        this.gameScene.virtualInputs.up = false;
+        this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
+        this.forwardButton.style.transform = 'scale(1)';
+      }
     });
     
     // Set up fire button events
@@ -492,7 +601,7 @@ export class GameUI {
       this.fireButton.style.transform = 'scale(1)';
     });
     
-    // Handle the case where the finger moves out of the button
+    // Handle the case where the finger moves out of the fire button
     document.addEventListener('touchmove', (event) => {
       if (!isFiring) return;
       
@@ -534,8 +643,18 @@ export class GameUI {
     this.uiContainer.style.width = canvas.offsetWidth + 'px';
     this.uiContainer.style.height = canvas.offsetHeight + 'px';
     
+    // Check if the forward button exists and update its visibility
+    if (this.forwardButton) {
+      // Make sure forward button is visible on touch devices
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      this.forwardButton.style.display = isTouchDevice ? 'flex' : 'none';
+    }
+    
     // Update joystick position if it exists (handle orientation changes)
     if (this.joystickManager && this.joystickManager.get().length > 0) {
+      // Dead zone for turning calculations
+      const DEAD_ZONE = 0.2;
+      
       // Destroy and recreate the joystick to ensure proper positioning
       this.joystickManager.destroy();
       this.joystickManager = nipplejs.create({
@@ -548,35 +667,62 @@ export class GameUI {
         lockY: false
       });
       
-      // Re-add event listeners
+      // Re-add event listeners for joystick movements - now only controls turning
       this.joystickManager.on('move', (evt, data) => {
         if (!this.gameScene || !data || !data.vector) return;
         
         const { x, y } = data.vector;
+        const angle = data.angle.radian;
         
-        // Convert joystick position to key presses
+        // Reset tank turning inputs
+        const forwardState = this.gameScene.virtualInputs.up;
         this.gameScene.virtualInputs = {
           left: false,
           right: false,
-          up: false,
+          up: forwardState, // Preserve forward state
           down: false
         };
         
-        // Apply inputs based on joystick position
-        if (x < -0.4) this.gameScene.virtualInputs.left = true;
-        if (x > 0.4) this.gameScene.virtualInputs.right = true;
-        if (y < -0.4) this.gameScene.virtualInputs.up = true;
-        if (y > 0.4) this.gameScene.virtualInputs.down = true;
+        // Skip turning in the dead zone (when joystick is near center)
+        const distance = Math.sqrt(x*x + y*y);
+        if (distance < DEAD_ZONE) return;
+        
+        // Get the current tank heading in the game
+        const tankHeading = this.gameScene.currentPlayer?.heading || 0;
+        
+        // Calculate the difference between joystick angle and tank heading
+        // First convert joystick angle to same coordinate system as tank heading
+        // In Phaser, heading 0 is to the right, increasing clockwise
+        // In nipplejs, angle 0 is to the right, increasing counter-clockwise
+        const joystickHeading = Math.PI * 2 - angle;
+        
+        // Find the smallest angle between the two directions
+        let angleDiff = joystickHeading - tankHeading;
+        
+        // Normalize to -PI to PI
+        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+        
+        // Turn based on the angle difference
+        if (angleDiff > DEAD_ZONE) {
+          // Turn right (clockwise)
+          this.gameScene.virtualInputs.right = true;
+        } else if (angleDiff < -DEAD_ZONE) {
+          // Turn left (counter-clockwise)
+          this.gameScene.virtualInputs.left = true;
+        }
       });
       
       // Reset inputs when joystick is released
       this.joystickManager.on('end', () => {
         if (!this.gameScene) return;
         
+        // Only reset turning inputs, not forward
+        const forwardState = this.gameScene.virtualInputs.up;
         this.gameScene.virtualInputs = {
           left: false,
           right: false,
-          up: false,
+          up: forwardState, // Preserve forward state
           down: false
         };
       });
