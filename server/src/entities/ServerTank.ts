@@ -40,6 +40,7 @@ export class ServerTank extends Tank {
     if (this.schema.health !== this.health) this.schema.health = this.health;
     if (this.schema.ammo !== this.ammo) this.schema.ammo = this.ammo;
     if (this.schema.team !== this.team) this.schema.team = this.team;
+    if (this.schema.name !== this.name) this.schema.name = this.name;
     if (this.schema.left !== this.currentInput.left) this.schema.left = this.currentInput.left;
     if (this.schema.right !== this.currentInput.right) this.schema.right = this.currentInput.right;
     if (this.schema.up !== this.currentInput.up) this.schema.up = this.currentInput.up;

@@ -35,6 +35,7 @@ const SI = new SnapshotInterpolation(60)
 export interface NewswireMessage {
   type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed' | 'chat';
   playerId?: string;
+  playerName?: string;
   team?: number;
   position?: { x: number, y: number };
   message: string;
@@ -92,7 +93,9 @@ export class ClientGameScene extends GameScene {
         tick: 0,
     };
 
-    async create() {
+    playerName: string = "Player";
+  
+  async create() {
         console.log("ClientGameScene create");
         
         await super.create();
@@ -274,9 +277,6 @@ export class ClientGameScene extends GameScene {
                 });
 
             } else {
-                if(entity.team === this.currentPlayer.team) {
-                    entity.setDepth(200);
-                }
                 // listening for server updates
                 // Listen for changes on the tank schema directly
                 $(player.tank).onChange(() => {
@@ -322,7 +322,86 @@ export class ClientGameScene extends GameScene {
         
     
 
+    promptForPlayerName() {
+        return new Promise<void>(resolve => {
+            // Create a modal dialog for name input
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = '#333';
+            modalContent.style.padding = '20px';
+            modalContent.style.borderRadius = '5px';
+            modalContent.style.textAlign = 'center';
+            
+            const title = document.createElement('h2');
+            title.textContent = 'Enter Your Name';
+            title.style.color = '#fff';
+            title.style.marginBottom = '20px';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Your Name';
+            input.value = this.playerName;
+            input.style.padding = '8px';
+            input.style.fontSize = '16px';
+            input.style.width = '100%';
+            input.style.marginBottom = '20px';
+            input.style.borderRadius = '3px';
+            input.style.border = 'none';
+            
+            const button = document.createElement('button');
+            button.textContent = 'Join Game';
+            button.style.padding = '8px 16px';
+            button.style.fontSize = '16px';
+            button.style.backgroundColor = '#4CAF50';
+            button.style.color = 'white';
+            button.style.border = 'none';
+            button.style.borderRadius = '3px';
+            button.style.cursor = 'pointer';
+            
+            modalContent.appendChild(title);
+            modalContent.appendChild(input);
+            modalContent.appendChild(button);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Focus the input field
+            input.focus();
+            
+            const submitName = () => {
+                this.playerName = input.value || "Player";
+                document.body.removeChild(modal);
+                resolve();
+            };
+            
+            // Handle enter key press
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    submitName();
+                }
+            });
+            
+            // Handle button click
+            button.addEventListener('click', () => {
+                submitName();
+            });
+        });
+    }
+    
     async connect() {
+        // Prompt for player name first
+        await this.promptForPlayerName();
+        
         // add connection status text
         const connectionStatusText = this.add
             .text(0, 0, "Trying to connect with the server...")
@@ -332,11 +411,11 @@ export class ClientGameScene extends GameScene {
         const client = new Client(BACKEND_URL);
 
         try {
-            this.room = await client.joinOrCreate("game", {});
+            this.room = await client.joinOrCreate("game", { playerName: this.playerName });
 
             // connection successful!
             connectionStatusText.destroy();
-            console.log("Connected to server!");
+            console.log("Connected to server with name: " + this.playerName);
 
             this.room.onMessage("snapshot", (snapshot) => {
                 SI.snapshot.add(snapshot)
@@ -490,8 +569,16 @@ export class ClientGameScene extends GameScene {
                 if (this.gameUI) {
                     // Handle chat messages differently
                     if (message.type === 'chat') {
-                        // Extract player name (first 4 characters of session ID)
-                        const playerName = message.playerId ? message.playerId.substr(0, 4) : 'Unknown';
+                        // Use the player name from the message if available
+                        let playerName = message.playerName || 'Unknown';
+                        
+                        // Fallback to looking up the player if not in the message
+                        if (!playerName && message.playerId) {
+                            const player = this.players.get(message.playerId);
+                            if (player) {
+                                playerName = player.name;
+                            }
+                        }
                         
                         // Add chat message to newswire
                         this.gameUI.addChatMessage(
@@ -922,8 +1009,12 @@ export class ClientGameScene extends GameScene {
 
     // Add a player entity to the scene
     addPlayer(x: number, y: number, sessionId: string, isLocalPlayer: boolean = false): ClientTank {
-        console.log(`Adding ${isLocalPlayer ? "local" : "remote"} player ${sessionId} at (${x}, ${y})`);
-        const tank = new ClientTank(this, x, y, sessionId, isLocalPlayer);
+        // Get player name from schema if available, otherwise use the playerName property for local player
+        const player = this.room.state.players.get(sessionId);
+        const playerName = player?.tank?.name || (isLocalPlayer ? this.playerName : "Player");
+        
+        console.log(`Adding ${isLocalPlayer ? "local" : "remote"} player ${sessionId} with name ${playerName} at (${x}, ${y})`);
+        const tank = new ClientTank(this, x, y, sessionId, isLocalPlayer, playerName);
         this.players.set(sessionId, tank);
         return tank;
     }

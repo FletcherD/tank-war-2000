@@ -16,6 +16,7 @@ export class Tank extends Phaser.GameObjects.Container
   team: number = 0;
   health: number = PHYSICS.TANK_HEALTH;
   ammo: number = PHYSICS.TANK_MAX_AMMO;
+  name: string = "Player";
 
   // Tank sprites
   tankBody: Phaser.GameObjects.Sprite;
@@ -175,6 +176,7 @@ export class Tank extends Phaser.GameObjects.Container
   getState() {
     return {
       id: "0",
+      name: this.name,
       x: this.x,
       y: this.y,
       heading: this.heading,

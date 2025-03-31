@@ -139,9 +139,10 @@ export class ServerGameScene extends GameScene {
   }
 
   // Add a player to the server game scene
-  addPlayer(sessionId: string, x: number, y: number): ServerTank {
-    console.log(`Server adding player ${sessionId} at (${x}, ${y})`);
+  addPlayer(sessionId: string, x: number, y: number, playerName: string = "Player"): ServerTank {
+    console.log(`Server adding player ${sessionId} (${playerName}) at (${x}, ${y})`);
     const tank = new ServerTank(this, x, y, sessionId);
+    tank.name = playerName;
     this.players.set(sessionId, tank);
     return tank;
   }

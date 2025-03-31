@@ -29,6 +29,7 @@ export class MyRoomState extends Schema {
 export interface NewswireMessage {
   type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed' | 'wood_harvested' | 'chat';
   playerId?: string;
+  playerName?: string;
   team?: number;
   position?: { x: number, y: number };
   message: string;
@@ -66,8 +67,9 @@ export class GameRoom extends Room<MyRoomState> {
       const playerState = this.state.players.get(client.sessionId);
       if (!playerState) return;
       
-      // Get player team
+      // Get player team and name
       const team = playerState.tank.team;
+      const playerName = playerState.tank.name || "Player";
       const isTeamChat = !data.isAllChat;
       
       // Sanitize message (remove HTML tags)
@@ -82,6 +84,7 @@ export class GameRoom extends Room<MyRoomState> {
             this.send(thisClient, "newswire", {
               type: 'chat',
               playerId: client.sessionId,
+              playerName: playerName,
               team: team,
               message: sanitizedMessage,
               isTeamChat: true
@@ -93,6 +96,7 @@ export class GameRoom extends Room<MyRoomState> {
         this.broadcast("newswire", {
           type: 'chat',
           playerId: client.sessionId,
+          playerName: playerName,
           team: team,
           message: sanitizedMessage,
           isTeamChat: false
@@ -223,7 +227,7 @@ export class GameRoom extends Room<MyRoomState> {
             playerId: client.sessionId,
             team: tank.team,
             position: { x: pillboxX, y: pillboxY },
-            message: `Player ${client.sessionId.substr(0, 4)} from Team ${teamName} placed a pillbox.`
+            message: `${tank.name} from Team ${teamName} placed a pillbox.`
           });
         }
       }
@@ -281,7 +285,10 @@ export class GameRoom extends Room<MyRoomState> {
   }
 
   onJoin(client: Client, options: any) {
-    console.log(client.sessionId, "joined!");
+    console.log(client.sessionId, "joined!", options);
+
+    // Extract player name from options or use default
+    const playerName = options.playerName || "Player";
 
     // Create player state
     const playerState = new PlayerState();
@@ -298,8 +305,8 @@ export class GameRoom extends Room<MyRoomState> {
     // Get spawn position for team
     const spawnPos = this.gameScene.getSpawnPositionForTeam(team);
     
-    // Add player to the game at the spawn position
-    const tank = this.gameScene.addPlayer(client.sessionId, spawnPos.x, spawnPos.y);
+    // Add player to the game at the spawn position with player name
+    const tank = this.gameScene.addPlayer(client.sessionId, spawnPos.x, spawnPos.y, playerName);
     
     // Set team
     tank.team = team;
@@ -315,7 +322,7 @@ export class GameRoom extends Room<MyRoomState> {
     // Add player to state AFTER initializing properties to ensure first state sync is complete
     this.state.players.set(client.sessionId, playerState);
     
-    console.log(`Player ${client.sessionId} joined at position ${spawnPos.x.toFixed(2)}, ${spawnPos.y.toFixed(2)}, team: ${team}`);
+    console.log(`Player ${playerName} (${client.sessionId}) joined at position ${spawnPos.x.toFixed(2)}, ${spawnPos.y.toFixed(2)}, team: ${team}`);
     
     // Send newswire message for player join
     const teamName = team === 1 ? "Blue" : "Red";
@@ -324,15 +331,17 @@ export class GameRoom extends Room<MyRoomState> {
       playerId: client.sessionId,
       team: team,
       position: spawnPos,
-      message: `Player ${client.sessionId.substr(0, 4)} joined Team ${teamName}.`
+      message: `${playerName} joined Team ${teamName}.`
     });
   }
 
   onLeave(client: Client, consented: boolean) {
     console.log(client.sessionId, "left!");
     
-    // Get player team before removing
-    const team = this.state.players.get(client.sessionId)?.tank.team;
+    // Get player info before removing
+    const player = this.state.players.get(client.sessionId);
+    const team = player?.tank.team;
+    const playerName = player?.tank.name || "Player";
     const teamName = team === 1 ? "Blue" : team === 2 ? "Red" : "Unknown";
     
     // Remove player from game world
@@ -346,7 +355,7 @@ export class GameRoom extends Room<MyRoomState> {
       type: 'player_leave',
       playerId: client.sessionId,
       team: team,
-      message: `Player ${client.sessionId.substr(0, 4)} from Team ${teamName} left the game.`
+      message: `${playerName} from Team ${teamName} left the game.`
     });
   }
 

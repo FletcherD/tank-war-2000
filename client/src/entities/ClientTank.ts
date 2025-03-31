@@ -6,6 +6,7 @@ import { VISUALS, PHYSICS } from "../../../shared/constants";
 export class ClientTank extends Tank {
   sessionId: string;
   isLocalPlayer: boolean;
+  nameText: Phaser.GameObjects.Text;
   lastServerState: {
     x: number;
     y: number;
@@ -17,6 +18,7 @@ export class ClientTank extends Tank {
     tick: number;
     pillboxCount: number;
     wood: number;
+    name: string;
   };
   pillboxCount: number = 0;
   wood: number = 0;
@@ -25,10 +27,11 @@ export class ClientTank extends Tank {
   firingCooldown: number = 0;
   firingRate: number = PHYSICS.TANK_FIRE_COOLDOWN;
   
-  constructor(scene: ClientGameScene, x: number, y: number, sessionId: string, isLocalPlayer: boolean = false) {
+  constructor(scene: ClientGameScene, x: number, y: number, sessionId: string, isLocalPlayer: boolean = false, name: string = "Player") {
     super(scene, x, y);
     this.sessionId = sessionId;
     this.isLocalPlayer = isLocalPlayer;
+    this.name = name;
     this.lastServerState = {
       x: x,
       y: y,
@@ -39,11 +42,28 @@ export class ClientTank extends Tank {
       team: 0,
       tick: 0,
       pillboxCount: 0,
-      wood: 0
+      wood: 0,
+      name: name
     };
 
     // Set up tread frames
     this.createTreadFrames(scene);
+    
+    // Add player name text if not local player
+    if (!isLocalPlayer) {
+      const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
+        color: "#ffffff",
+        fontSize: "14px",
+        fontFamily: "Arial",
+        stroke: "#000000",
+        strokeThickness: 2,
+        align: "center"
+      };
+      
+      this.nameText = scene.add.text(0, 30, name, textStyle);
+      this.nameText.setOrigin(0.5, 0);
+      this.add(this.nameText);
+    }
   }
 
   applySnapshot(data) {
@@ -76,8 +96,17 @@ export class ClientTank extends Tank {
       team: data.team,
       tick: data.tick,
       pillboxCount: data.pillboxCount || 0,
-      wood: data.wood || 0
+      wood: data.wood || 0,
+      name: data.name || this.name
     };
+    
+    // Update player name if changed
+    if (data.name && this.name !== data.name) {
+      this.name = data.name;
+      if (this.nameText) {
+        this.nameText.setText(this.name);
+      }
+    }
     
     // Update ammunition from server
     if (this.ammo !== data.ammo) {
@@ -230,6 +259,10 @@ export class ClientTank extends Tank {
   
   // Helper method to animate treads based on speed and direction
   override animate(delta: number, speed: number, rotationSpeed: number) {
+    if(this.scene.currentPlayer && this.team == this.scene.currentPlayer.scene) {
+        this.setDepth(200);
+    }
+
     const framesPerRow: number = 31;
     const framesPerRotation: number = 60;
     const animationSpeed: number = 0.5;
