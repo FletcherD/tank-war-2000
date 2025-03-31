@@ -1062,19 +1062,10 @@ export class GameUI {
     const messageElement = document.createElement('div');
     messageElement.className = `newswire-message ${type}`;
     
-    // Add timestamp
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    messageElement.textContent = `[${timestamp}] ${message}`;
+    messageElement.textContent = message;
     
-    // Add to newswire at the beginning (newest messages at the top)
-    this.newswireText.insertBefore(messageElement, this.newswireText.firstChild);
-    
-    // Limit the number of messages
-    while (this.newswireText.children.length > this.maxNewswireMessages) {
-      // Remove oldest message (last child)
-      this.newswireText.removeChild(this.newswireText.lastChild);
-    }
-    
+    this.newswireText.append(messageElement);
+  
     // Update the main newswire content to display at least the most recent message
     // when not expanded
     if (!this.isNewswireExpanded && messageElement.textContent) {

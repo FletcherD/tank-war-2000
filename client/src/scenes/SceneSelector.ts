@@ -36,20 +36,7 @@ export class SceneSelector extends Phaser.Scene {
             return;
         }
 
-        const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
-            color: "#ff0000",
-            fontSize: "32px",
-            // fontSize: "24px",
-            fontFamily: "Arial"
-        };
-
-
-        this.add.text(130, 150 + 70 * 0, `Start`, textStyle)
-            .setInteractive()
-            .setPadding(6)
-            .on("pointerdown", () => {
-                this.runScene("game");
-            });
+        this.runScene("game");
     }
 
     runScene(key: string) {
