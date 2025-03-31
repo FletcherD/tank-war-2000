@@ -32,6 +32,12 @@ npm start
 
 The client should be accessible at [`http://localhost:1234`](`http://localhost:1234`).
 
+You can connect to a different server by adding the `server` URL parameter:
+```
+http://localhost:1234?server=gameserver.example.com:2567
+```
+This allows connecting to remote servers without having to modify the client code.
+
 ## License
 
 - Source-code is licensed under MIT License.
