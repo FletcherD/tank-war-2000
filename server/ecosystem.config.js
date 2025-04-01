@@ -5,7 +5,7 @@ module.exports = {
         name: "tank-war-2000",
         script: 'src/index.ts',
         interpreter: 'node',
-        interpreterArgs: '--loader tsx',
+        interpreterArgs: '--import tsx',
         time: true,
         watch: false,
         instances: os.cpus().length,
