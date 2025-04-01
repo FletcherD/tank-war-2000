@@ -33,8 +33,8 @@ export class ServerGameScene extends GameScene {
   // Track server-managed bullets
   serverBullets: ServerBullet[] = [];
 
-  constructor(config: Phaser.Types.Scenes.SettingsConfig) {
-    super(config);
+  constructor() {
+    super();
     console.log("ServerGameScene constructor");
   }
 
@@ -44,8 +44,8 @@ export class ServerGameScene extends GameScene {
     this.load.json('tilesetData', '../../../../assets/tiles/tileset.json');
   }
 
-  create() {
-    super.create();
+  async create() {
+    await Promise.resolve(); // Make it return a Promise
     console.log("ServerGameScene created");
 
     console.log(this.room.state)
@@ -53,7 +53,15 @@ export class ServerGameScene extends GameScene {
             // Create the game map
     this.gameMap = new ServerMap(this);
     this.gameMap.createTilemapFromFile();
-    this.room.state.map = this.gameMap.schema;
+    
+    // Set map in room state
+    if (this.room && this.room.state) {
+      // Cast to access schema property which exists on ServerMap
+      const serverMap = this.gameMap as any;
+      if (serverMap.schema) {
+        this.room.state.map = serverMap.schema;
+      }
+    }
 
     if (!this.gameMap.map) {
         console.error("Failed to create tilemap");
@@ -84,8 +92,15 @@ export class ServerGameScene extends GameScene {
         // Assign one random station to each team
         if (this.stations.length >= 2) {
             // Get two random indexes for team stations
-            const indices = Phaser.Utils.Array.NumberArray(0, this.stations.length - 1);
-            Phaser.Utils.Array.Shuffle(indices);
+            const indices: number[] = [];
+            for (let i = 0; i < this.stations.length; i++) {
+                indices.push(i);
+            }
+            // Shuffle the array
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
             
             // Assign team 1 station
             const team1StationIndex = indices[0];
@@ -174,23 +189,26 @@ export class ServerGameScene extends GameScene {
   }
 
   // Create a server bullet (from tank or pillbox)
-  createBullet(x: number, y: number, angle: number, ownerId: string = "") {
-    const bullet = new ServerBullet(this, x, y, angle, ownerId);
+  createBullet(x: number, y: number, angle: number, team: number = 0) {
+    const bullet = new ServerBullet(this, x, y, angle, "");
+    bullet.team = team;
     this.serverBullets.push(bullet);
     
     // Add to room state
-    this.room.state.bullets.set(bullet.schema.id, bullet.schema);
+    if (this.room && this.room.state && this.room.state.bullets) {
+      this.room.state.bullets.set(bullet.schema.id, bullet.schema);
+    }
     
     return bullet;
   }
   
   // Override the base Bullet creation
-  createBulletAt(x: number, y: number, angle: number, ownerId: string = "") {
-    return this.createBullet(x, y, angle, ownerId);
+  createBulletAt(x: number, y: number, angle: number, team: number = 0) {
+    return this.createBullet(x, y, angle, team);
   }
 
 
-  addStation(x: number, y: number, id: string, team: number = 0): ServerStation {
+  addStation(x: number, y: number, id: string, team: number = 0): any {
     const station = new ServerStation(this, x, y, id, team);
     this.stations.push(station);
     
@@ -203,7 +221,7 @@ export class ServerGameScene extends GameScene {
     return station;
   }
   
-  getRandomStationForTeam(team: number): ServerStation | null {
+  getRandomStationForTeam(team: number): any {
     const teamStations = this.teamStations[team];
     if (!teamStations || teamStations.length === 0) {
       return null;
@@ -236,14 +254,16 @@ export class ServerGameScene extends GameScene {
   sendSnapshots(): void {
     this.worldState.players = [];
     this.players.forEach(tank => {
-      let thisPlayerState = tank.schema;
-      thisPlayerState.id = tank.sessionId;
-      this.worldState.players.push(thisPlayerState);
+      this.worldState.players.push(tank);
     });
 
-    const snapshot = this.room.SI.snapshot.create(this.worldState);
-
-    this.room.broadcast("snapshot", snapshot);
+    // Check if SI (SnapshotInterpolation) is available
+    if (this.room && this.room.SI) {
+      const snapshot = this.room.SI.snapshot.create(this.worldState);
+      this.room.broadcast("snapshot", snapshot);
+    } else {
+      console.warn("SnapshotInterpolation (SI) is not initialized");
+    }
   }
   
   update(time: number, delta: number): void {

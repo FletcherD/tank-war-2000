@@ -23,7 +23,11 @@ export class Bullet extends Phaser.GameObjects.Sprite
     const velocity: Phaser.Math.Vector2 = new Phaser.Math.Vector2(
       this.speed * Math.cos(rotation), 
       this.speed * Math.sin(rotation));
-    this.setVelocity(velocity.x, velocity.y);
+    if (this.body) {
+      // Set velocity directly for Matter physics
+      this.body.velocity.x = velocity.x;
+      this.body.velocity.y = velocity.y;
+    }
   }
 
   preUpdate(time: number, delta: number)

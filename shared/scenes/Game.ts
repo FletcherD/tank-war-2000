@@ -177,9 +177,9 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    handleWallBulletCollision(bullet: Bullet, wall: MatterJS.Body) {
+    handleWallBulletCollision(bullet: Bullet, wall: any) {
         bullet.destroy();
-        const wallTilePos = wall.position;
+        const wallTilePos = wall.position ? wall.position : {x: wall.x, y: wall.y};
         this.gameMap.map.setLayer(0);
         const wallTile = this.gameMap.map.getTileAtWorldXY(wallTilePos.x, wallTilePos.y);
 

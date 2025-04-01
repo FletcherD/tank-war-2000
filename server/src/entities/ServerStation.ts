@@ -28,9 +28,13 @@ export class ServerStation extends Station {
   override preUpdate(time: number, delta: number): void {
     super.preUpdate(time, delta);
     
+    // Cast to ServerGameScene to access players
+    const serverScene = this.scene as any;
+    if (!serverScene.players) return;
+    
     // Check all tanks in the scene
-    for (const sessionId of this.scene.players.keys()) {
-      const tank = this.scene.players.get(sessionId);
+    for (const sessionId of serverScene.players.keys()) {
+      const tank = serverScene.players.get(sessionId);
       
       // Calculate distance
       const distance = Phaser.Math.Distance.Between(this.x, this.y, tank.x, tank.y);

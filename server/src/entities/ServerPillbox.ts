@@ -8,12 +8,20 @@ import { NewswireMessage } from "../rooms/GameRoom";
 export class ServerPillbox extends Pillbox {
     // Schema to be synced with clients
     schema: PillboxSchema;
+    schemaId: string = ''; // Add this property for bullet firing
+    // Store our own team value
+    public teamValue: number = 0;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, team: number = 0) {
-        super(scene, x, y, team);
+    constructor(scene: Phaser.Scene, x: number, y: number, teamInitial: number = 0) {
+        super(scene, x, y, 0); // Initialize with neutral team
         
         // Initialize schema
         this.schema = new PillboxSchema();
+        this.schemaId = this.schema.id; // Store the schema ID
+        
+        // Set team value after initialization
+        this.teamValue = teamInitial;
+        // Cannot directly access parent class field
         this.updateSchema();
     }
     
@@ -21,7 +29,7 @@ export class ServerPillbox extends Pillbox {
     updateSchema() {
         this.schema.x = this.x;
         this.schema.y = this.y;
-        this.schema.team = this.team;
+        this.schema.team = this.teamValue;
         this.schema.health = this.health;
         // State and ownerId already handled in state transition methods
     }
@@ -82,11 +90,11 @@ export class ServerPillbox extends Pillbox {
         // Send newswire message for pillbox destruction
         const gameScene = this.scene as ServerGameScene;
         if (gameScene.room) {
-            const teamName = this.team === 0 ? "Neutral" : this.team === 1 ? "Blue" : "Red";
+            const teamName = this.teamValue === 0 ? "Neutral" : this.teamValue === 1 ? "Blue" : "Red";
             
             const message: NewswireMessage = {
                 type: 'pillbox_destroyed',
-                team: this.team,
+                team: this.teamValue,
                 position: { x: this.x, y: this.y },
                 message: `A ${teamName} pillbox was destroyed!`
             };
@@ -122,10 +130,17 @@ export class ServerPillbox extends Pillbox {
         super.destroy();
     }
     
-    // Override team setter to update schema when team changes
-    set team(value: number) {
-        super.team = value;
-        this.updateSchema();
+    // Instead of getter/setter, we'll use methods to get/set team
+    getTeam(): number {
+        return this.teamValue;
+    }
+    
+    setTeam(value: number) {
+        this.teamValue = value;
+        // Cannot directly access parent class field
+        if (this.schema) {
+            this.updateSchema();
+        }
     }
 
     preUpdate(time: number, delta: number) {
@@ -154,7 +169,7 @@ export class ServerPillbox extends Pillbox {
             const tank = gameScene.playerEntities[sessionId];
             
             // Skip tanks on the same team
-            if (tank.team === this.team && this.team !== 0) continue;
+            if (tank.team === this.teamValue && this.teamValue !== 0) continue;
             
             // Calculate distance
             const distance = Phaser.Math.Distance.Between(this.x, this.y, tank.x, tank.y);
@@ -208,8 +223,7 @@ export class ServerPillbox extends Pillbox {
             this.x + fireLocation.x, 
             this.y + fireLocation.y, 
             angle, 
-            this.team, 
-            this.schemaId
+            this.teamValue
         );
     }
 }

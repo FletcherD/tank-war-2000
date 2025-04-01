@@ -353,14 +353,14 @@ export class GameMap {
                 isStatic: true,
                 label: 'wall'
             });
-            tile.body = body;
+            (tile as any).body = body;
         }
     }
     
     removeMatterBody(tile: Phaser.Tilemaps.Tile) {
-        if (tile &&tile.body) {
-            this.scene.matter.world.remove(tile.body);
-            tile.body = null;
+        if (tile && (tile as any).body) {
+            this.scene.matter.world.remove((tile as any).body);
+            (tile as any).body = null;
         }
     }
     

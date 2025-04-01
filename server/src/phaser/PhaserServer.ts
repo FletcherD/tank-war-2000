@@ -19,7 +19,7 @@ export class PhaserServer {
       physics: {
         default: 'matter',
         matter: {
-          gravity: { y: 0 },
+          gravity: { x: 0, y: 0 },
           debug: false
         }
       },
@@ -36,17 +36,14 @@ export class PhaserServer {
     const key = "game-" + room.roomId;
     
     // Create scene with proper configuration
-    const scene = new SceneClass({ 
-      key: key,
-      active: true,
-      visible: false,
-      physics: {
-        matter: {
-          gravity: { y: 0 },
-          debug: false
-        }
-      }
-    }, room);
+    const scene = new SceneClass();
+    // Set the key and other properties
+    scene.sys.settings.key = key;
+    scene.sys.settings.active = true;
+    scene.sys.settings.visible = false;
+    
+    // Set room reference after creation
+    scene.room = room;
     
     // Add the scene and start it
     this.game.scene.add(key, scene, true);

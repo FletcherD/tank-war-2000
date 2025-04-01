@@ -58,8 +58,8 @@ export default config({
         });
 
         // these latency methods are for development purpose only.
-        app.get("/latency", (req, res) => res.json(latencySimulationMs));
-        app.get("/simulate-latency/:milliseconds", (req, res) => {
+        app.get("/latency", (req: any, res: any) => res.json(latencySimulationMs));
+        app.get("/simulate-latency/:milliseconds", (req: any, res: any) => {
             latencySimulationMs = parseInt(req.params.milliseconds || "100");
 
             // enable latency simulation

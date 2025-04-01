@@ -92,7 +92,8 @@ export class Tank extends Phaser.GameObjects.Container
       const maxSpeed = this.baseMaxSpeed * speedMultiplier;
       const rotationSpeed = this.baseRotationSpeed * speedMultiplier;
       
-      if (this === gameScene.currentPlayer) {
+      // Only handle crosshair visibility if there's a currentPlayer property
+      if ((gameScene as any).currentPlayer && this === (gameScene as any).currentPlayer) {
           this.crosshair.setVisible(true);
       }
   
@@ -129,7 +130,11 @@ export class Tank extends Phaser.GameObjects.Container
         }
       }
 
-      this.setVelocity(this.speed * Math.cos(this.heading), this.speed * Math.sin(this.heading));
+      if (this.body) {
+        // Set velocity directly for Matter physics
+        this.body.velocity.x = this.speed * Math.cos(this.heading);
+        this.body.velocity.y = this.speed * Math.sin(this.heading);
+      }
       
       // Handle fire cooldown
       if (this.currentInput.fire && this.fireCooldownTimer <= 0 && this.canFire()) {

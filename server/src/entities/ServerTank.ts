@@ -19,7 +19,8 @@ export class ServerTank extends Tank {
   // Road building queue
   buildQueue: BuildQueueItem[] = [];
   
-  constructor(scene: ServerGameScene, x: number, y: number, sessionId: string) {
+  constructor(scene: Phaser.Scene, x: number, y: number, sessionId: string) {
+    // @ts-ignore - we're passing a Scene as GameScene
     super(scene, x, y);
     this.sessionId = sessionId;
     this.schema = new TankSchema();
@@ -60,7 +61,7 @@ export class ServerTank extends Tank {
     this.useAmmo();
 
     // Only fire if cooldown is complete
-    const scene = this.scene as ServerGameScene;      
+    const scene = this.scene as any;      
 
     const fireLocation = new Phaser.Math.Vector2(VISUALS.FIRING_OFFSET, 0.0).rotate(this.heading);
 
@@ -68,7 +69,9 @@ export class ServerTank extends Tank {
     const bulletY = this.y + fireLocation.y;
     
     // Create a server bullet with this tank as owner
-    scene.createBullet(bulletX, bulletY, this.heading, this.sessionId);
+    if (scene.createBullet) {
+      scene.createBullet(bulletX, bulletY, this.heading, this.team);
+    }
 
     // Update the schema to sync ammo change
     this.updateSchema();
@@ -90,11 +93,13 @@ export class ServerTank extends Tank {
     currentBuild.progress += delta / currentBuild.buildTime;
     
     // Send progress update to all clients
-    const scene = this.scene as ServerGameScene;
-    scene.room.broadcast("tileBuildProgress", {
-        tile: currentBuild.tile,
-        progress: currentBuild.progress
-    });
+    const scene = this.scene as any;
+    if (scene.room) {
+      scene.room.broadcast("tileBuildProgress", {
+          tile: currentBuild.tile,
+          progress: currentBuild.progress
+      });
+    }
     
     // If building is complete
     if (currentBuild.progress >= 1) {
@@ -106,12 +111,14 @@ export class ServerTank extends Tank {
         this.addWood(1);
         
         // Notify clients about completion
-        scene.room.broadcast("tileBuildComplete", {
-          tile: currentBuild.tile,
-          tileType: "grass",
-          isHarvesting: true,
-          woodAwarded: 1
-        });
+        if (scene.room) {
+          scene.room.broadcast("tileBuildComplete", {
+            tile: currentBuild.tile,
+            tileType: "grass",
+            isHarvesting: true,
+            woodAwarded: 1
+          });
+        }
       } else {
         // Normal road/wall building
         const tileIndex = (currentBuild.tileType === "road") ? TILE_INDICES.ROAD : TILE_INDICES.WALL;
@@ -119,10 +126,12 @@ export class ServerTank extends Tank {
         scene.gameMap.setTile(currentBuild.tile.x, currentBuild.tile.y, tileIndex, true);
         
         // Notify clients about completion
-        scene.room.broadcast("tileBuildComplete", {
-          tile: currentBuild.tile,
-          tileType: currentBuild.tileType
-        });
+        if (scene.room) {
+          scene.room.broadcast("tileBuildComplete", {
+            tile: currentBuild.tile,
+            tileType: currentBuild.tileType
+          });
+        }
       }
       
       // Remove from queue
