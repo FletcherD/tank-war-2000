@@ -27,11 +27,12 @@ export class ClientTank extends Tank {
   firingCooldown: number = 0;
   firingRate: number = PHYSICS.TANK_FIRE_COOLDOWN;
   
-  constructor(scene: ClientGameScene, x: number, y: number, sessionId: string, isLocalPlayer: boolean = false, name: string = "Player") {
+  constructor(scene: ClientGameScene, x: number, y: number, sessionId: string, isLocalPlayer: boolean = false, name: string = "Player", team: number = 0) {
     super(scene, x, y);
     this.sessionId = sessionId;
     this.isLocalPlayer = isLocalPlayer;
     this.name = name;
+    this.team = team;
     this.lastServerState = {
       x: x,
       y: y,
@@ -39,7 +40,7 @@ export class ClientTank extends Tank {
       speed: 0,
       health: 100,
       ammo: PHYSICS.TANK_MAX_AMMO,
-      team: 0,
+      team: team,
       tick: 0,
       pillboxCount: 0,
       wood: 0,

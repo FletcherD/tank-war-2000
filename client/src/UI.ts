@@ -255,41 +255,9 @@ export class GameUI {
     this.pillboxCountElement.style.borderRadius = '5px';
     this.pillboxCountElement.style.fontFamily = "'Courier Prime', monospace";
     this.pillboxCountElement.style.fontWeight = "700";
+    this.pillboxCountElement.style.visibility = 'hidden';
     this.pillboxCountElement.textContent = 'Pillboxes: 0';
     this.uiContainer.appendChild(this.pillboxCountElement);
-    
-    // Create wood count display
-    this.woodCountElement = document.createElement('div');
-    this.woodCountElement.style.position = 'absolute';
-    this.woodCountElement.style.top = '70px';
-    this.woodCountElement.style.right = '20px';
-    this.woodCountElement.style.padding = '5px 10px';
-    this.woodCountElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    this.woodCountElement.style.color = 'white';
-    this.woodCountElement.style.borderRadius = '5px';
-    this.woodCountElement.style.fontFamily = "'Courier Prime', monospace";
-    this.woodCountElement.style.fontWeight = "700";
-    this.woodCountElement.textContent = 'Wood: 0';
-    this.uiContainer.appendChild(this.woodCountElement);
-    
-    // Create harvest wood button (now hidden as we use the context menu)
-    this.harvestWoodButton = document.createElement('button');
-    this.harvestWoodButton.textContent = 'Harvest Wood';
-    this.harvestWoodButton.style.position = 'absolute';
-    this.harvestWoodButton.style.bottom = '100px';
-    this.harvestWoodButton.style.right = '20px';
-    this.harvestWoodButton.style.padding = '10px 20px';
-    this.harvestWoodButton.style.backgroundColor = '#8D6E63'; // Brown color for wood
-    this.harvestWoodButton.style.color = 'white';
-    this.harvestWoodButton.style.border = 'none';
-    this.harvestWoodButton.style.borderRadius = '5px';
-    this.harvestWoodButton.style.cursor = 'pointer';
-    this.harvestWoodButton.style.fontFamily = "'Courier Prime', monospace";
-    this.harvestWoodButton.style.fontWeight = "700";
-    this.harvestWoodButton.style.pointerEvents = 'auto';
-    this.harvestWoodButton.style.display = 'none'; // Hide it as we use context menu instead
-    this.harvestWoodButton.onclick = () => this.gameScene.buildTile('forest'); // Use forest tile type for harvesting
-    this.uiContainer.appendChild(this.harvestWoodButton);
     
     // Create message element for notifications
     this.messageElement = document.createElement('div');
@@ -456,7 +424,7 @@ export class GameUI {
     window.addEventListener('resize', () => this.updateUIPosition());
 
     // Initial update
-    this.updateHealthBar(100);
+    this.updateHealthBar(PHYSICS.TANK_HEALTH, PHYSICS.TANK_HEALTH);
     this.updateAmmoBar(PHYSICS.TANK_MAX_AMMO, PHYSICS.TANK_MAX_AMMO);
     
     // Initialize the touch joystick
@@ -797,11 +765,11 @@ export class GameUI {
   /**
    * Updates the health bar with the current player's health
    */
-  public updateHealthBar(health: number) {
+  public updateHealthBar(health: number, maxHealth: number) {
     if (!this.healthBarElement || !this.healthTextElement) return;
     
     // Update health bar width
-    this.healthBarElement.style.width = `${health}%`;
+    this.healthBarElement.style.width = `${(health / maxHealth) * 100}%`;
     
     // Update health text
     this.healthTextElement.textContent = `Health:\u00A0${health}%`;
@@ -854,6 +822,7 @@ export class GameUI {
   public updatePillboxCount(count: number) {
     if (!this.pillboxCountElement) return;
     
+    this.pillboxCountElement.style.visibility = (count > 0 ? 'visible' : 'hidden');
     this.pillboxCountElement.textContent = `Pillboxes: ${count}`;
   }
   

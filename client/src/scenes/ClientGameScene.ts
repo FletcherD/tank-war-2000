@@ -252,7 +252,7 @@ export class ClientGameScene extends GameScene {
             console.log(`Creating player at server position: ${spawnX}, ${spawnY}, team: ${team}`);
             
             // Create the tank at the server-provided position
-            const entity = this.addPlayer(spawnX, spawnY, sessionId, sessionId === this.room.sessionId);
+            const entity = this.addPlayer(spawnX, spawnY, sessionId, team, sessionId === this.room.sessionId);
             entity.team = team;
 
             // is current player
@@ -1025,13 +1025,13 @@ export class ClientGameScene extends GameScene {
     }
 
     // Add a player entity to the scene
-    addPlayer(x: number, y: number, sessionId: string, isLocalPlayer: boolean = false): ClientTank {
+    addPlayer(x: number, y: number, sessionId: string, team: number, isLocalPlayer: boolean = false): ClientTank {
         // Get player name from schema if available, otherwise use the playerName property for local player
         const player = this.room.state.players.get(sessionId);
         const playerName = player?.tank?.name || (isLocalPlayer ? this.playerName : "Player");
         
         console.log(`Adding ${isLocalPlayer ? "local" : "remote"} player ${sessionId} with name ${playerName} at (${x}, ${y})`);
-        const tank = new ClientTank(this, x, y, sessionId, isLocalPlayer, playerName);
+        const tank = new ClientTank(this, x, y, sessionId, isLocalPlayer, playerName, team);
         this.players.set(sessionId, tank);
         return tank;
     }

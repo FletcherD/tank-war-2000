@@ -5,6 +5,6 @@ function getUrlParam(name: string, defaultValue: string): string {
 }
 
 // Get server URL from URL parameters or use default
-const serverUrl = getUrlParam('server', 'localhost:2567');
+const serverUrl = getUrlParam('server', 'wss://us-lax-f83c5951.colyseus.cloud');
 
 export const BACKEND_URL = `${serverUrl}`;

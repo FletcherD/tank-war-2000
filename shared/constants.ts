@@ -44,7 +44,7 @@ export const COLLISION_CATEGORIES = {
 
 // Team Colors
 export const TEAM_COLORS = {
-  1: 0x0000ff, // Blue for team 1
+  1: 0x2222ff, // Blue for team 1
   2: 0xff0000  // Red for team 2
 };
 
