@@ -3,12 +3,12 @@
   "name": "my-app",
   "version": "1.0.0",
   "description": "Tank War 2000 Server",
-  "main": "lib/index.js",
+  "main": "build/server/src/index.js",
   "scripts": {
+    "start": "tsx watch src/index.ts",
     "loadtest": "colyseus-loadtest loadtest/example.ts --room my_room --numClients 2",
     "build": "tsc",
-    "clean": "",
-    "test": "mocha -r tsx test/**_test.ts --exit --timeout 15000"
+    "clean": ""
   },
   "author": "",
   "license": "UNLICENSED",
@@ -30,12 +30,9 @@
     "copyfiles": "^2.4.1",
     "mocha": "^11.1.0",
     "phaser": "3.88.2",
-    "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.2",
-    "webpack": "^5.98.0",
-    "webpack-cli": "^6.0.1"
+    "typescript": "^5.8.2"
   },
   "dependencies": {
     "@colyseus/core": "^0.16.13",

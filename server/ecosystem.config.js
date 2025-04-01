@@ -10,7 +10,7 @@ module.exports = {
         exec_mode: 'fork',
         wait_ready: true,
         env_production: {
-            NODE_ENV: 'production'
+            NODE_ENV: 'development'
         }
     }],
 };
