@@ -185,6 +185,6 @@ export class GameScene extends Phaser.Scene {
 
         // Adding 192 gets us the 'crater' tile with the same wang index
         const newTileIndex = wallTile.index+192;
-        this.gameMap.setTile(wallTile.x, wallTile.y, newTileIndex);
+        this.gameMap.setTile(wallTile.x, wallTile.y, newTileIndex, false);
     }
 }

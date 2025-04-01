@@ -123,7 +123,7 @@ export class GameRoom extends Room<MyRoomState> {
         const baseTileType = this.gameScene.gameMap.getBaseTileType(currentTile);
         
         // Check if this is a forest tile (for harvesting wood)
-        if (data.tileType === "forest") {
+        if (data.tileType === "forest" && baseTileType === TILE_INDICES.FOREST) {
           validTiles.push(tile);
           isHarvesting = true;
         } 

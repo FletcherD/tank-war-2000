@@ -129,7 +129,6 @@ export class ClientTank extends Tank {
     if (this.ammo !== data.ammo) {
       this.ammo = data.ammo;
     }
-    console.log(`Updated ammo for ${this.sessionId}: ${this.ammo}`);
     
     // Update pillbox count
     if (this.pillboxCount !== data.pillboxCount) {
@@ -340,7 +339,6 @@ export class ClientTank extends Tank {
 
       this.leftTreadPosition = mod(this.leftTreadPosition + frameIncrementL, framesPerRotation);
       this.rightTreadPosition = mod(this.rightTreadPosition + frameIncrementR, framesPerRotation);
-      console.log(this.leftTreadPosition, this.rightTreadPosition);
 
       this.leftTread.setFrame(getTreadFrameForPosition(this.leftTreadPosition));
       this.rightTread.setFrame(getTreadFrameForPosition(this.rightTreadPosition) + framesPerRow);

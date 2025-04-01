@@ -668,7 +668,6 @@ export class ClientGameScene extends GameScene {
                 const serverPos = serverSnapshot.state.players.filter(s => s.id === this.currentPlayer.sessionId)[0]
 
                 const nowTime = this.playerVault.get().time
-                console.log(nowTime - serverSnapshot.time)
 
                 this.currentPlayer.updateFromServer(serverPos)
             }
@@ -792,13 +791,19 @@ export class ClientGameScene extends GameScene {
         }
     }
     
-    // Start tile selection process
+    // Start tile selection process - simplified to always select 2x2
     startTileSelection(pointer: Phaser.Input.Pointer) {
         // Convert pointer position to tile coordinates
         const tileXY = this.gameMap.groundLayer.worldToTileXY(pointer.worldX, pointer.worldY);
         
-        this.selectionStartTile = { x: tileXY.x, y: tileXY.y };
-        this.selectionEndTile = { x: tileXY.x, y: tileXY.y };
+        // Get the top-left corner of a 2x2 area centered at cursor
+        // For even-sized selections like 2x2, we need to offset by -1,-1 from the cursor
+        const startX = tileXY.x - 1;
+        const startY = tileXY.y - 1;
+        
+        // Set selection to be exactly 2x2
+        this.selectionStartTile = { x: startX, y: startY };
+        this.selectionEndTile = { x: startX + 1, y: startY + 1 };
         
         // Set selection rectangle position and size
         this.updateSelectionRectangle();
@@ -807,65 +812,68 @@ export class ClientGameScene extends GameScene {
         if (this.selectionRect) {
             this.selectionRect.setVisible(true);
         }
+        
+        // Immediately set the selectedTiles array with the 2x2 block
+        this.selectedTiles = [
+            { x: startX, y: startY },
+            { x: startX + 1, y: startY },
+            { x: startX, y: startY + 1 },
+            { x: startX + 1, y: startY + 1 }
+        ];
     }
     
     // Update tile selection as mouse moves
     updateTileSelection(pointer: Phaser.Input.Pointer) {
-        if (!this.selectionStartTile || !pointer.isDown) return;
+        if (!pointer.isDown) return;
         
         // Convert pointer position to tile coordinates
         const tileXY = this.gameMap.groundLayer.worldToTileXY(pointer.worldX, pointer.worldY);
-        this.selectionEndTile = { x: tileXY.x, y: tileXY.y };
         
-        // For pillbox placement, we need exactly a 2x2 area
-        // Force the end tile to create a 1x1 or 2x2 selection
-        if (Math.abs(this.selectionEndTile.x - this.selectionStartTile.x) > 1) {
-            this.selectionEndTile.x = this.selectionStartTile.x + 
-                (this.selectionEndTile.x > this.selectionStartTile.x ? 1 : -1);
-        }
+        // Get the top-left corner of a 2x2 area centered at cursor
+        const startX = tileXY.x - 1;
+        const startY = tileXY.y - 1;
         
-        if (Math.abs(this.selectionEndTile.y - this.selectionStartTile.y) > 1) {
-            this.selectionEndTile.y = this.selectionStartTile.y + 
-                (this.selectionEndTile.y > this.selectionStartTile.y ? 1 : -1);
-        }
+        // Set selection to be exactly 2x2
+        this.selectionStartTile = { x: startX, y: startY };
+        this.selectionEndTile = { x: startX + 1, y: startY + 1 };
         
         // Update selection rectangle
         this.updateSelectionRectangle();
+        
+        // Update selectedTiles array with the 2x2 block
+        this.selectedTiles = [
+            { x: startX, y: startY },
+            { x: startX + 1, y: startY },
+            { x: startX, y: startY + 1 },
+            { x: startX + 1, y: startY + 1 }
+        ];
     }
     
     // End tile selection process
     endTileSelection(pointer: Phaser.Input.Pointer) {
-        if (!this.selectionStartTile || !this.selectionEndTile) return;
-        
-        // Calculate the list of selected tiles
-        this.selectedTiles = [];
-        
-        const startX = Math.min(this.selectionStartTile.x, this.selectionEndTile.x);
-        const endX = Math.max(this.selectionStartTile.x, this.selectionEndTile.x);
-        const startY = Math.min(this.selectionStartTile.y, this.selectionEndTile.y);
-        const endY = Math.max(this.selectionStartTile.y, this.selectionEndTile.y);
-        
-        for (let y = startY; y <= endY; y++) {
-            for (let x = startX; x <= endX; x++) {
-                this.selectedTiles.push({ x, y });
-            }
+        // If the user clicks somewhere without dragging, we want to toggle selection off
+        // This allows clicking elsewhere to clear the selection
+        if (pointer.downTime === pointer.upTime && !this.isBuilding) {
+            this.clearSelection();
         }
-        
-        // Keep selection rectangle visible to show the selected area
+        // Otherwise, keep the currently selected tiles
     }
     
     // Update the selection rectangle's position and size
     updateSelectionRectangle() {
         if (!this.selectionRect || !this.selectionStartTile || !this.selectionEndTile) return;
         
-        const startX = Math.min(this.selectionStartTile.x, this.selectionEndTile.x);
-        const endX = Math.max(this.selectionStartTile.x, this.selectionEndTile.x);
-        const startY = Math.min(this.selectionStartTile.y, this.selectionEndTile.y);
-        const endY = Math.max(this.selectionStartTile.y, this.selectionEndTile.y);
-        
         // Convert tile coordinates to world coordinates
-        const startPoint = this.gameMap.groundLayer.tileToWorldXY(startX, startY);
-        const endPoint = this.gameMap.groundLayer.tileToWorldXY(endX + 1, endY + 1);
+        const startPoint = this.gameMap.groundLayer.tileToWorldXY(
+            this.selectionStartTile.x, 
+            this.selectionStartTile.y
+        );
+        
+        // For a 2x2 grid, the end point is 2 tiles to the right and down
+        const endPoint = this.gameMap.groundLayer.tileToWorldXY(
+            this.selectionStartTile.x + 2,
+            this.selectionStartTile.y + 2
+        );
         
         // Set rectangle size and position (using top-left origin)
         const width = endPoint.x - startPoint.x;
