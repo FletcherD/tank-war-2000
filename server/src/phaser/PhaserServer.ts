@@ -1,5 +1,6 @@
+import '@geckos.io/phaser-on-nodejs'
+import Phaser from 'phaser'
 
-require('@geckos.io/phaser-on-nodejs');
 import { Room } from "colyseus";
 import { ServerGameScene } from "../scenes/ServerGameScene";
 import { MyRoomState } from "../rooms/GameRoom";

@@ -3,13 +3,33 @@ import { Server } from "@colyseus/core";
 import { monitor } from "@colyseus/monitor";
 import { playground } from "@colyseus/playground";
 
+
+import '@geckos.io/phaser-on-nodejs'
+import Phaser from 'phaser'
 /**
  * Import your Room files
  */
 import { GameRoom } from "./rooms/GameRoom";
+import { ServerGameScene } from "./scenes/ServerGameScene";
 
 let gameServerRef: Server;
 let latencySimulationMs: number = 0;
+
+const defaultConfig = {
+    type: Phaser.HEADLESS,
+    width: 1280,
+    height: 720,
+    banner: false,
+    audio: false,
+    scene: [ServerGameScene],
+    physics: {
+        default: "matter",
+        matter: {
+            debug: true,
+            gravity: { y: 0 }
+        }
+    },
+  }
 
 export default config({
     options: {

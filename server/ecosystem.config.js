@@ -3,7 +3,7 @@ const os = require('os');
 module.exports = {
     apps : [{
         name: "tank-war-2000",
-        script: 'src/index.ts',
+        script: 'dist/bundle.js',
         time: true,
         watch: false,
         instances: os.cpus().length,
