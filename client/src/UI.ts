@@ -1,5 +1,5 @@
 import { ClientGameScene } from "./scenes/ClientGameScene";
-import { PHYSICS } from "../../shared/constants";
+import { PHYSICS, TILE_INDICES } from "../../shared/constants";
 import * as nipplejs from 'nipplejs';
 
 export class GameUI {
@@ -1004,6 +1004,10 @@ export class GameUI {
     } else {
       // Show/hide context menu based on selection
       const hasSelection = this.gameScene.selectedTiles.length > 0;
+      const hasPillboxes = this.gameScene.currentPlayer && this.gameScene.currentPlayer.pillboxCount > 0;
+      
+      let isValidSelection = false;
+      let isInRange = false;
       
       if (hasSelection && !this.gameScene.isBuilding) {
         // Show context menu near the selection
@@ -1045,103 +1049,166 @@ export class GameUI {
         
         this.contextMenu.style.left = `${menuX}px`;
         this.contextMenu.style.top = `${menuY}px`;
+
+        // Check if player is close enough to the selection
+        if (this.gameScene.currentPlayer) {
+          // Find the center of the 2x2 selection
+          const minX = Math.min(...this.gameScene.selectedTiles.map(t => t.x));
+          const minY = Math.min(...this.gameScene.selectedTiles.map(t => t.y));
+          const worldPos = this.gameScene.gameMap.groundLayer.tileToWorldXY(minX, minY);
+          const centerX = worldPos.x + 16; // Center of the 2x2 area
+          const centerY = worldPos.y + 16;
+          
+          // Calculate distance
+          const distance = Phaser.Math.Distance.Between(
+            this.gameScene.currentPlayer.x, this.gameScene.currentPlayer.y,
+            centerX, centerY
+          );
+          
+          // Check if close enough (using the same distance as in placePillbox)
+          isInRange = distance <= PHYSICS.BUILD_MAX_DISTANCE;
+        }
+        
+        // Check if selected tiles are valid for each button type
+        // First, check if any of the selected tiles are walls (can't build wall or road on a wall)
+        let nWallTiles = 0;
+        let nForestTiles = 0;
+        
+        for (const tile of this.gameScene.selectedTiles) {
+          const groundTile = this.gameScene.gameMap.groundLayer.getTileAt(tile.x, tile.y);
+          const decorationTile = this.gameScene.gameMap.decorationLayer.getTileAt(tile.x, tile.y);
+          
+          // Check for wall tiles (which have collision)
+          if (groundTile && groundTile.properties?.hasCollision) {
+            nWallTiles++;
+          }
+          if (decorationTile && decorationTile.properties?.hasCollision) {
+            nWallTiles++;
+          }
+          
+          // Check for forest tiles (which have baseTileType of forest)
+          if (decorationTile && this.gameScene.gameMap.getBaseTileType(decorationTile) === TILE_INDICES.FOREST) { // 2*64 = 128 for forest
+            nForestTiles++;
+          }
+        }
+        
+        // Update build road button state
+        if (!isInRange || nWallTiles == 4) {
+          this.buildRoadContextButton.style.opacity = '0.5';
+          this.buildRoadContextButton.style.cursor = 'not-allowed';
+          this.buildRoadContextButton.style.backgroundColor = '#888888'; // Grey
+          this.buildRoadContextButton.onclick = null; // Remove click handler when disabled
+          this.buildRoadContextButton.title = "Can't build road on a wall";
+        } else {
+          isValidSelection = true;
+          this.buildRoadContextButton.style.opacity = '1';
+          this.buildRoadContextButton.style.cursor = 'pointer';
+          this.buildRoadContextButton.style.backgroundColor = '#4CAF50'; // Green
+          this.buildRoadContextButton.onclick = () => this.gameScene.buildTile('road');
+          this.buildRoadContextButton.title = "Build Road";
+        }
+        
+        // Update build wall button state
+        if (!isInRange || nWallTiles == 4) {
+          this.buildWallContextButton.style.opacity = '0.5';
+          this.buildWallContextButton.style.cursor = 'not-allowed';
+          this.buildWallContextButton.style.backgroundColor = '#888888'; // Grey
+          this.buildWallContextButton.onclick = null; // Remove click handler when disabled
+          this.buildWallContextButton.title = "Can't build wall on a wall";
+        } else {
+          isValidSelection = true;
+          this.buildWallContextButton.style.opacity = '1';
+          this.buildWallContextButton.style.cursor = 'pointer';
+          this.buildWallContextButton.style.backgroundColor = '#2196F3'; // Blue
+          this.buildWallContextButton.onclick = () => this.gameScene.buildTile('wall');
+          this.buildWallContextButton.title = "Build Wall";
+        }
+        
+        // Update harvest wood button state
+        if (!isInRange || nForestTiles == 0) {
+          this.harvestWoodContextButton.style.opacity = '0.5';
+          this.harvestWoodContextButton.style.cursor = 'not-allowed';
+          this.harvestWoodContextButton.style.backgroundColor = '#888888'; // Grey
+          this.harvestWoodContextButton.onclick = null; // Remove click handler when disabled
+          this.harvestWoodContextButton.title = "No forest to harvest";
+        } else {
+          isValidSelection = true;
+          this.harvestWoodContextButton.style.opacity = '1';
+          this.harvestWoodContextButton.style.cursor = 'pointer';
+          this.harvestWoodContextButton.style.backgroundColor = '#8D6E63'; // Brown
+          this.harvestWoodContextButton.onclick = () => this.gameScene.buildTile('forest');
+          this.harvestWoodContextButton.title = "Harvest Wood";
+        }
       } else {
         this.contextMenu.style.display = 'none';
       }
-    }
-    
-    // Update place pillbox button visibility based on selection
-    const hasSelection = this.gameScene.selectedTiles.length > 0;
-    const hasPillboxes = this.gameScene.currentPlayer && this.gameScene.currentPlayer.pillboxCount > 0;
-    
-    // Check if the selection is valid for a pillbox (2x2 area of valid tiles)
-    let isValidSelection = false;
-    let isInRange = false;
-    
-    if (hasSelection && hasPillboxes && !this.gameScene.isBuilding) {
-      isValidSelection = (this.gameScene.gameMap as any).isSelectionValidForPillbox(this.gameScene.selectedTiles);
-      
-      // Check if player is close enough to the selection
-      if (isValidSelection && this.gameScene.currentPlayer) {
-        // Find the center of the 2x2 selection
-        const minX = Math.min(...this.gameScene.selectedTiles.map(t => t.x));
-        const minY = Math.min(...this.gameScene.selectedTiles.map(t => t.y));
-        const worldPos = this.gameScene.gameMap.groundLayer.tileToWorldXY(minX, minY);
-        const centerX = worldPos.x + 32; // Center of the 2x2 area
-        const centerY = worldPos.y + 32;
+
+      if (hasPillboxes) {
+        isValidSelection = (this.gameScene.gameMap as any).isSelectionValidForPillbox(this.gameScene.selectedTiles);
         
-        // Calculate distance
-        const distance = Phaser.Math.Distance.Between(
-          this.gameScene.currentPlayer.x, this.gameScene.currentPlayer.y,
-          centerX, centerY
-        );
+        // Since we always have a 2x2 selection, we can just add a dynamic pillbox button
+        // Create pillbox context button if it doesn't exist yet
+        if (!this.contextMenu.querySelector('.pillbox-button') && hasPillboxes) {
+          const pillboxContextButton = document.createElement('div');
+          pillboxContextButton.className = 'context-menu-button pillbox-button';
+          pillboxContextButton.innerHTML = '🛡️'; // Shield emoji for pillbox
+          pillboxContextButton.title = 'Place Pillbox';
+          pillboxContextButton.style.backgroundColor = '#9c27b0'; // Purple
+          pillboxContextButton.onclick = () => this.gameScene.placePillbox();
+          this.contextMenu.appendChild(pillboxContextButton);
+        }
         
-        // Check if close enough (using the same distance as in placePillbox)
-        isInRange = distance <= 100;
-      }
-      
-      // Since we always have a 2x2 selection, we can just add a dynamic pillbox button
-      // Create pillbox context button if it doesn't exist yet
-      if (!this.contextMenu.querySelector('.pillbox-button') && hasPillboxes) {
-        const pillboxContextButton = document.createElement('div');
-        pillboxContextButton.className = 'context-menu-button pillbox-button';
-        pillboxContextButton.innerHTML = '🛡️'; // Shield emoji for pillbox
-        pillboxContextButton.title = 'Place Pillbox';
-        pillboxContextButton.style.backgroundColor = '#9c27b0'; // Purple
-        pillboxContextButton.onclick = () => this.gameScene.placePillbox();
-        this.contextMenu.appendChild(pillboxContextButton);
-      }
-      
-      // Handle the button state based on validity and range
-      const pillboxButton = this.contextMenu.querySelector('.pillbox-button');
-      if (pillboxButton) {
-        if (!hasPillboxes) {
-          // Remove the button if no pillboxes available
-          this.contextMenu.removeChild(pillboxButton);
-        } else if (!isValidSelection || !isInRange) {
-          // Disable the button if selection invalid or out of range
-          pillboxButton.style.opacity = '0.5';
-          pillboxButton.style.cursor = 'not-allowed';
-          pillboxButton.style.backgroundColor = '#888888'; // Grey
-          pillboxButton.onclick = null; // Remove click handler when disabled
-          
-          // Update tooltip to explain why it's disabled
-          if (!isValidSelection) {
-            pillboxButton.title = "Invalid selection. Need valid land for pillbox.";
-          } else if (!isInRange) {
-            pillboxButton.title = "Too far away. Move closer to place pillbox.";
+        // Handle the button state based on validity and range
+        const pillboxButton = this.contextMenu.querySelector('.pillbox-button');
+        if (pillboxButton) {
+          if (!hasPillboxes) {
+            // Remove the button if no pillboxes available
+            this.contextMenu.removeChild(pillboxButton);
+          } else if (!isValidSelection || !isInRange) {
+            // Disable the button if selection invalid or out of range
+            pillboxButton.style.opacity = '0.5';
+            pillboxButton.style.cursor = 'not-allowed';
+            pillboxButton.style.backgroundColor = '#888888'; // Grey
+            pillboxButton.onclick = null; // Remove click handler when disabled
+            
+            // Update tooltip to explain why it's disabled
+            if (!isValidSelection) {
+              pillboxButton.title = "Invalid selection. Need valid land for pillbox.";
+            } else if (!isInRange) {
+              pillboxButton.title = "Too far away. Move closer to place pillbox.";
+            }
+          } else {
+            // Enable the button when valid and in range
+            pillboxButton.style.opacity = '1';
+            pillboxButton.style.cursor = 'pointer';
+            pillboxButton.style.backgroundColor = '#9c27b0'; // Purple
+            pillboxButton.onclick = () => this.gameScene.placePillbox();
+            pillboxButton.title = 'Place Pillbox';
           }
-        } else {
-          // Enable the button when valid and in range
-          pillboxButton.style.opacity = '1';
-          pillboxButton.style.cursor = 'pointer';
-          pillboxButton.style.backgroundColor = '#9c27b0'; // Purple
-          pillboxButton.onclick = () => this.gameScene.placePillbox();
-          pillboxButton.title = 'Place Pillbox';
+        }
+      } else {
+        // Remove pillbox button from context menu if it exists
+        const pillboxButton = this.contextMenu.querySelector('.pillbox-button');
+        if (pillboxButton) {
+          this.contextMenu.removeChild(pillboxButton);
         }
       }
-    } else {
-      // Remove pillbox button from context menu if it exists
-      const pillboxButton = this.contextMenu.querySelector('.pillbox-button');
-      if (pillboxButton) {
-        this.contextMenu.removeChild(pillboxButton);
-      }
-    }
     
-    // Also pass range information to the selection renderer
-    if (this.gameScene.selectionRect && hasSelection) {
-      if (!isInRange && isValidSelection) {
-        // Selection is valid but out of range - color it grey
-        this.gameScene.selectionRect.setStrokeStyle(2, 0x888888);
-        this.gameScene.selectionRect.setFillStyle(0x888888, 0.3);
-      } else if (isValidSelection && isInRange) {
-        // Selection is valid and in range - color it green
-        this.gameScene.selectionRect.setStrokeStyle(2, 0x00ff00);
-        this.gameScene.selectionRect.setFillStyle(0x00ff00, 0.3);
-      } else {
-        // Selection is invalid - color it yellow
-        this.gameScene.selectionRect.setStrokeStyle(2, 0xffff00);
-        this.gameScene.selectionRect.setFillStyle(0xffff00, 0.3);
+      // Also pass range information to the selection renderer
+      if (this.gameScene.selectionRect && hasSelection) {
+        if (!isInRange) {
+          // Selection is valid but out of range - color it grey
+          this.gameScene.selectionRect.setStrokeStyle(2, 0x888888);
+          this.gameScene.selectionRect.setFillStyle(0x888888, 0.3);
+        } else if (isValidSelection && isInRange) {
+          // Selection is valid and in range - color it green
+          this.gameScene.selectionRect.setStrokeStyle(2, 0x00ff00);
+          this.gameScene.selectionRect.setFillStyle(0x00ff00, 0.3);
+        } else {
+          // Selection is invalid - color it red
+          this.gameScene.selectionRect.setStrokeStyle(2, 0xff0000);
+          this.gameScene.selectionRect.setFillStyle(0xff0000, 0.3);
+        }
       }
     }
     

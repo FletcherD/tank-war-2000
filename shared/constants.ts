@@ -27,6 +27,8 @@ export const PHYSICS = {
   STATION_CAPTURE_RANGE: 16, // pixels
   STATION_REFILL_RATE: 5, // ammo per second
 
+  BUILD_MAX_DISTANCE: 96,
+
   // Game timing
   FIXED_TIMESTEP: 1000 / 60, // 60 FPS
 };
