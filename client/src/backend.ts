@@ -8,7 +8,7 @@ function getUrlParam(name: string, defaultValue: string): string {
 const serverUrl = getUrlParam('server', 'localhost:2567');
 
 export const BACKEND_URL = (window.location.href.indexOf("localhost") === -1 && !serverUrl.includes(':'))
-    ? `//${window.location.hostname}${(window.location.port && `:${window.location.port}`)}`
-    : `//${serverUrl}`;
+    ? `${window.location.hostname}${(window.location.port && `:${window.location.port}`)}`
+    : `${serverUrl}`;
 
 export const BACKEND_HTTP_URL = BACKEND_URL
