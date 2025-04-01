@@ -6,11 +6,11 @@
  * If you're self-hosting (without Colyseus Cloud), you can manually instantiate a
  * Colyseus Server as documented here: 👉 https://docs.colyseus.io/server/api/#constructor-options
  */
-import { listen } from "@colyseus/tools";
 
-// imports for headless phaser
 import '@geckos.io/phaser-on-nodejs'
 import Phaser from 'phaser'
+
+import { listen } from "@colyseus/tools";
 
 // Import arena config
 import appConfig from "./app.config";
