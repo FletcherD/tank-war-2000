@@ -1,4 +1,4 @@
-import { PHYSICS, COLLISION_CATEGORIES } from "../constants";
+import { PHYSICS } from "../constants.js";
 
 export class Bullet extends Phaser.GameObjects.Sprite
 {

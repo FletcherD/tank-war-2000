@@ -1,9 +1,9 @@
-import { Station } from "../../../shared/objects/Station";
-import { StationSchema } from "../schemas/StationSchema";
-import { TEAM_COLORS } from "../../../shared/constants";
-import { PHYSICS } from "../../../shared/constants";
-import { ServerGameScene } from "../scenes/ServerGameScene";
-import { NewswireMessage } from "../rooms/GameRoom";
+import { Station } from "../../../shared/objects/Station.js";
+import { StationSchema } from "../schemas/StationSchema.js";
+import { TEAM_COLORS } from "../../../shared/constants.js";
+import { PHYSICS } from "../../../shared/constants.js";
+import { ServerGameScene } from "../scenes/ServerGameScene.js";
+import { NewswireMessage } from "../rooms/GameRoom.js";
 
 export class ServerStation extends Station {
   // Schema to be synced with clients

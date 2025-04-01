@@ -1,11 +1,9 @@
-import { GameMap } from "./Map";
-import { Tank } from "../objects/Tank";
-import { Bullet } from "../objects/Bullet";
-import { Pillbox } from "../objects/Pillbox";
-import { Station } from "../objects/Station";
-import { PHYSICS, DAMAGE, TEAM_COLORS } from "../constants";
-
-export { InputData } from "../objects/Tank";
+import { GameMap } from "./Map.js";
+import { Tank } from "../objects/Tank.js";
+import { Bullet } from "../objects/Bullet.js";
+import { Pillbox } from "../objects/Pillbox.js";
+import { Station } from "../objects/Station.js";
+import { PHYSICS, DAMAGE, TEAM_COLORS } from "../constants.js";
 
 export class GameScene extends Phaser.Scene {
     matter: Phaser.Physics.Matter.MatterPhysics;

@@ -1,6 +1,5 @@
-import { Bullet } from "./Bullet";
-import { COLLISION_CATEGORIES, PHYSICS, VISUALS } from "../constants";
-import { GameScene } from "../scenes/Game";
+import { COLLISION_CATEGORIES, PHYSICS } from "../constants.js";
+import { GameScene } from "../scenes/Game.js";
 
 export interface InputData {
     left: boolean;

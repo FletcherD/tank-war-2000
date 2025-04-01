@@ -1,15 +1,15 @@
-import { GameScene } from "../../../shared/scenes/Game";
-import { ServerTank } from "../entities/ServerTank";
-import { InputData } from "../../../shared/objects/Tank";
+import { GameScene } from "../../../shared/scenes/Game.js";
+import { ServerTank } from "../entities/ServerTank.js";
+import { InputData } from "../../../shared/objects/Tank.js";
 import { Room } from "colyseus";
-import { MyRoomState, NewswireMessage } from "../rooms/GameRoom";
-import { ServerMap } from "../scenes/ServerMap";
-import { StationSchema } from "../schemas/StationSchema";
-import { PillboxSchema } from "../schemas/PillboxSchema";
-import { TEAM_COLORS, PHYSICS } from "../../../shared/constants";
-import { ServerPillbox } from "../entities/ServerPillbox";
-import { ServerBullet } from "../entities/ServerBullet";
-import { ServerStation } from "../entities/ServerStation";
+import { MyRoomState, NewswireMessage } from "../rooms/GameRoom.js";
+import { ServerMap } from "../scenes/ServerMap.js";
+import { StationSchema } from "../schemas/StationSchema.js";
+import { PillboxSchema } from "../schemas/PillboxSchema.js";
+import { TEAM_COLORS, PHYSICS } from "../../../shared/constants.js";
+import { ServerPillbox } from "../entities/ServerPillbox.js";
+import { ServerBullet } from "../entities/ServerBullet.js";
+import { ServerStation } from "../entities/ServerStation.js";
 
 export interface WorldState {
   players: ServerTank[];

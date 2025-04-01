@@ -1,7 +1,7 @@
-import { Tank, InputData } from "../../../shared/objects/Tank";
-import { TankSchema } from "../schemas/TankSchema";
-import { ServerGameScene } from "../scenes/ServerGameScene";
-import { VISUALS, TILE_INDICES, PHYSICS } from "../../../shared/constants";
+import { Tank, InputData } from "../../../shared/objects/Tank.js";
+import { TankSchema } from "../schemas/TankSchema.js";
+import { ServerGameScene } from "../scenes/ServerGameScene.js";
+import { VISUALS, TILE_INDICES, PHYSICS } from "../../../shared/constants.js";
 
 // Define the build queue item type
 export interface BuildQueueItem {

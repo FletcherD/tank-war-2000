@@ -9,8 +9,8 @@ import Phaser from 'phaser'
 /**
  * Import your Room files
  */
-import { GameRoom } from "./rooms/GameRoom";
-import { ServerGameScene } from "./scenes/ServerGameScene";
+import { GameRoom } from "./rooms/GameRoom.js";
+import { ServerGameScene } from "./scenes/ServerGameScene.js";
 
 let gameServerRef: Server;
 let latencySimulationMs: number = 0;

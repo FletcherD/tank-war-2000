@@ -1,5 +1,5 @@
-import { Bullet } from "../../../shared/objects/Bullet";
-import { BulletSchema } from "../schemas/BulletSchema";
+import { Bullet } from "../../../shared/objects/Bullet.js";
+import { BulletSchema } from "../schemas/BulletSchema.js";
 import { v4 as uuidv4 } from 'uuid'; // We'll need to add this dependency
 
 export class ServerBullet extends Bullet {

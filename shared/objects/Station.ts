@@ -1,4 +1,4 @@
-import { COLLISION_CATEGORIES, TEAM_COLORS } from "../constants";
+import { COLLISION_CATEGORIES, TEAM_COLORS } from "../constants.js";
 
 export class Station extends Phaser.Physics.Matter.Sprite {
   // Team - 0 for neutral, 1+ for player teams

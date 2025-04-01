@@ -1,9 +1,9 @@
-import { Pillbox } from "../../../shared/objects/Pillbox";
-import { PillboxSchema } from "../schemas/PillboxSchema";
-import { ServerGameScene } from "../scenes/ServerGameScene";
-import { Tank } from "../../../shared/objects/Tank";
-import { VISUALS, PHYSICS, COLLISION_CATEGORIES } from "../../../shared/constants";
-import { NewswireMessage } from "../rooms/GameRoom";
+import { Pillbox } from "../../../shared/objects/Pillbox.js";
+import { PillboxSchema } from "../schemas/PillboxSchema.js";
+import { ServerGameScene } from "../scenes/ServerGameScene.js";
+import { Tank } from "../../../shared/objects/Tank.js";
+import { VISUALS, PHYSICS, COLLISION_CATEGORIES } from "../../../shared/constants.js";
+import { NewswireMessage } from "../rooms/GameRoom.js";
 
 export class ServerPillbox extends Pillbox {
     // Schema to be synced with clients

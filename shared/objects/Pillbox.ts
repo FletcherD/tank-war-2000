@@ -1,6 +1,4 @@
-import { Bullet } from "./Bullet";
-import { Tank } from "./Tank";
-import { COLLISION_CATEGORIES, PHYSICS, TEAM_COLORS, VISUALS } from "../constants";
+import { COLLISION_CATEGORIES, PHYSICS, TEAM_COLORS } from "../constants.js";
 
 export class Pillbox extends Phaser.Physics.Matter.Sprite {
   // Detection range for targeting tanks

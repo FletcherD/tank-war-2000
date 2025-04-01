@@ -1,5 +1,5 @@
 import { Schema, type } from "@colyseus/schema";
-import { PHYSICS } from "../../../shared/constants";
+import { PHYSICS } from "../../../shared/constants.js";
 
 export class TankSchema extends Schema {
   @type("string") id: string = "";

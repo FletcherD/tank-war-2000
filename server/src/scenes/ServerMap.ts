@@ -1,5 +1,5 @@
-import { GameMap } from "../../../shared/scenes/Map";
-import { WorldMapSchema } from "../schemas/WorldMapSchema";
+import { GameMap } from "../../../shared/scenes/Map.js";
+import { WorldMapSchema } from "../schemas/WorldMapSchema.js";
 import { ArraySchema } from "@colyseus/schema";
 
 export class ServerMap extends GameMap {

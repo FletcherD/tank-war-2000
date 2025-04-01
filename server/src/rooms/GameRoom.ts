@@ -1,14 +1,14 @@
 import { Room, Client } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
-import { InputData } from "../../../shared/objects/Tank";
-import { TankSchema } from "../schemas/TankSchema";
-import { ServerGameScene } from "../scenes/ServerGameScene";
-import { PhaserServer } from "../phaser/PhaserServer";
-import { WorldMapSchema } from "../schemas/WorldMapSchema";
-import { StationSchema } from "../schemas/StationSchema";
-import { PillboxSchema } from "../schemas/PillboxSchema";
-import { BulletSchema } from "../schemas/BulletSchema";
-import { TILE_INDICES } from "../../../shared/constants";
+import { InputData } from "../../../shared/objects/Tank.js";
+import { TankSchema } from "../schemas/TankSchema.js";
+import { ServerGameScene } from "../scenes/ServerGameScene.js";
+import { PhaserServer } from "../phaser/PhaserServer.js";
+import { WorldMapSchema } from "../schemas/WorldMapSchema.js";
+import { StationSchema } from "../schemas/StationSchema.js";
+import { PillboxSchema } from "../schemas/PillboxSchema.js";
+import { BulletSchema } from "../schemas/BulletSchema.js";
+import { TILE_INDICES } from "../../../shared/constants.js";
 
 import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
 
