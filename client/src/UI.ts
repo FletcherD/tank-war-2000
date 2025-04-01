@@ -57,6 +57,11 @@ export class GameUI {
   private ammoBarContainer: HTMLDivElement;
   private ammoBarElement: HTMLDivElement;
   private ammoTextElement: HTMLDivElement;
+  
+  // Wood bar elements
+  private woodBarContainer: HTMLDivElement;
+  private woodBarElement: HTMLDivElement;
+  private woodTextElement: HTMLDivElement;
 
   private createUI() {
     // Get the canvas element
@@ -154,6 +159,28 @@ export class GameUI {
     this.ammoTextElement.style.fontFamily = "'Courier Prime', monospace";
     this.ammoTextElement.style.fontWeight = "700";
     ammoBarOuter.appendChild(this.ammoTextElement);
+    
+    // Create wood bar container positioned below ammo bar
+    this.woodBarContainer = document.createElement('div');
+    this.healthBarContainer.appendChild(this.woodBarContainer);
+    
+    // Create wood bar outer container
+    const woodBarOuter = document.createElement('div');
+    woodBarOuter.className = 'progress';
+    this.woodBarContainer.appendChild(woodBarOuter);
+    
+    // Create wood bar
+    this.woodBarElement = document.createElement('div');
+    this.woodBarElement.id = 'woodBar';
+    this.woodBarElement.style.backgroundColor = '#4CAF50'; // Green color for wood
+    woodBarOuter.appendChild(this.woodBarElement);
+    
+    // Create wood text
+    this.woodTextElement = document.createElement('div');
+    this.woodTextElement.className = 'percent';
+    this.woodTextElement.style.fontFamily = "'Courier Prime', monospace";
+    this.woodTextElement.style.fontWeight = "700";
+    woodBarOuter.appendChild(this.woodTextElement);
     
     // Create context menu for tile selection
     this.contextMenu = document.createElement('div');
@@ -804,6 +831,22 @@ export class GameUI {
       this.ammoBarElement.style.backgroundColor = '#999999'; // Grey when high
     }
   }
+  
+  /**
+   * Updates the wood bar with the current player's wood resources
+   */
+  public updateWoodBar(currentWood: number, maxWood: number) {
+    if (!this.woodBarElement || !this.woodTextElement) return;
+    
+    // Calculate percentage
+    const woodPercentage = Math.floor((currentWood / maxWood) * 100);
+    
+    // Update wood bar width
+    this.woodBarElement.style.width = `${woodPercentage}%`;
+    
+    // Update wood text
+    this.woodTextElement.textContent = `Wood:\u00A0${Math.floor(currentWood)}/${maxWood}`;
+  }
 
   /**
    * Updates the pillbox count display
@@ -947,6 +990,7 @@ export class GameUI {
     if (this.gameScene.currentPlayer) {
       this.updateHealthBar(this.gameScene.currentPlayer.health);
       this.updateAmmoBar(this.gameScene.currentPlayer.ammo, PHYSICS.TANK_MAX_AMMO);
+      this.updateWoodBar(this.gameScene.currentPlayer.wood, PHYSICS.TANK_MAX_WOOD);
       this.updatePillboxCount(this.gameScene.currentPlayer.pillboxCount);
       this.updateWoodCount(this.gameScene.currentPlayer.wood);
       

@@ -16,6 +16,7 @@ export class ServerMap extends GameMap {
     // Update the schema tile indices
     if (this.schema && this.groundLayer) {
       const width = this.groundLayer.width;
+      const index = y * width + x;
       this.schema.tileIndices[index] = tileIndex;
       
       // Broadcast tile change message to all clients

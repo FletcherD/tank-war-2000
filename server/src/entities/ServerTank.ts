@@ -1,7 +1,7 @@
 import { Tank, InputData } from "../../../shared/objects/Tank";
 import { TankSchema } from "../schemas/TankSchema";
 import { ServerGameScene } from "../scenes/ServerGameScene";
-import { VISUALS, TILE_INDICES } from "../../../shared/constants";
+import { VISUALS, TILE_INDICES, PHYSICS } from "../../../shared/constants";
 
 // Define the build queue item type
 export interface BuildQueueItem {
@@ -187,8 +187,10 @@ export class ServerTank extends Tank {
   
   // Add wood to the tank's inventory
   addWood(amount: number): void {
-    this.schema.wood += amount;
-    console.log(`Tank ${this.sessionId} collected wood. Now has ${this.schema.wood} wood.`);
+    const maxWood = PHYSICS.TANK_MAX_WOOD;
+    // Limit wood to maximum capacity
+    this.schema.wood = Math.min(maxWood, this.schema.wood + amount);
+    console.log(`Tank ${this.sessionId} collected wood. Now has ${this.schema.wood}/${maxWood} wood.`);
     
     // Update the schema to notify clients
     this.updateSchema();

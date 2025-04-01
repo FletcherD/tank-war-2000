@@ -123,13 +123,15 @@ export class GameRoom extends Room<MyRoomState> {
         const baseTileType = this.gameScene.gameMap.getBaseTileType(currentTile);
         
         // Check if this is a forest tile (for harvesting wood)
-        if (data.tileType === "forest" && baseTileType === TILE_INDICES.FOREST) {
-          validTiles.push(tile);
-          isHarvesting = true;
+        if (data.tileType === "forest") {
+          if(baseTileType === TILE_INDICES.FOREST) {
+            validTiles.push(tile);
+            isHarvesting = true;
+          }
         } 
         // For roads and walls, check if tile is valid for building and not water
-        else if (baseTileType !== TILE_INDICES.WATER && baseTileType !== TILE_INDICES.WALL) {
-          // Not water and not a wall
+        else if (baseTileType !== TILE_INDICES.WALL) {
+          // Not a wall
           validTiles.push(tile);
           
           // Count wood cost for roads and walls

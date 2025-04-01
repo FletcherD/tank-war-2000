@@ -827,7 +827,7 @@ export class ClientGameScene extends GameScene {
         if (!pointer.isDown) return;
         
         // Convert pointer position to tile coordinates
-        const tileXY = this.gameMap.groundLayer.worldToTileXY(pointer.worldX, pointer.worldY);
+        const tileXY = this.gameMap.groundLayer.worldToTileXY(pointer.worldX+8, pointer.worldY+8);
         
         // Get the top-left corner of a 2x2 area centered at cursor
         const startX = tileXY.x - 1;

@@ -9,6 +9,7 @@ export const PHYSICS = {
   TANK_AMMO_PER_SHOT: 1,
   TANK_FIRE_COOLDOWN: 1000, // milliseconds
   TANK_HITBOX_RADIUS: 14, // pixels
+  TANK_MAX_WOOD: 25, // maximum wood a tank can carry
 
   // Bullets
   BULLET_SPEED: 10, // units/timestep
