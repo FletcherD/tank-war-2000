@@ -63,10 +63,6 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
       const healthFraction = 255.0 * this.health / maxHealth;
       this.setTint(Phaser.Display.Color.GetColor(healthFraction, healthFraction, healthFraction));
     }
-    
-    if (this.health <= 0) {
-      this.destroy();
-    }
   }
   
   destroy() {
