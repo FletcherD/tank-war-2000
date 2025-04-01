@@ -8,5 +8,3 @@ function getUrlParam(name: string, defaultValue: string): string {
 const serverUrl = getUrlParam('server', 'localhost:2567');
 
 export const BACKEND_URL = `${serverUrl}`;
-
-export const BACKEND_HTTP_URL = BACKEND_URL.replace("ws", "http");

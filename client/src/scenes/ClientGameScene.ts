@@ -413,7 +413,7 @@ export class ClientGameScene extends GameScene {
         
         // add connection status text
         const connectionStatusText = this.add
-            .text(0, 0, "Trying to connect with the server...")
+            .text(0, 0, `Trying to connect to ${BACKEND_URL}`)
             .setStyle({ color: "#ff0000" })
             .setPadding(4)
 
