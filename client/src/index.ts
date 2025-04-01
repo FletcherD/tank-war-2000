@@ -3,7 +3,7 @@ import Phaser from "phaser";
 import { SceneSelector } from "./scenes/SceneSelector";
 import { ClientGameScene } from "./scenes/ClientGameScene";
 
-import { BACKEND_HTTP_URL } from "./backend";
+import { BACKEND_URL } from "./backend";
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
