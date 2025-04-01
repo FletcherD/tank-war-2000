@@ -914,28 +914,6 @@ export class GameUI {
           pillboxButton.title = 'Place Pillbox';
         }
       }
-      
-      // For backward compatibility, update the old hidden button too
-      if (isValidSelection && isInRange) {
-        // Selection is valid and in range - enable button
-        this.placePillboxButton.style.backgroundColor = '#9c27b0'; // Purple
-        this.placePillboxButton.style.opacity = '1';
-        this.placePillboxButton.style.cursor = 'pointer';
-        this.placePillboxButton.disabled = false;
-      } else {
-        // Grey out button if selection is invalid or too far
-        this.placePillboxButton.style.backgroundColor = '#888888'; // Grey
-        this.placePillboxButton.style.opacity = '0.6';
-        this.placePillboxButton.style.cursor = 'not-allowed';
-        this.placePillboxButton.disabled = true;
-        
-        // Update the tooltip/title to explain why it's disabled
-        if (!isValidSelection) {
-          this.placePillboxButton.title = "Invalid selection. Need 2x2 area of valid land.";
-        } else if (!isInRange) {
-          this.placePillboxButton.title = "Too far away. Move closer to the selected area.";
-        }
-      }
     } else {
       // Remove pillbox button from context menu if it exists
       const pillboxButton = this.contextMenu.querySelector('.pillbox-button');

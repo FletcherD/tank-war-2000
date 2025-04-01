@@ -569,7 +569,7 @@ export class ClientGameScene extends GameScene {
             this.room.onMessage("tileChanged", (data) => {
                 if (this.gameMap && this.gameMap.map) {
                     // Update the tile directly in the client map
-                    this.gameMap.setTile(data.x, data.y, data.tileIndex, true);
+                    this.gameMap.setTile(data.x, data.y, data.tileIndex, data.applyWang);
                 }
             });
             
