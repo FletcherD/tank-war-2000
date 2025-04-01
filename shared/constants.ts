@@ -1,17 +1,17 @@
 // Game Physics & Movement Constants
 export const PHYSICS = {
   // Tank movement
-  TANK_MAX_SPEED: 1, // meters/msec
-  TANK_ROTATION_SPEED: 0.002, // radians/msec
-  TANK_ACCELERATION: 0.005, // meters/msec^2
-  TANK_HEALTH: 100,
+  TANK_MAX_SPEED: 1.15, // meters/timestep
+  TANK_ROTATION_SPEED: 0.0025, // radians/timestep
+  TANK_ACCELERATION: 0.005, // meters/timestep^2
+  TANK_HEALTH: 7,
   TANK_MAX_AMMO: 20,
   TANK_AMMO_PER_SHOT: 1,
   TANK_FIRE_COOLDOWN: 1000, // milliseconds
   TANK_HITBOX_RADIUS: 14, // pixels
 
   // Bullets
-  BULLET_SPEED: 10, // units per msec
+  BULLET_SPEED: 10, // units/timestep
   BULLET_RANGE: 256, // pixels (max travel distance)
   BULLET_HITBOX_RADIUS: 1, // pixels
   BULLET_BOUNCE: 1, // bounce factor
@@ -19,7 +19,7 @@ export const PHYSICS = {
   // Pillbox
   PILLBOX_DETECTION_RANGE: 256, // pixels
   PILLBOX_FIRE_COOLDOWN: 500, // milliseconds
-  PILLBOX_HEALTH: 8,
+  PILLBOX_HEALTH: 7,
   PILLBOX_HITBOX_RADIUS: 16, // pixels
 
   // Station
