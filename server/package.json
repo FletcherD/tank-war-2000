@@ -2,13 +2,13 @@
   "private": true,
   "name": "my-app",
   "version": "1.0.0",
-  "description": "npm init template for bootstrapping an empty Colyseus project",
+  "description": "Tank War 2000 Server",
   "main": "lib/index.js",
   "scripts": {
     "start": "tsx watch src/index.ts",
     "loadtest": "colyseus-loadtest loadtest/example.ts --room my_room --numClients 2",
-    "build": "npm run clean && tsc",
-    "clean": "node node_modules/rimraf/bin lib",
+    "build": "",
+    "clean": "",
     "test": "mocha -r tsx test/**_test.ts --exit --timeout 15000"
   },
   "author": "",
@@ -30,7 +30,6 @@
     "copyfiles": "^2.4.1",
     "mocha": "^11.1.0",
     "phaser": "3.88.2",
-    "rimraf": "^6.0.1",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   },
@@ -41,7 +40,6 @@
     "@colyseus/tools": "^0.16.3",
     "colyseus": "^0.16.3",
     "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "npm-check-updates": "^17.1.16"
+    "express": "^4.21.2"
   }
 }
