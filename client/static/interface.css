@@ -202,11 +202,10 @@ p {
 /* The newswire that shows messages */
 #newswireContainer {
 	width: auto;
-	height: 34px;
     max-width: 100%;
 	position: absolute;
 	left: 0;
-	top: 0;
+	bottom: 0;
 	z-index:1;
 }
 #newswire {
@@ -216,24 +215,37 @@ p {
     border-style: outset;
     padding: 4px;
 	width: auto;
-	height: 100%;
     max-width: 100%;
     min-height: 20px;
     display: inline-block;
-    overflow:hidden;
+    overflow: hidden;
     white-space: nowrap;
 }
 #newswire.expanded {
-    min-height: 100px;
+    min-height: 200px;
+    max-height: 300px;
+    height: auto;
     resize: both;
-    overflow-y: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
+    white-space: normal;
+}
+#newswireText {
+    width: 100%;
+}
+#recentMessageContainer {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 #newswire.hidden {
     display: none;
 }
 #newswireExpandButton {
-    height: 100%;
-    width: 24px;
+    width: 34px;
+    height: 34px;
     padding:0;
     background-color:#444;
     content: '▼';
@@ -254,14 +266,14 @@ p {
     border-radius: 3px;
 }
 #chatButton {
-    height: 28px;
     width: 34px;
+    height: 34px;
     padding:0;
     bottom: 0;
 }
 #newswireChatButton {
-    height: 100%;
     width: 34px;
+    height: 34px;
     padding:0;
     background-color:#444;
 }
@@ -449,6 +461,56 @@ p {
     left: 10%;
 	z-index:1;
     display: none; /* disabled by default */
+}
+
+/* Map entity status display */
+#mapStatusContainer {
+    position: absolute;
+    right: 130px; /* Position to the left of fire and move buttons */
+    bottom: 44px; /* Just above the newswire */
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 2px solid #444;
+    border-radius: 5px;
+    padding: 6px;
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.entity-row {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.entity-icon {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #888;
+    border-radius: 2px;
+}
+
+.entity-icon.station {
+    background-color: #888;
+}
+
+.entity-icon.pillbox {
+    background-color: #888;
+}
+
+/* Team colors */
+.entity-icon.team0 {
+    background-color: #f00; 
+}
+
+.entity-icon.team1 {
+    background-color: #f00; 
+}
+
+/* Neutral/uncontrolled entities */
+.entity-icon.neutral {
+    background-color: #888; /* Gray for neutral */
 }
 #teamDisplayTable td {
     padding: 0px 4px 0px 4px;

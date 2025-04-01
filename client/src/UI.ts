@@ -22,6 +22,7 @@ export class GameUI {
   private newswireContainer: HTMLDivElement;
   private newswire: HTMLDivElement;
   private newswireText: HTMLDivElement;
+  private recentMessageContainer: HTMLDivElement;
   private newswireExpandButton: HTMLButtonElement;
   private isNewswireExpanded: boolean = false;
   private maxNewswireMessages: number = 20;
@@ -42,6 +43,11 @@ export class GameUI {
   private harvestWoodContextButton: HTMLDivElement;
   private buildRoadContextButton: HTMLDivElement;
   private buildWallContextButton: HTMLDivElement;
+  
+  // Map entity status display
+  private mapStatusContainer: HTMLDivElement;
+  private stationIcons: HTMLDivElement[] = [];
+  private pillboxIcons: HTMLDivElement[] = [];
 
   constructor(gameScene: ClientGameScene) {
     this.gameScene = gameScene;
@@ -76,8 +82,8 @@ export class GameUI {
     this.joystickContainer = document.createElement('div');
     this.joystickContainer.id = 'joystickContainer';
     this.joystickContainer.style.position = 'absolute';
-    this.joystickContainer.style.bottom = '80px';
-    this.joystickContainer.style.left = '80px';
+    this.joystickContainer.style.bottom = '20px';
+    this.joystickContainer.style.left = '20px';
     this.joystickContainer.style.width = '120px';
     this.joystickContainer.style.height = '120px';
     this.joystickContainer.style.pointerEvents = 'auto';
@@ -89,10 +95,10 @@ export class GameUI {
     this.fireButton.id = 'fireButton';
     this.fireButton.style.position = 'absolute';
     this.fireButton.style.bottom = '80px';
-    this.fireButton.style.right = '80px';
+    this.fireButton.style.right = '20px';
     this.fireButton.style.width = '100px';
-    this.fireButton.style.height = '100px';
-    this.fireButton.style.borderRadius = '50%';
+    this.fireButton.style.height = '60px';
+    this.fireButton.style.borderRadius = '5px';
     this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
     this.fireButton.style.border = '2px solid rgba(255, 0, 0, 0.8)';
     this.fireButton.style.display = 'flex';
@@ -277,17 +283,30 @@ export class GameUI {
     // Create newswire container at the bottom of the screen
     this.newswireContainer = document.createElement('div');
     this.newswireContainer.id = 'newswireContainer';
+    this.newswireContainer.style.position = 'absolute';
+    this.newswireContainer.style.bottom = '0';
+    this.newswireContainer.style.left = '0';
+    this.newswireContainer.style.width = 'auto';
+    this.newswireContainer.style.zIndex = '20';
     this.uiContainer.appendChild(this.newswireContainer);
     
     // Create newswire
     this.newswire = document.createElement('div');
     this.newswire.id = 'newswire';
+    this.newswire.style.maxHeight = '34px'; // Default height when collapsed
+    this.newswire.style.overflow = 'hidden';
     this.newswireContainer.appendChild(this.newswire);
     
     // Create newswire text container
     this.newswireText = document.createElement('div');
     this.newswireText.id = 'newswireText';
     this.newswire.appendChild(this.newswireText);
+    
+    // Create a container for the most recent message (shown when collapsed)
+    this.recentMessageContainer = document.createElement('div');
+    this.recentMessageContainer.id = 'recentMessageContainer';
+    this.recentMessageContainer.style.display = 'block';
+    this.newswire.appendChild(this.recentMessageContainer);
     
     // Create expand button
     this.newswireExpandButton = document.createElement('button');
@@ -303,11 +322,30 @@ export class GameUI {
       if (this.isNewswireExpanded) {
         this.newswire.classList.add('expanded');
         this.newswireExpandButton.textContent = '▲';
+        // Show all messages
+        this.newswireText.style.display = 'block';
+        this.recentMessageContainer.style.display = 'none';
+        // Make sure it's tall enough when expanded
+        this.newswire.style.maxHeight = '300px';
+        this.newswire.style.height = 'auto';
+        this.newswire.style.minHeight = '200px';
+        this.newswire.style.overflow = 'auto';
       } else {
         this.newswire.classList.remove('expanded');
         this.newswireExpandButton.textContent = '▼';
+        // Only show most recent message
+        this.newswireText.style.display = 'none';
+        this.recentMessageContainer.style.display = 'block';
+        // Reset height when collapsed
+        this.newswire.style.maxHeight = '34px';
+        this.newswire.style.height = '34px';
+        this.newswire.style.minHeight = '';
+        this.newswire.style.overflow = 'hidden';
       }
     };
+    
+    // Initially hide all messages except most recent
+    this.newswireText.style.display = 'none';
     
     // Make sure scroll and resize work (needs pointer-events: auto)
     this.newswire.style.pointerEvents = 'auto';
@@ -316,13 +354,14 @@ export class GameUI {
     this.chatContainer = document.createElement('div');
     this.chatContainer.id = 'chatContainer';
     this.chatContainer.style.position = 'absolute';
-    this.chatContainer.style.bottom = '34px'; // Position just above the newswire
+    this.chatContainer.style.bottom = '36px'; // Position just above the newswire (34px + borders)
     this.chatContainer.style.left = '0';
     this.chatContainer.style.display = 'none'; // Initially hidden
     this.chatContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
     this.chatContainer.style.padding = '5px';
     this.chatContainer.style.width = 'auto';
     this.chatContainer.style.pointerEvents = 'auto'; // Allow interaction
+    this.chatContainer.style.zIndex = '20'; // Same z-index as newswire
     this.uiContainer.appendChild(this.chatContainer);
     
     // Create chat input field
@@ -383,6 +422,9 @@ export class GameUI {
       }, 200);
     };
 
+    // Create map status container for stations and pillboxes
+    this.createMapStatusDisplay();
+    
     // Update UI container position when window resizes
     window.addEventListener('resize', () => this.updateUIPosition());
 
@@ -414,11 +456,11 @@ export class GameUI {
     this.forwardButton = document.createElement('div');
     this.forwardButton.id = 'forwardButton';
     this.forwardButton.style.position = 'absolute';
-    this.forwardButton.style.bottom = '200px'; // Position above fire button
-    this.forwardButton.style.right = '80px';
+    this.forwardButton.style.bottom = '150px'; // Position above fire button
+    this.forwardButton.style.right = '20px';
     this.forwardButton.style.width = '100px';
-    this.forwardButton.style.height = '100px';
-    this.forwardButton.style.borderRadius = '50%';
+    this.forwardButton.style.height = '60px';
+    this.forwardButton.style.borderRadius = '5px';
     this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
     this.forwardButton.style.border = '2px solid rgba(0, 255, 0, 0.8)';
     this.forwardButton.style.display = 'flex';
@@ -782,6 +824,123 @@ export class GameUI {
   }
 
   /**
+   * Creates the map status display container showing stations and pillboxes
+   */
+  private createMapStatusDisplay() {
+    // Create main container
+    this.mapStatusContainer = document.createElement('div');
+    this.mapStatusContainer.id = 'mapStatusContainer';
+    this.uiContainer.appendChild(this.mapStatusContainer);
+    
+    // Create station row
+    const stationRow = document.createElement('div');
+    stationRow.className = 'entity-row';
+    this.mapStatusContainer.appendChild(stationRow);
+    
+    // Create 16 station icons
+    for (let i = 0; i < 16; i++) {
+      const stationIcon = document.createElement('div');
+      stationIcon.className = 'entity-icon station neutral';
+      stationIcon.setAttribute('data-index', i.toString());
+      stationIcon.title = `Station ${i + 1}`;
+      stationRow.appendChild(stationIcon);
+      this.stationIcons.push(stationIcon);
+    }
+    
+    // Create pillbox row
+    const pillboxRow = document.createElement('div');
+    pillboxRow.className = 'entity-row';
+    this.mapStatusContainer.appendChild(pillboxRow);
+    
+    // Create 16 pillbox icons
+    for (let i = 0; i < 16; i++) {
+      const pillboxIcon = document.createElement('div');
+      pillboxIcon.className = 'entity-icon pillbox neutral';
+      pillboxIcon.setAttribute('data-index', i.toString());
+      pillboxIcon.title = `Pillbox ${i + 1}`;
+      pillboxRow.appendChild(pillboxIcon);
+      this.pillboxIcons.push(pillboxIcon);
+    }
+  }
+  
+  /**
+   * Updates the map status display with current stations and pillboxes
+   */
+  private updateMapStatusDisplay() {
+    // Only update if game scene is available and has loaded stations and pillboxes
+    if (!this.gameScene || !this.gameScene.gameMap) return;
+    
+    // Reset all icons to neutral first
+    this.stationIcons.forEach(icon => {
+      icon.className = 'entity-icon station neutral';
+    });
+    this.pillboxIcons.forEach(icon => {
+      icon.className = 'entity-icon pillbox neutral';
+    });
+    
+    // Update stations (if available in game scene)
+    if (this.gameScene.stations && this.gameScene.stations.length > 0) {
+      // For each station in the game, update its corresponding icon
+      this.gameScene.stations.forEach((station, index) => {
+        if (index < this.stationIcons.length) {
+          // Clear previous classes except base classes
+          this.stationIcons[index].className = 'entity-icon station';
+          
+          // Set team color based on station's team
+          if (station.team === 0) {
+            this.stationIcons[index].classList.add('neutral');
+          } else if (station.team === 1) {
+            this.stationIcons[index].classList.add('team0');
+          } else {
+            this.stationIcons[index].classList.add('team1');
+          }
+          
+          // Update tooltip with additional info if available
+          this.stationIcons[index].title = `Station ${index + 1}: ${
+            station.team === 0 ? 'Red Team' : 
+            station.team === 1 ? 'Blue Team' : 
+            'Neutral'
+          }`;
+        }
+      });
+    }
+    
+    // Update pillboxes (if available in game scene)
+    if (this.gameScene.pillboxes && this.gameScene.pillboxes.length > 0) {
+      // For each pillbox in the game, update its corresponding icon
+      this.gameScene.pillboxes.forEach((pillbox, index) => {
+        if (index < this.pillboxIcons.length) {
+          // Clear previous classes except base classes
+          this.pillboxIcons[index].className = 'entity-icon pillbox';
+          
+          // Set team color based on pillbox's team
+          if (pillbox.team === 0) {
+            this.pillboxIcons[index].classList.add('neutral');
+          } else if (pillbox.team === 1) {
+            this.pillboxIcons[index].classList.add('team0');
+          } else {
+            this.pillboxIcons[index].classList.add('team1');
+          }
+          
+          // Update tooltip with additional info if available
+          this.pillboxIcons[index].title = `Pillbox ${index + 1}: ${
+            pillbox.team === 0 ? 'Red Team' : 
+            pillbox.team === 1 ? 'Blue Team' : 
+            'Neutral'
+          }`;
+        }
+      });
+    }
+    
+    // Fill in any missing icons with a count of active entities
+    const stationCount = this.gameScene.stations ? this.gameScene.stations.length : 0;
+    const pillboxCount = this.gameScene.pillboxes ? this.gameScene.pillboxes.length : 0;
+    
+    // Update the container title to show entity counts
+    this.mapStatusContainer.title = `Stations: ${stationCount}/16, Pillboxes: ${pillboxCount}/16`;
+  }
+  
+  /**
    * Updates the UI based on the current game state
    */
   public update() {
@@ -790,6 +949,9 @@ export class GameUI {
       this.updateAmmoBar(this.gameScene.currentPlayer.ammo, PHYSICS.TANK_MAX_AMMO);
       this.updatePillboxCount(this.gameScene.currentPlayer.pillboxCount);
       this.updateWoodCount(this.gameScene.currentPlayer.wood);
+      
+      // Update map status display if needed
+      this.updateMapStatusDisplay();
     }
     
     // Update build buttons based on building state
@@ -975,16 +1137,37 @@ export class GameUI {
     // Create a message element
     const messageElement = document.createElement('div');
     messageElement.className = `newswire-message ${type}`;
-    
     messageElement.textContent = message;
     
-    this.newswireText.append(messageElement);
+    // Add to the main newswire text container (shown when expanded)
+    this.newswireText.prepend(messageElement);
+    
+    // Update the recent message container with a clone of the newest message
+    this.updateRecentMessage(message, type);
   
-    // Update the main newswire content to display at least the most recent message
-    // when not expanded
-    if (!this.isNewswireExpanded && messageElement.textContent) {
-      this.newswire.setAttribute('title', messageElement.textContent);
+    // Limit the number of messages
+    while (this.newswireText.children.length > this.maxNewswireMessages) {
+      // Remove oldest message (last child)
+      this.newswireText.removeChild(this.newswireText.lastChild);
     }
+  }
+  
+  /**
+   * Updates the recent message container with the newest message
+   * @param message The message text
+   * @param type The message type for styling
+   */
+  private updateRecentMessage(message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info') {
+    // Clear previous recent message
+    this.recentMessageContainer.innerHTML = '';
+    
+    // Create a new message element for the recent container
+    const recentMessage = document.createElement('div');
+    recentMessage.className = `newswire-message ${type}`;
+    recentMessage.textContent = message;
+    
+    // Add to recent message container
+    this.recentMessageContainer.appendChild(recentMessage);
   }
   
   /**
@@ -992,6 +1175,7 @@ export class GameUI {
    */
   public clearNewswire() {
     this.newswireText.innerHTML = '';
+    this.recentMessageContainer.innerHTML = '';
   }
   
   /**
@@ -1113,10 +1297,59 @@ export class GameUI {
     // Add to newswire at the beginning (newest messages at the top)
     this.newswireText.insertBefore(messageElement, this.newswireText.firstChild);
     
+    // Update the recent message container as well
+    this.updateRecentChatMessage(message, playerName, isTeamChat, team);
+    
     // Limit the number of messages
     while (this.newswireText.children.length > this.maxNewswireMessages) {
       // Remove oldest message (last child)
       this.newswireText.removeChild(this.newswireText.lastChild);
     }
+  }
+  
+  /**
+   * Updates the recent message container with a chat message
+   */
+  private updateRecentChatMessage(message: string, playerName: string, isTeamChat: boolean, team: number) {
+    // Clear previous recent message
+    this.recentMessageContainer.innerHTML = '';
+    
+    // Create a new message element for the recent container
+    const recentMessage = document.createElement('div');
+    recentMessage.className = `newswire-message chat-message`;
+    
+    // Create prefix element (Team) or (All) with appropriate color
+    const prefixElement = document.createElement('span');
+    if (isTeamChat) {
+      prefixElement.textContent = '(Team) ';
+      prefixElement.style.color = '#ffcc00'; // Yellow for team chat
+    } else {
+      prefixElement.textContent = '(All) ';
+      prefixElement.style.color = '#ff3333'; // Red for all chat
+    }
+    
+    // Create player name element
+    const playerNameElement = document.createElement('span');
+    playerNameElement.textContent = playerName + ': ';
+    
+    // Set player name color based on team
+    if (team === 1) { // Blue team
+      playerNameElement.style.color = '#3333ff';
+    } else { // Red team
+      playerNameElement.style.color = '#ff3333';
+    }
+    
+    // Create message content element
+    const messageContentElement = document.createElement('span');
+    messageContentElement.textContent = message;
+    messageContentElement.style.color = '#ffffff';
+    
+    // Add all parts to the message element
+    recentMessage.appendChild(prefixElement);
+    recentMessage.appendChild(playerNameElement);
+    recentMessage.appendChild(messageContentElement);
+    
+    // Add to recent message container
+    this.recentMessageContainer.appendChild(recentMessage);
   }
 }

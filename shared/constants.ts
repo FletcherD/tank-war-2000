@@ -18,7 +18,7 @@ export const PHYSICS = {
 
   // Pillbox
   PILLBOX_DETECTION_RANGE: 256, // pixels
-  PILLBOX_FIRE_COOLDOWN: 1000, // milliseconds
+  PILLBOX_FIRE_COOLDOWN: 500, // milliseconds
   PILLBOX_HEALTH: 8,
   PILLBOX_HITBOX_RADIUS: 16, // pixels
 
