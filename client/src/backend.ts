@@ -16,6 +16,11 @@ export const BACKEND_URL = (window.location.href.indexOf("localhost") === -1 && 
     : `${isSecure ? 'wss' : 'ws'}://${serverUrl}`;
 
 // Use secure HTTP (https://) when on HTTPS
-export const BACKEND_HTTP_URL = isSecure 
+const rawBackendHttpUrl = isSecure 
     ? BACKEND_URL.replace("wss", "https") 
     : BACKEND_URL.replace("ws", "http");
+
+// Use a CORS proxy if needed (for demo/game jam only)
+export const BACKEND_HTTP_URL = isSecure 
+    ? `https://corsproxy.io/?${encodeURIComponent(rawBackendHttpUrl)}`
+    : rawBackendHttpUrl;
