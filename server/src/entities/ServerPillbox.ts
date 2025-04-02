@@ -183,7 +183,7 @@ export class ServerPillbox extends Pillbox {
         
         // For room state cleanup, if this is a held pillbox being destroyed
         const scene = this.scene as ServerGameScene;
-        if (scene.room && scene.room.state.pillboxes.has(this.schema.id)) {
+        if (scene && scene.room && scene.room.state.pillboxes.has(this.schema.id)) {
             scene.room.state.pillboxes.delete(this.schema.id);
         }
         
