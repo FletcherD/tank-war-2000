@@ -75,7 +75,7 @@ export class ServerTank extends Tank {
     // Update the schema to sync ammo change
     this.updateSchema();
 
-    console.log(`Fired bullet at (${bulletX}, ${bulletY}, ${this.heading}), ammo left: ${this.ammo}`);
+    // console.log(`Fired bullet at (${bulletX}, ${bulletY}, ${this.heading}), ammo left: ${this.ammo}`);
   }
 
   override preUpdate(time: number, delta: number): void {
