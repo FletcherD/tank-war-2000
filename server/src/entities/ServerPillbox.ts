@@ -181,8 +181,6 @@ export class ServerPillbox extends Pillbox {
             this.scene.matter.world.remove(this.body);
         }
         
-        console.log(`Pillbox destroyed in ${this.schema.state} state at (${this.x}, ${this.y})`);
-        
         // For room state cleanup, if this is a held pillbox being destroyed
         const scene = this.scene as ServerGameScene;
         if (scene.room && scene.room.state.pillboxes.has(this.schema.id)) {

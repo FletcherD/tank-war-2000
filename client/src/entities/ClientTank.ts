@@ -75,6 +75,23 @@ export class ClientTank extends Tank {
     }
   }
 
+  override createSprites() {
+    // Create tank body sprite
+    this.tankBody = this.scene.add.sprite(0, 0, 'tank');
+    
+    // Create left and right tread sprites
+    // Left tread uses frames from top row (row 0)
+    this.leftTread = this.scene.add.sprite(0, 0, 'tankTreads', 0);
+    // Right tread uses frames from bottom row (row 1)
+    this.rightTread = this.scene.add.sprite(0, 0, 'tankTreads', 31);
+    
+    // Create crosshair sprite (initially invisible)
+    this.crosshair = this.scene.add.sprite(PHYSICS.BULLET_RANGE, 0, 'crosshair');
+    this.crosshair.setVisible(false);
+    
+    this.add([this.tankBody, this.leftTread, this.rightTread, this.crosshair]);
+  }
+
   applySnapshot(data) {
     this.x = data.x;
     this.y = data.y;

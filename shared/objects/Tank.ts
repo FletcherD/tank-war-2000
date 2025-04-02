@@ -52,21 +52,7 @@ export class Tank extends Phaser.GameObjects.Container
   {
       super(scene as Phaser.Scene, x, y);
       
-      // Create tank body sprite
-      this.tankBody = scene.add.sprite(0, 0, 'tank');
-      
-      // Create left and right tread sprites
-      // Left tread uses frames from top row (row 0)
-      this.leftTread = scene.add.sprite(0, 0, 'tankTreads', 0);
-      // Right tread uses frames from bottom row (row 1)
-      this.rightTread = scene.add.sprite(0, 0, 'tankTreads', 31);
-      
-      // Create crosshair sprite (initially invisible)
-      this.crosshair = scene.add.sprite(PHYSICS.BULLET_RANGE, 0, 'crosshair');
-      this.crosshair.setVisible(false);
-      
-      this.add([this.tankBody, this.leftTread, this.rightTread, this.crosshair]);
-            
+      this.createSprites();
       // Add the container to the Matter physics system
       scene.matter.add.gameObject(this, {
         shape: {
@@ -82,6 +68,10 @@ export class Tank extends Phaser.GameObjects.Container
         }
       });
       scene.add.existing(this);
+  }
+
+  createSprites() {
+    
   }
 
   preUpdate(time: number, delta: number, isSimulated: boolean = false)
