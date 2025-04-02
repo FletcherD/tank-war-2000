@@ -63,6 +63,11 @@ export class GameUI {
   private woodBarElement: HTMLDivElement;
   private woodTextElement: HTMLDivElement;
 
+  // Welcome modal elements
+  private welcomeModalContainer: HTMLDivElement;
+  private welcomeModalContent: HTMLDivElement;
+  private welcomeModalButton: HTMLButtonElement;
+  
   private createUI() {
     // Get the canvas element
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
@@ -847,8 +852,93 @@ export class GameUI {
   }
 
   /**
-   * Creates the map status display container showing stations and pillboxes
+   * Creates and shows the welcome modal when the player joins the game
    */
+  public showWelcomeModal() {
+    // Create modal container
+    this.welcomeModalContainer = document.createElement('div');
+    this.welcomeModalContainer.style.position = 'fixed';
+    this.welcomeModalContainer.style.top = '0';
+    this.welcomeModalContainer.style.left = '0';
+    this.welcomeModalContainer.style.width = '100%';
+    this.welcomeModalContainer.style.height = '100%';
+    this.welcomeModalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    this.welcomeModalContainer.style.display = 'flex';
+    this.welcomeModalContainer.style.justifyContent = 'center';
+    this.welcomeModalContainer.style.alignItems = 'center';
+    this.welcomeModalContainer.style.zIndex = '1000';
+    this.welcomeModalContainer.style.pointerEvents = 'auto';
+    
+    // Create modal content
+    this.welcomeModalContent = document.createElement('div');
+    this.welcomeModalContent.style.backgroundColor = '#333';
+    this.welcomeModalContent.style.color = 'white';
+    this.welcomeModalContent.style.padding = '20px';
+    this.welcomeModalContent.style.borderRadius = '10px';
+    this.welcomeModalContent.style.maxWidth = '500px';
+    this.welcomeModalContent.style.textAlign = 'left';
+    this.welcomeModalContent.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
+    this.welcomeModalContent.style.fontFamily = "'Courier Prime', monospace";
+    
+    // Create title
+    const title = document.createElement('h2');
+    title.textContent = 'Welcome to Tank War 2000!';
+    title.style.textAlign = 'center';
+    title.style.color = '#4CAF50';
+    title.style.marginTop = '0';
+    
+    // Create message content
+    const message = document.createElement('div');
+    message.innerHTML = `
+      <p>Capture all the stations on the map to win.</p>
+      <p>Collect wood from trees and build walls and roads to help your team.</p>
+      <p>Pick up pillboxes and place them to defend your stations.</p>
+      
+      <h3>Controls:</h3>
+      <ul>
+        <li>Left joystick - Turn</li>
+        <li>Right buttons - Move / Fire</li>
+        <li>Select tiles on the map to harvest wood or build structures.</li>
+      </ul>
+    `;
+    message.style.lineHeight = '1.5';
+    
+    // Create OK button
+    this.welcomeModalButton = document.createElement('button');
+    this.welcomeModalButton.textContent = 'OK';
+    this.welcomeModalButton.style.display = 'block';
+    this.welcomeModalButton.style.margin = '20px auto 0';
+    this.welcomeModalButton.style.padding = '10px 30px';
+    this.welcomeModalButton.style.backgroundColor = '#4CAF50';
+    this.welcomeModalButton.style.color = 'white';
+    this.welcomeModalButton.style.border = 'none';
+    this.welcomeModalButton.style.borderRadius = '5px';
+    this.welcomeModalButton.style.fontSize = '16px';
+    this.welcomeModalButton.style.cursor = 'pointer';
+    
+    // Add hover effect
+    this.welcomeModalButton.onmouseover = () => {
+      this.welcomeModalButton.style.backgroundColor = '#45a049';
+    };
+    this.welcomeModalButton.onmouseout = () => {
+      this.welcomeModalButton.style.backgroundColor = '#4CAF50';
+    };
+    
+    // Close modal when button is clicked
+    this.welcomeModalButton.onclick = () => {
+      document.body.removeChild(this.welcomeModalContainer);
+    };
+    
+    // Assemble modal
+    this.welcomeModalContent.appendChild(title);
+    this.welcomeModalContent.appendChild(message);
+    this.welcomeModalContent.appendChild(this.welcomeModalButton);
+    this.welcomeModalContainer.appendChild(this.welcomeModalContent);
+    
+    // Add to body (not to uiContainer, to ensure it's above everything)
+    document.body.appendChild(this.welcomeModalContainer);
+  }
+
   private createMapStatusDisplay() {
     // Create main container
     this.mapStatusContainer = document.createElement('div');
