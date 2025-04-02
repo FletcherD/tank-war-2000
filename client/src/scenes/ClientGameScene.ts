@@ -772,6 +772,10 @@ export class ClientGameScene extends GameScene {
         // Process build queue
         this.updateBuildQueue(delta);
 
+        if (this.selectedTiles.length && this.getSelectionDistance() >= this.MAX_BUILD_DISTANCE) {
+            this.clearSelection();
+        } 
+
         // Update UI if it exists
         if (this.gameUI) {
             this.gameUI.update();
@@ -904,6 +908,9 @@ export class ClientGameScene extends GameScene {
         if (pointer.downTime === pointer.upTime && !this.isBuilding) {
             this.clearSelection();
         }
+        if (this.selectedTiles.length && this.getSelectionDistance() >= this.MAX_BUILD_DISTANCE) {
+            this.clearSelection();
+        } 
         // Otherwise, keep the currently selected tiles
     }
     
@@ -931,14 +938,8 @@ export class ClientGameScene extends GameScene {
         this.selectionRect.setPosition(startPoint.x, startPoint.y);
         this.selectionRect.setSize(width, height);
     }
-    
-    // Function to start building tile on selected tiles
-    buildTile(tileType: string = 'road') {
-        // Check if already building or no tiles selected
-        if (this.isBuilding || !this.selectedTiles.length || !this.currentPlayer) return;
 
-        console.log(`Starting tile construction for ${this.currentPlayer.sessionId} - ${tileType}`);
-        
+    getSelectionDistance(): number {
         // Check if the selection is close enough to the player
         // Calculate the center of the selection
         let centerX = 0;
@@ -958,6 +959,17 @@ export class ClientGameScene extends GameScene {
             this.currentPlayer.x, this.currentPlayer.y,
             centerX, centerY
         );
+        return distance;
+    }
+    
+    // Function to start building tile on selected tiles
+    buildTile(tileType: string = 'road') {
+        // Check if already building or no tiles selected
+        if (this.isBuilding || !this.selectedTiles.length || !this.currentPlayer) return;
+
+        console.log(`Starting tile construction for ${this.currentPlayer.sessionId} - ${tileType}`);
+        
+        const distance = this.getSelectionDistance();
         
         if (distance <= this.MAX_BUILD_DISTANCE) {
             // Send buildTile request to server with selected tiles and tile type
