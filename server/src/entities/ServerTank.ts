@@ -237,6 +237,15 @@ export class ServerTank extends Tank {
     this.updateSchema();
     pillbox.updateSchema();
     
+    // Send a notification message to the player
+    const scene = this.scene as ServerGameScene;
+    if (scene.room) {
+      scene.room.sendMessage(this.sessionId, "notification", {
+        message: "You picked up a pillbox.",
+        duration: 2000
+      });
+    }
+    
     console.log(`Tank ${this.sessionId} picked up pillbox. Now has ${this.schema.pillboxCount} pillboxes.`);
     
     // We need to keep the pillbox schema in the state for syncing to clients, 
@@ -247,7 +256,6 @@ export class ServerTank extends Tank {
     }
     
     // Remove from the scene but keep the schema
-    const scene = this.scene as ServerGameScene;
     const pillboxIndex = scene.pillboxes.indexOf(pillbox);
     if (pillboxIndex !== -1) {
       scene.pillboxes.splice(pillboxIndex, 1);

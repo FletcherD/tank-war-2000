@@ -448,6 +448,15 @@ export class ClientGameScene extends GameScene {
                 SI.snapshot.add(snapshot)
             });
             
+            // Listen for notification messages
+            this.room.onMessage("notification", (data) => {
+                if (this.gameUI && data.message) {
+                    // Use the provided duration or default to 2000ms
+                    const duration = data.duration || 2000;
+                    this.gameUI.showMessage(data.message, duration);
+                }
+            });
+            
             // Listen for response from server on pillbox placement
             this.room.onMessage("pillboxPlaced", (response) => {
                 if (response.success) {
@@ -650,10 +659,17 @@ export class ClientGameScene extends GameScene {
             
             // Add initial welcome message once UI is ready
             setTimeout(() => {
-                if (this.gameUI) {
-                    this.gameUI.addNewswireMessage("Welcome to the game. Capture stations and build pillboxes to control the map.", 'info');
-                }
-            }, 500);
+                this.gameUI.addNewswireMessage("Welcome to tank war 2000!", 'info');
+            }, 2000);
+            setTimeout(() => {
+                this.gameUI.addNewswireMessage("Capture all the stations on the map to win.", 'info');
+            }, 4000);
+            setTimeout(() => {
+                this.gameUI.addNewswireMessage("Collect wood from trees and then build walls and roads to help your team.", 'info');
+            }, 6000);
+            setTimeout(() => {
+                this.gameUI.addNewswireMessage("Pick up pillboxes and place them to defend your stations.", 'info');
+            }, 8000);
 
         } catch (e) {
             // couldn't connect

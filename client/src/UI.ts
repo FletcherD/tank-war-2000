@@ -25,7 +25,7 @@ export class GameUI {
   private recentMessageContainer: HTMLDivElement;
   private newswireExpandButton: HTMLButtonElement;
   private isNewswireExpanded: boolean = false;
-  private maxNewswireMessages: number = 20;
+  // No longer limiting number of messages, using scrollbar instead
   
   // Chat elements
   private chatContainer: HTMLDivElement;
@@ -1268,16 +1268,17 @@ export class GameUI {
     messageElement.textContent = message;
     
     // Add to the main newswire text container (shown when expanded)
-    this.newswireText.prepend(messageElement);
+    this.newswireText.appendChild(messageElement);
+    
+    // Auto-scroll to the bottom if newswire is expanded
+    if (this.isNewswireExpanded) {
+      this.newswire.scrollTop = this.newswire.scrollHeight;
+    }
     
     // Update the recent message container with a clone of the newest message
     this.updateRecentMessage(message, type);
   
-    // Limit the number of messages
-    while (this.newswireText.children.length > this.maxNewswireMessages) {
-      // Remove oldest message (last child)
-      this.newswireText.removeChild(this.newswireText.lastChild);
-    }
+    // No longer remove old messages - scrollbar will appear if needed
   }
   
   /**
@@ -1422,17 +1423,18 @@ export class GameUI {
     messageElement.appendChild(playerNameElement);
     messageElement.appendChild(messageContentElement);
     
-    // Add to newswire at the beginning (newest messages at the top)
-    this.newswireText.insertBefore(messageElement, this.newswireText.firstChild);
+    // Add to newswire at the end (newest messages at the bottom)
+    this.newswireText.appendChild(messageElement);
+    
+    // Auto-scroll to the bottom if newswire is expanded
+    if (this.isNewswireExpanded) {
+      this.newswire.scrollTop = this.newswire.scrollHeight;
+    }
     
     // Update the recent message container as well
     this.updateRecentChatMessage(message, playerName, isTeamChat, team);
     
-    // Limit the number of messages
-    while (this.newswireText.children.length > this.maxNewswireMessages) {
-      // Remove oldest message (last child)
-      this.newswireText.removeChild(this.newswireText.lastChild);
-    }
+    // No longer remove old messages - scrollbar will appear if needed
   }
   
   /**
