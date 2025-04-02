@@ -201,8 +201,8 @@ p {
 	width: auto;
     max-width: 100%;
 	position: absolute;
-	left: 0;
-	bottom: 0;
+	right: 0;
+	top: 100%;
 	z-index:1;
 }
 #newswire {
@@ -273,6 +273,7 @@ p {
     height: 34px;
     padding:0;
     background-color:#444;
+    margin-left: 2px;
 }
 /* Chat message styling */
 .chat-message .team-prefix {
@@ -463,8 +464,8 @@ p {
 /* Map entity status display */
 #mapStatusContainer {
     position: absolute;
-    right: 130px; /* Position to the left of fire and move buttons */
-    bottom: 44px; /* Just above the newswire */
+    left: 0px; /* Position to the left of fire and move buttons */
+    top: 0px;
     background-color: rgba(0, 0, 0, 0.7);
     border: 2px solid #444;
     border-radius: 5px;

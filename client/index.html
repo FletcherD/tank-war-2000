@@ -16,31 +16,9 @@
 
         a { color: red; }
         input { outline: none; }
-
-        div.menu { padding: 1em; }
-        div.menu > div { margin-bottom: 0.1em; }
     </style>
 </head>
 <body>
-
-    <div class="menu" hidden>
-        <div>
-            <label for="fps">FPS:</label>
-            <input type="range" min="8" max="60" value="60" id="fps">
-            <span id="fps-value">60</span>
-        </div>
-
-        <div>
-            <label for="latency">Latency Simulation:</label>
-            <input type="range" min="0" max="500" value="0" id="latency">
-            <span id="latency-value">0 ms</span>
-        </div>
-
-        <div>
-            <a href="/" class="button">Back to menu</a>
-        </div>
-    </div>
-
     <script src="./src/index.ts" type="module"></script>
 
 </body>

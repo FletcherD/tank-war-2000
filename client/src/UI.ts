@@ -181,6 +181,17 @@ export class GameUI {
     this.woodTextElement.style.fontFamily = "'Courier Prime', monospace";
     this.woodTextElement.style.fontWeight = "700";
     woodBarOuter.appendChild(this.woodTextElement);
+
+
+    // Create newswire container directly under the health/ammo/wood bars on the top right
+    this.newswireContainer = document.createElement('div');
+    this.newswireContainer.id = 'newswireContainer';
+    this.newswireContainer.style.position = 'absolute';
+    this.newswireContainer.style.top = '100%'; // Position it right below the status container
+    this.newswireContainer.style.right = '0';
+    this.newswireContainer.style.width = 'auto';
+    this.newswireContainer.style.zIndex = '20';
+    this.healthBarContainer.appendChild(this.newswireContainer);
     
     // Create context menu for tile selection
     this.contextMenu = document.createElement('div');
@@ -275,21 +286,13 @@ export class GameUI {
     this.messageElement.style.zIndex = '20';
     this.uiContainer.appendChild(this.messageElement);
 
-    // Create newswire container at the bottom of the screen
-    this.newswireContainer = document.createElement('div');
-    this.newswireContainer.id = 'newswireContainer';
-    this.newswireContainer.style.position = 'absolute';
-    this.newswireContainer.style.bottom = '0';
-    this.newswireContainer.style.left = '0';
-    this.newswireContainer.style.width = 'auto';
-    this.newswireContainer.style.zIndex = '20';
-    this.uiContainer.appendChild(this.newswireContainer);
     
     // Create newswire
     this.newswire = document.createElement('div');
     this.newswire.id = 'newswire';
     this.newswire.style.maxHeight = '34px'; // Default height when collapsed
     this.newswire.style.overflow = 'hidden';
+    this.newswire.style.width = '100%'; // Make sure it uses full width
     this.newswireContainer.appendChild(this.newswire);
     
     // Create newswire text container
@@ -303,13 +306,22 @@ export class GameUI {
     this.recentMessageContainer.style.display = 'block';
     this.newswire.appendChild(this.recentMessageContainer);
     
+    // Create a container for newswire buttons
+    const newswireButtonsContainer = document.createElement('div');
+    newswireButtonsContainer.style.display = 'flex';
+    newswireButtonsContainer.style.justifyContent = 'flex-end'; // Align to the right
+    newswireButtonsContainer.style.width = '100%';
+    newswireButtonsContainer.style.marginTop = '2px';
+    this.newswireContainer.appendChild(newswireButtonsContainer);
+    
     // Create expand button
     this.newswireExpandButton = document.createElement('button');
     this.newswireExpandButton.id = 'newswireExpandButton';
     this.newswireExpandButton.textContent = '▼';
     this.newswireExpandButton.className = 'button';
     this.newswireExpandButton.style.pointerEvents = 'auto';
-    this.newswireContainer.appendChild(this.newswireExpandButton);
+    this.newswireExpandButton.style.marginLeft = '2px';
+    newswireButtonsContainer.appendChild(this.newswireExpandButton);
     
     // Add click handler to expand/collapse the newswire
     this.newswireExpandButton.onclick = () => {
@@ -349,15 +361,15 @@ export class GameUI {
     this.chatContainer = document.createElement('div');
     this.chatContainer.id = 'chatContainer';
     this.chatContainer.style.position = 'absolute';
-    this.chatContainer.style.bottom = '36px'; // Position just above the newswire (34px + borders)
-    this.chatContainer.style.left = '0';
+    this.chatContainer.style.top = '-36px'; // Position just above the newswire
+    this.chatContainer.style.right = '0';
     this.chatContainer.style.display = 'none'; // Initially hidden
     this.chatContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
     this.chatContainer.style.padding = '5px';
     this.chatContainer.style.width = 'auto';
     this.chatContainer.style.pointerEvents = 'auto'; // Allow interaction
     this.chatContainer.style.zIndex = '20'; // Same z-index as newswire
-    this.uiContainer.appendChild(this.chatContainer);
+    this.newswireContainer.appendChild(this.chatContainer);
     
     // Create chat input field
     this.chatInput = document.createElement('input');
@@ -377,16 +389,15 @@ export class GameUI {
     this.chatButton.style.marginLeft = '5px';
     this.chatContainer.appendChild(this.chatButton);
     
-    // Create a chat icon button in the newswire container
+    // Create a chat icon button in the newswire buttons container
     const chatIconButton = document.createElement('button');
     chatIconButton.id = 'newswireChatButton';
     chatIconButton.textContent = '💬';
     chatIconButton.className = 'button';
     chatIconButton.style.pointerEvents = 'auto';
-    chatIconButton.style.height = '100%';
     chatIconButton.style.width = '34px';
     chatIconButton.style.padding = '0';
-    this.newswireContainer.appendChild(chatIconButton);
+    newswireButtonsContainer.appendChild(chatIconButton);
     
     // Add keyboard event listener for Enter key to toggle chat
     document.addEventListener('keydown', (event) => {
