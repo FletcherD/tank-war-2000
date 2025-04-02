@@ -12,8 +12,17 @@
     <link rel="stylesheet" href="./static/interface.css">
     <style>
         * { margin: 0; padding: 0;}
-        html, body { font-family: 'Courier Prime', monospace; }
-
+        html, body { 
+            font-family: 'Courier Prime', monospace;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
         a { color: red; }
         input { outline: none; }
     </style>
@@ -24,6 +33,11 @@
             setTimeout(function() { window.scrollTo(0, 1); }, 100);
           });
         });
+        
+        // Prevent bounce effect on iOS
+        document.addEventListener('touchmove', function(e) {
+          e.preventDefault();
+        }, { passive: false });
       </script>
 </head>
 <body>

@@ -695,26 +695,59 @@ export class GameUI {
     this.uiContainer.style.width = canvas.offsetWidth + 'px';
     this.uiContainer.style.height = canvas.offsetHeight + 'px';
     
+    // Recalculate positions for responsive layout
+    if (this.healthBarContainer) {
+      // Keep status info at a reasonable width based on screen size
+      const statusWidth = Math.min(Math.max(300, canvas.offsetWidth * 0.4), 500);
+      this.healthBarContainer.style.width = statusWidth + 'px';
+    }
+    
     // Check if the forward button exists and update its visibility
     if (this.forwardButton) {
       // Make sure forward button is visible on touch devices
       const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       this.forwardButton.style.display = isTouchDevice ? 'flex' : 'none';
+      
+      // Position the forward button at the bottom right, adjusting for different screen sizes
+      const buttonSize = Math.min(100, Math.max(60, canvas.offsetWidth * 0.15));
+      this.forwardButton.style.width = buttonSize + 'px';
+      this.forwardButton.style.height = (buttonSize * 0.6) + 'px';
+      this.forwardButton.style.right = (canvas.offsetWidth * 0.05) + 'px';
+      this.forwardButton.style.bottom = (canvas.offsetHeight * 0.10) + 'px';
+    }
+    
+    // Reposition fire button if it exists
+    if (this.fireButton) {
+      const buttonSize = Math.min(100, Math.max(60, canvas.offsetWidth * 0.15));
+      this.fireButton.style.width = buttonSize + 'px';
+      this.fireButton.style.height = (buttonSize * 0.6) + 'px';
+      this.fireButton.style.right = (canvas.offsetWidth * 0.05) + 'px';
+      this.fireButton.style.bottom = (canvas.offsetHeight * 0.25) + 'px';
+    }
+    
+    // Reposition joystick container
+    if (this.joystickContainer) {
+      const joystickSize = Math.min(150, Math.max(100, canvas.offsetWidth * 0.2));
+      this.joystickContainer.style.width = joystickSize + 'px';
+      this.joystickContainer.style.height = joystickSize + 'px';
+      this.joystickContainer.style.left = '20px';
+      this.joystickContainer.style.bottom = '20px';
     }
     
     // Update joystick position if it exists (handle orientation changes)
     if (this.joystickManager && this.joystickManager.get().length > 0) {
       // Dead zone for turning calculations
-      const DEAD_ZONE = 0.2;
+      const DEAD_ZONE = 0.1;
       
       // Destroy and recreate the joystick to ensure proper positioning
       this.joystickManager.destroy();
+      const joystickSize = Math.min(150, Math.max(100, canvas.offsetWidth * 0.2));
       this.joystickManager = nipplejs.create({
         zone: this.joystickContainer,
         mode: 'static',
         position: { left: '50%', top: '50%' },
         color: 'rgba(255, 255, 255, 0.5)',
-        size: 120,
+        size: joystickSize,
         lockX: false,
         lockY: false
       });
@@ -882,6 +915,7 @@ export class GameUI {
     this.welcomeModalContent.style.textAlign = 'left';
     this.welcomeModalContent.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
     this.welcomeModalContent.style.fontFamily = "'Courier Prime', monospace";
+    this.welcomeModalContent.style.fontSize = '12px';
     
     // Create title
     const title = document.createElement('h2');

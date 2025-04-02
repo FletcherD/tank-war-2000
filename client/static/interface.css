@@ -56,7 +56,7 @@ input[type='range'] {
 html,body{
     background: rgb(0, 0, 0) transparent;
     background: rgba(0, 0, 0, 0);
-    font:700 20px/1em 'Courier Prime', monospace;
+    font:700 14px/1em 'Courier Prime', monospace;
     color: #FFFFFF;
     width: 100%;
     height: 100%;
@@ -74,7 +74,7 @@ p {
 }
 
 .button {    
-    font:700 20px/1em 'Courier Prime', monospace;
+    font:700 14px/1em 'Courier Prime', monospace;
     color: #FFF; 
     height: 46px;
     background-color:#AAA;
@@ -206,7 +206,7 @@ p {
 	z-index:1;
 }
 #newswire {
-    font:700 20px/1em 'Courier Prime', monospace;
+    font:700 14px/1em 'Courier Prime', monospace;
     color: #FFFFFF;
     background-color:#444;
     border-style: outset;
@@ -253,7 +253,7 @@ p {
     align-items: center;
 }
 .chatInput {
-    font:700 20px/1em 'Courier Prime', monospace;   
+    font:700 14px/1em 'Courier Prime', monospace;   
     color: #000000; 
     padding: 1px 4px 1px 4px;
     margin: 0;
@@ -340,7 +340,7 @@ p {
     background-color: #0b0;
 }
 .percent {
-	font:700 20px/1em 'Courier Prime', monospace;
+	font:700 14px/1em 'Courier Prime', monospace;
 	color: #FFF;
 	position: absolute;   
 	text-align: center;
@@ -447,7 +447,7 @@ p {
 
 /* Table for display of team information */
 #teamDisplay {
-    font:700 20px/1em 'Courier Prime', monospace;
+    font:700 14px/1em 'Courier Prime', monospace;
     color: #FFFFFF;
     width: auto;
     height: auto;
