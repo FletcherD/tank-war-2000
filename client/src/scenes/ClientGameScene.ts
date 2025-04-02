@@ -18,7 +18,7 @@ import type { MyRoomState } from "../../../server/src/rooms/GameRoom";
 import { GameScene, InputData } from "../../../shared/scenes/Game";
 import { ClientTank } from "../entities/ClientTank";
 import { GameUI } from "../UI";
-import { VISUALS, TEAM_COLORS } from "../../../shared/constants";
+import { VISUALS, TEAM_COLORS, PHYSICS } from "../../../shared/constants";
 import { ClientMap } from "./ClientMap";
 import { ClientStation } from "../entities/ClientStation";
 import { ClientPillbox } from "../entities/ClientPillbox";
