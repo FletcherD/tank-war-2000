@@ -647,6 +647,14 @@ export class ClientGameScene extends GameScene {
                             case 'pillbox_placed':
                                 messageType = 'success';
                                 break;
+                            case 'game_win':
+                                messageType = 'success';
+                                // Show a big win message with the game UI
+                                this.gameUI.showMessage(message.message, 10000);
+                                break;
+                            case 'info':
+                                messageType = 'info';
+                                break;
                         }
                         
                         this.gameUI.addNewswireMessage(message.message, messageType);

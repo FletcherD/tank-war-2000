@@ -295,6 +295,84 @@ export class ServerGameScene extends GameScene {
     this.room.broadcast("snapshot", snapshot);
   }
   
+  // Game win state tracking
+  private winState = {
+    gameOver: false,
+    winningTeam: 0,
+    restartTimer: null
+  };
+  
+  // Check if all stations are owned by one team
+  checkWinCondition(): void {
+    // Skip if game is already in win state
+    if (this.winState.gameOver) return;
+    
+    // Skip if there are no stations
+    if (this.stations.length === 0) return;
+    
+    // Get the team of the first station
+    const firstStation = this.stations[0];
+    const firstTeam = firstStation.team;
+    
+    // Skip checking neutral stations (team 0)
+    if (firstTeam === 0) return;
+    
+    // Check if all stations belong to the same team
+    const allSameTeam = this.stations.every(station => station.team === firstTeam);
+    
+    if (allSameTeam) {
+      // All stations owned by the same team - game win!
+      this.winState.gameOver = true;
+      this.winState.winningTeam = firstTeam;
+      
+      // Send game win message
+      const teamName = firstTeam === 1 ? "Blue" : "Red";
+      this.sendNewswire({
+        type: 'game_win',
+        team: firstTeam,
+        message: `Team ${teamName} has won the game by capturing all stations!`
+      });
+      
+      // Send restart message
+      this.sendNewswire({
+        type: 'info',
+        message: `Server will restart in 15 seconds...`
+      });
+      
+      // Schedule server restart
+      this.winState.restartTimer = setTimeout(() => {
+        this.restartServer();
+      }, 15000);
+    }
+  }
+  
+  // Restart the server
+  restartServer(): void {
+    console.log("Restarting server due to game win condition");
+    
+    // Send final message
+    this.sendNewswire({
+      type: 'info',
+      message: `Server restarting now...`
+    });
+    
+    // Reset game state and restart
+    this.scene.restart();
+    
+    // Clear room state
+    this.room.state.stations.clear();
+    this.room.state.pillboxes.clear();
+    this.room.state.bullets.clear();
+    
+    // Reset win state
+    this.winState.gameOver = false;
+    this.winState.winningTeam = 0;
+    if (this.winState.restartTimer) {
+      clearTimeout(this.winState.restartTimer);
+      this.winState.restartTimer = null;
+    }
+  }
+  
   update(time: number, delta: number): void {
     super.update(time, delta);
     
@@ -340,6 +418,9 @@ export class ServerGameScene extends GameScene {
         station.updateSchema();
       }
     });
+    
+    // Check for win condition - all stations owned by one team
+    this.checkWinCondition();
     
     // Update bullets and clean up destroyed ones
     for (let i = this.serverBullets.length - 1; i >= 0; i--) {
