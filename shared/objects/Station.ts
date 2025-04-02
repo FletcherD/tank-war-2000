@@ -14,7 +14,6 @@ export class Station extends Phaser.Physics.Matter.Sprite {
     
     // Create the top sprite that will be tinted
     this.topSprite = scene.add.sprite(x, y, 'station1', 0);
-    this.setDepth(101);
     this.topSprite.setDepth(101);
     
     // Set up station physics body

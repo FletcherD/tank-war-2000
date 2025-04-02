@@ -410,7 +410,7 @@ export class GameMap {
                 // Check ground tile
                 if (groundTile) {
                     // Check if it's water (tileIndex 1*64 = 64)
-                    if (this.getBaseTileType(groundTile) === 64) {
+                    if (this.getBaseTileType(groundTile) === TILE_INDICES.WATER) {
                         return false;
                     }
                     
@@ -427,31 +427,44 @@ export class GameMap {
                         return false;
                     }
                 }
+
+                if (this.doesTileContainBuilding(x, y)) {
+                    return false;
+                }
             }
         }
         
         // If we made it here, the area is valid
         return true;
     }
+
+    doesTileContainBuilding(x: number, y: number): boolean {
+        function checkBuildingPos(x2: number, y2: number): boolean {
+            return x2 === x && y2 === y || 
+            x2 === x && y2 === y + 1 || 
+            x2 === x + 1 && y2 === y || 
+            x2 === x + 1 && y2 === y + 1
+        }
+
+        for(const station of this.scene.stations) {
+            const [x2, y2] = this.groundLayer.worldToTileXY(x, y);
+            if (checkBuildingPos(x2, y2)) {
+                return true;
+            }
+        }
+        for(const pillbox of this.scene.pillboxes) {
+            const [x2, y2] = this.groundLayer.worldToTileXY(x, y);
+            if (checkBuildingPos(x2, y2)) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     // Check if the selection is a valid 2x2 area for pillbox placement
     isSelectionValidForPillbox(selectedTiles: { x: number, y: number }[]): boolean {
-        // Check if we have exactly 4 tiles
-        if (selectedTiles.length !== 4) {
-            return false;
-        }
-        
-        // Find the min and max x and y to see if we have a 2x2 area
         const minX = Math.min(...selectedTiles.map(t => t.x));
-        const maxX = Math.max(...selectedTiles.map(t => t.x));
         const minY = Math.min(...selectedTiles.map(t => t.y));
-        const maxY = Math.max(...selectedTiles.map(t => t.y));
-        
-        // Check if it's a 2x2 area
-        if (maxX - minX !== 1 || maxY - minY !== 1) {
-            return false;
-        }
-        
         // Check if all 4 tiles are valid for placement
         return this.isPillboxPlacementValid(minX, minY);
     }

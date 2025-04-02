@@ -391,8 +391,9 @@ export class GameUI {
     });
     
     // Dead zone for turning calculations
-    const DEAD_ZONE = 0.5;
-    const HYSTERESIS = 0.5;
+    const DEAD_ZONE_CENTER = 0.3;
+    const DEAD_ZONE_ANGLUAR = 0.1;
+    const CONTROL_SLOPE = 10.0;
     
     // Add event listeners for joystick movements - now uses turnRate
     this.joystickManager.on('move', (evt, data) => {
@@ -410,7 +411,7 @@ export class GameUI {
       
       // Skip turning in the dead zone (when joystick is near center)
       const distance = Math.sqrt(x*x + y*y);
-      if (distance < DEAD_ZONE) return;
+      if (distance < DEAD_ZONE_CENTER) return;
       
       // Get the current tank heading in the game
       const tankHeading = this.gameScene.currentPlayer?.heading || 0;
@@ -430,7 +431,7 @@ export class GameUI {
       
       // Set turnRate proportional to angle difference
       // Clamp to [-1.0, 1.0] range
-      const turnRate = Math.max(-1.0, Math.min(1.0, angleDiff / Math.PI));
+      const turnRate = Math.max(-1.0, Math.min(1.0, angleDiff * CONTROL_SLOPE));
       this.gameScene.virtualInputs.turnRate = turnRate;
     });
     
