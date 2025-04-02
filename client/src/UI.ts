@@ -79,46 +79,21 @@ export class GameUI {
     // Create a UI container that overlays exactly on the canvas
     this.uiContainer = document.createElement('div');
     this.uiContainer.id = 'gameContainer';
-    this.uiContainer.style.position = 'absolute';
     this.uiContainer.style.top = canvas.offsetTop + 'px';
     this.uiContainer.style.left = canvas.offsetLeft + 'px';
     this.uiContainer.style.width = canvas.offsetWidth + 'px';
     this.uiContainer.style.height = canvas.offsetHeight + 'px';
-    this.uiContainer.style.pointerEvents = 'none'; // Allow clicks to pass through to game
-    this.uiContainer.style.zIndex = '10';
     document.body.appendChild(this.uiContainer);
     
     // Create joystick container for touch controls
     this.joystickContainer = document.createElement('div');
     this.joystickContainer.id = 'joystickContainer';
-    this.joystickContainer.style.position = 'absolute';
-    this.joystickContainer.style.bottom = '20px';
-    this.joystickContainer.style.left = '20px';
-    this.joystickContainer.style.width = '120px';
-    this.joystickContainer.style.height = '120px';
-    this.joystickContainer.style.pointerEvents = 'auto';
-    this.joystickContainer.style.zIndex = '20';
     this.uiContainer.appendChild(this.joystickContainer);
     
     // Create fire button for touch controls
     this.fireButton = document.createElement('div');
     this.fireButton.id = 'fireButton';
-    this.fireButton.style.position = 'absolute';
-    this.fireButton.style.bottom = '100px';
-    this.fireButton.style.right = '20px';
-    this.fireButton.style.width = '100px';
-    this.fireButton.style.height = '60px';
-    this.fireButton.style.borderRadius = '5px';
-    this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
-    this.fireButton.style.border = '2px solid rgba(255, 0, 0, 0.5)';
-    this.fireButton.style.display = 'flex';
-    this.fireButton.style.justifyContent = 'center';
-    this.fireButton.style.alignItems = 'center';
-    this.fireButton.style.pointerEvents = 'auto';
-    this.fireButton.style.zIndex = '20';
-    this.fireButton.style.userSelect = 'none';
     this.fireButton.innerHTML = 'Fire';
-    this.fireButton.style.fontSize = '20px';
     this.uiContainer.appendChild(this.fireButton);
 
     // Create the status container (already defined in CSS)
@@ -139,8 +114,7 @@ export class GameUI {
     // Create health text
     this.healthTextElement = document.createElement('div');
     this.healthTextElement.className = 'percent';
-    this.healthTextElement.style.fontFamily = "'Courier Prime', monospace";
-    this.healthTextElement.style.fontWeight = "700";
+    this.healthTextElement.className = 'percent';
     healthBarOuter.appendChild(this.healthTextElement);
     
     // Create ammo bar container - positioned below health bar
@@ -161,8 +135,7 @@ export class GameUI {
     // Create ammo text
     this.ammoTextElement = document.createElement('div');
     this.ammoTextElement.className = 'percent';
-    this.ammoTextElement.style.fontFamily = "'Courier Prime', monospace";
-    this.ammoTextElement.style.fontWeight = "700";
+    this.ammoTextElement.className = 'percent';
     ammoBarOuter.appendChild(this.ammoTextElement);
     
     // Create wood bar container positioned below ammo bar
@@ -183,27 +156,18 @@ export class GameUI {
     // Create wood text
     this.woodTextElement = document.createElement('div');
     this.woodTextElement.className = 'percent';
-    this.woodTextElement.style.fontFamily = "'Courier Prime', monospace";
-    this.woodTextElement.style.fontWeight = "700";
+    this.woodTextElement.className = 'percent';
     woodBarOuter.appendChild(this.woodTextElement);
 
 
     // Create newswire container directly under the health/ammo/wood bars on the top right
     this.newswireContainer = document.createElement('div');
     this.newswireContainer.id = 'newswireContainer';
-    this.newswireContainer.style.position = 'absolute';
-    this.newswireContainer.style.top = '100%'; // Position it right below the status container
-    this.newswireContainer.style.right = '0';
-    this.newswireContainer.style.width = 'auto';
-    this.newswireContainer.style.zIndex = '20';
     this.healthBarContainer.appendChild(this.newswireContainer);
     
     // Create context menu for tile selection
     this.contextMenu = document.createElement('div');
-    this.contextMenu.style.position = 'absolute';
-    this.contextMenu.style.display = 'none'; // Initially hidden
-    this.contextMenu.style.zIndex = '200';
-    this.contextMenu.style.pointerEvents = 'auto';
+    this.contextMenu.className = 'context-menu';
     this.uiContainer.appendChild(this.contextMenu);
     
     // Create build road context button
@@ -211,7 +175,7 @@ export class GameUI {
     this.buildRoadContextButton.className = 'context-menu-button';
     this.buildRoadContextButton.innerHTML = '🛣️'; // Road emoji
     this.buildRoadContextButton.title = 'Build Road';
-    this.buildRoadContextButton.style.backgroundColor = '#4CAF50';
+    this.buildRoadContextButton.className += ' road';
     this.buildRoadContextButton.onclick = () => this.gameScene.buildTile('road');
     this.contextMenu.appendChild(this.buildRoadContextButton);
     
@@ -220,7 +184,7 @@ export class GameUI {
     this.buildWallContextButton.className = 'context-menu-button';
     this.buildWallContextButton.innerHTML = '🧱'; // Brick emoji
     this.buildWallContextButton.title = 'Build Wall';
-    this.buildWallContextButton.style.backgroundColor = '#2196F3';
+    this.buildWallContextButton.className += ' wall';
     this.buildWallContextButton.onclick = () => this.gameScene.buildTile('wall');
     this.contextMenu.appendChild(this.buildWallContextButton);
     
@@ -229,7 +193,7 @@ export class GameUI {
     this.harvestWoodContextButton.className = 'context-menu-button';
     this.harvestWoodContextButton.innerHTML = '🪓'; // Axe emoji
     this.harvestWoodContextButton.title = 'Harvest Wood';
-    this.harvestWoodContextButton.style.backgroundColor = '#8D6E63';
+    this.harvestWoodContextButton.className += ' harvest';
     this.harvestWoodContextButton.onclick = () => this.gameScene.buildTile('forest');
     this.contextMenu.appendChild(this.harvestWoodContextButton);
     
@@ -262,42 +226,21 @@ export class GameUI {
     
     // Create pillbox count display
     this.pillboxCountElement = document.createElement('div');
-    this.pillboxCountElement.style.position = 'absolute';
-    this.pillboxCountElement.style.top = '40px';
-    this.pillboxCountElement.style.right = '20px';
-    this.pillboxCountElement.style.padding = '5px 10px';
-    this.pillboxCountElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    this.pillboxCountElement.style.color = 'white';
-    this.pillboxCountElement.style.borderRadius = '5px';
-    this.pillboxCountElement.style.fontFamily = "'Courier Prime', monospace";
-    this.pillboxCountElement.style.fontWeight = "700";
+    this.pillboxCountElement.id = 'pillboxCountElement';
     this.pillboxCountElement.style.visibility = 'hidden';
     this.pillboxCountElement.textContent = 'Pillboxes: 0';
     this.uiContainer.appendChild(this.pillboxCountElement);
     
     // Create message element for notifications
     this.messageElement = document.createElement('div');
-    this.messageElement.style.position = 'absolute';
-    this.messageElement.style.top = '100px';
-    this.messageElement.style.left = '50%';
-    this.messageElement.style.transform = 'translateX(-50%)';
-    this.messageElement.style.padding = '10px 20px';
-    this.messageElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    this.messageElement.style.color = 'white';
-    this.messageElement.style.borderRadius = '5px';
-    this.messageElement.style.fontFamily = "'Courier Prime', monospace";
-    this.messageElement.style.fontWeight = "700";
+    this.messageElement.id = 'messageElement';
     this.messageElement.style.display = 'none';
-    this.messageElement.style.zIndex = '20';
     this.uiContainer.appendChild(this.messageElement);
 
     
     // Create newswire
     this.newswire = document.createElement('div');
     this.newswire.id = 'newswire';
-    this.newswire.style.maxHeight = '34px'; // Default height when collapsed
-    this.newswire.style.overflow = 'hidden';
-    this.newswire.style.width = '100%'; // Make sure it uses full width
     this.newswireContainer.appendChild(this.newswire);
     
     // Create newswire text container
@@ -308,15 +251,11 @@ export class GameUI {
     // Create a container for the most recent message (shown when collapsed)
     this.recentMessageContainer = document.createElement('div');
     this.recentMessageContainer.id = 'recentMessageContainer';
-    this.recentMessageContainer.style.display = 'block';
     this.newswire.appendChild(this.recentMessageContainer);
     
     // Create a container for newswire buttons
     const newswireButtonsContainer = document.createElement('div');
-    newswireButtonsContainer.style.display = 'flex';
-    newswireButtonsContainer.style.justifyContent = 'flex-end'; // Align to the right
-    newswireButtonsContainer.style.width = '100%';
-    newswireButtonsContainer.style.marginTop = '2px';
+    newswireButtonsContainer.className = 'newswire-buttons-container';
     this.newswireContainer.appendChild(newswireButtonsContainer);
     
     // Create expand button
@@ -324,8 +263,6 @@ export class GameUI {
     this.newswireExpandButton.id = 'newswireExpandButton';
     this.newswireExpandButton.textContent = '▼';
     this.newswireExpandButton.className = 'button';
-    this.newswireExpandButton.style.pointerEvents = 'auto';
-    this.newswireExpandButton.style.marginLeft = '2px';
     newswireButtonsContainer.appendChild(this.newswireExpandButton);
     
     // Add click handler to expand/collapse the newswire
@@ -337,43 +274,22 @@ export class GameUI {
         // Show all messages
         this.newswireText.style.display = 'block';
         this.recentMessageContainer.style.display = 'none';
-        // Make sure it's tall enough when expanded
-        this.newswire.style.maxHeight = '300px';
-        this.newswire.style.height = 'auto';
-        this.newswire.style.minHeight = '200px';
-        this.newswire.style.overflow = 'auto';
       } else {
         this.newswire.classList.remove('expanded');
         this.newswireExpandButton.textContent = '▼';
         // Only show most recent message
         this.newswireText.style.display = 'none';
         this.recentMessageContainer.style.display = 'block';
-        // Reset height when collapsed
-        this.newswire.style.maxHeight = '34px';
-        this.newswire.style.height = '34px';
-        this.newswire.style.minHeight = '';
-        this.newswire.style.overflow = 'hidden';
       }
     };
     
     // Initially hide all messages except most recent
     this.newswireText.style.display = 'none';
     
-    // Make sure scroll and resize work (needs pointer-events: auto)
-    this.newswire.style.pointerEvents = 'auto';
-    
     // Create chat container, will be shown/hidden as needed
     this.chatContainer = document.createElement('div');
     this.chatContainer.id = 'chatContainer';
-    this.chatContainer.style.position = 'absolute';
-    this.chatContainer.style.top = '-36px'; // Position just above the newswire
-    this.chatContainer.style.right = '0';
     this.chatContainer.style.display = 'none'; // Initially hidden
-    this.chatContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    this.chatContainer.style.padding = '5px';
-    this.chatContainer.style.width = 'auto';
-    this.chatContainer.style.pointerEvents = 'auto'; // Allow interaction
-    this.chatContainer.style.zIndex = '20'; // Same z-index as newswire
     this.newswireContainer.appendChild(this.chatContainer);
     
     // Create chat input field
@@ -382,7 +298,6 @@ export class GameUI {
     this.chatInput.className = 'chatInput';
     this.chatInput.placeholder = 'Team chat (Shift+Enter for all)';
     this.chatInput.maxLength = 100; // Limit message length
-    this.chatInput.style.width = '300px';
     this.chatContainer.appendChild(this.chatInput);
     
     // Create chat button
@@ -390,8 +305,6 @@ export class GameUI {
     this.chatButton.id = 'chatButton';
     this.chatButton.textContent = '💬';
     this.chatButton.className = 'button';
-    this.chatButton.style.height = '28px';
-    this.chatButton.style.marginLeft = '5px';
     this.chatContainer.appendChild(this.chatButton);
     
     // Create a chat icon button in the newswire buttons container
@@ -399,9 +312,6 @@ export class GameUI {
     chatIconButton.id = 'newswireChatButton';
     chatIconButton.textContent = '💬';
     chatIconButton.className = 'button';
-    chatIconButton.style.pointerEvents = 'auto';
-    chatIconButton.style.width = '34px';
-    chatIconButton.style.padding = '0';
     newswireButtonsContainer.appendChild(chatIconButton);
     
     // Add keyboard event listener for Enter key to toggle chat
@@ -463,25 +373,10 @@ export class GameUI {
       return;
     }
     
-    // Create the forward button - positioned on the right side of the screen
+    // Create the forward button
     this.forwardButton = document.createElement('div');
     this.forwardButton.id = 'forwardButton';
-    this.forwardButton.style.position = 'absolute';
-    this.forwardButton.style.bottom = '20px'; 
-    this.forwardButton.style.right = '20px';
-    this.forwardButton.style.width = '100px';
-    this.forwardButton.style.height = '60px';
-    this.forwardButton.style.borderRadius = '5px';
-    this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
-    this.forwardButton.style.border = '2px solid rgba(0, 255, 0, 0.5)';
-    this.forwardButton.style.display = 'flex';
-    this.forwardButton.style.justifyContent = 'center';
-    this.forwardButton.style.alignItems = 'center';
-    this.forwardButton.style.pointerEvents = 'auto';
-    this.forwardButton.style.zIndex = '20';
-    this.forwardButton.style.userSelect = 'none';
     this.forwardButton.innerHTML = 'Move';
-    this.forwardButton.style.fontSize = '20px';
     this.uiContainer.appendChild(this.forwardButton);
     
     // Create the nipplejs joystick
@@ -893,36 +788,16 @@ export class GameUI {
   public showWelcomeModal() {
     // Create modal container
     this.welcomeModalContainer = document.createElement('div');
-    this.welcomeModalContainer.style.position = 'fixed';
-    this.welcomeModalContainer.style.top = '0';
-    this.welcomeModalContainer.style.left = '0';
-    this.welcomeModalContainer.style.width = '100%';
-    this.welcomeModalContainer.style.height = '100%';
-    this.welcomeModalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    this.welcomeModalContainer.style.display = 'flex';
-    this.welcomeModalContainer.style.justifyContent = 'center';
-    this.welcomeModalContainer.style.alignItems = 'center';
-    this.welcomeModalContainer.style.zIndex = '1000';
-    this.welcomeModalContainer.style.pointerEvents = 'auto';
+    this.welcomeModalContainer.className = 'welcome-modal-container';
     
     // Create modal content
     this.welcomeModalContent = document.createElement('div');
-    this.welcomeModalContent.style.backgroundColor = '#333';
-    this.welcomeModalContent.style.color = 'white';
-    this.welcomeModalContent.style.padding = '20px';
-    this.welcomeModalContent.style.borderRadius = '10px';
-    this.welcomeModalContent.style.maxWidth = '500px';
-    this.welcomeModalContent.style.textAlign = 'left';
-    this.welcomeModalContent.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
-    this.welcomeModalContent.style.fontFamily = "'Courier Prime', monospace";
-    this.welcomeModalContent.style.fontSize = '12px';
+    this.welcomeModalContent.className = 'welcome-modal-content';
     
     // Create title
     const title = document.createElement('h2');
     title.textContent = 'Welcome to Tank War 2000!';
-    title.style.textAlign = 'center';
-    title.style.color = '#4CAF50';
-    title.style.marginTop = '0';
+    title.className = 'welcome-modal-title';
     
     // Create message content
     const message = document.createElement('div');
@@ -938,28 +813,11 @@ export class GameUI {
         <li>Select tiles on the map to harvest wood or build structures.</li>
       </ul>
     `;
-    message.style.lineHeight = '1.5';
     
     // Create OK button
     this.welcomeModalButton = document.createElement('button');
     this.welcomeModalButton.textContent = 'OK';
-    this.welcomeModalButton.style.display = 'block';
-    this.welcomeModalButton.style.margin = '20px auto 0';
-    this.welcomeModalButton.style.padding = '10px 30px';
-    this.welcomeModalButton.style.backgroundColor = '#4CAF50';
-    this.welcomeModalButton.style.color = 'white';
-    this.welcomeModalButton.style.border = 'none';
-    this.welcomeModalButton.style.borderRadius = '5px';
-    this.welcomeModalButton.style.fontSize = '16px';
-    this.welcomeModalButton.style.cursor = 'pointer';
-    
-    // Add hover effect
-    this.welcomeModalButton.onmouseover = () => {
-      this.welcomeModalButton.style.backgroundColor = '#45a049';
-    };
-    this.welcomeModalButton.onmouseout = () => {
-      this.welcomeModalButton.style.backgroundColor = '#4CAF50';
-    };
+    this.welcomeModalButton.className = 'welcome-modal-button';
     
     // Close modal when button is clicked
     this.welcomeModalButton.onclick = () => {
