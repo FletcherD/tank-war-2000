@@ -482,7 +482,7 @@ export class GameUI {
     // Create the nipplejs joystick
     this.joystickManager = nipplejs.create({
       zone: this.joystickContainer,
-      mode: 'static',
+      mode: 'semi',
       position: { left: '50%', top: '50%' },
       color: 'rgba(255, 255, 255, 0.5)',
       size: 120,
