@@ -113,7 +113,6 @@ export class ClientTank extends Tank {
     // Update input state
     this.currentInput.turnRate = data.turnRate;
     this.currentInput.up = data.up;
-    this.currentInput.down = data.down;
     this.currentInput.fire = data.fire;
     this.currentInput.tick = data.tick;
   }
@@ -211,10 +210,8 @@ export class ClientTank extends Tank {
       }
       
       // Update input state
-      this.currentInput.left = data.left;
-      this.currentInput.right = data.right;
+      this.currentInput.turnRate = data.turnRate;
       this.currentInput.up = data.up;
-      this.currentInput.down = data.down;
       this.currentInput.fire = data.fire;
       this.currentInput.tick = data.tick;
     } else {
@@ -333,9 +330,27 @@ export class ClientTank extends Tank {
   
   // Helper method to animate treads based on speed and direction
   override animate(delta: number, speed: number, rotationSpeed: number) {
-    if(this.scene.currentPlayer && this.team == this.scene.currentPlayer.scene) {
-        this.setDepth(200);
-        this.nameText.setDepth(201);
+    const gameScene = this.scene as ClientGameScene;
+    if(gameScene.currentPlayer && this.team === gameScene.currentPlayer.team) {
+        this.setDepth(1);
+        if(this.nameText) {
+            this.nameText.setDepth(1);
+        }
+
+        const visibility = (gameScene.gameMap.isEntityHiddenAt(this.x, this.y) ? 0.5 : 1.0);
+        this.setAlpha(visibility);
+    }
+    else if(gameScene.currentPlayer && this.team !== gameScene.currentPlayer.team) {
+        this.setDepth(0);
+        if(this.nameText) {
+            this.nameText.setDepth(-1);
+        }
+
+        const visibility = gameScene.gameMap.isEntityHiddenAt(this.x, this.y);
+        this.setVisible(visibility);
+        if(this.nameText) {
+            this.nameText.setVisible(visibility);
+        }
     }
 
     const framesPerRow: number = 31;

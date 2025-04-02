@@ -1,3 +1,4 @@
+import { TILE_INDICES } from "../constants";
 
 export class GameMap {
     scene: Phaser.Scene;
@@ -31,6 +32,20 @@ export class GameMap {
         }
         
         return tile.properties?.speed || 1.0;
+    }
+
+    // Get the visibility of entities at the given world position
+    // Returns true if the entity should be hidden, false otherwise
+    isEntityHiddenAt(x: number, y: number): boolean {
+        if (!this.groundLayer) return false;
+        
+        // Convert world position to tile position
+        const tileX = this.groundLayer.worldToTileX(x);
+        const tileY = this.groundLayer.worldToTileY(y);
+        
+        const tile = this.decorationLayer.getTileAt(tileX, tileY);
+        if (!tile) return false;
+        return this.getBaseTileType(tile) === TILE_INDICES.FOREST;
     }
 
     createTilemapFromFile() {
