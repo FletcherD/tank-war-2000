@@ -290,6 +290,11 @@ export class ClientGameScene extends GameScene {
                 // Initialize the UI once we have the current player, with a slight delay to ensure the canvas is ready
                 setTimeout(() => {
                     this.gameUI = new GameUI(this);
+                    
+                    // Show welcome modal after UI is initialized
+                    setTimeout(() => {
+                        this.gameUI.showWelcomeModal();
+                    }, 500);
                 }, 100);
 
                 // Listen for changes on the tank schema directly
@@ -666,19 +671,10 @@ export class ClientGameScene extends GameScene {
                 SI.snapshot.add(snapshot);
             });
             
-            // Add initial welcome message once UI is ready
+            // Add initial server connection message to newswire
             setTimeout(() => {
-                this.gameUI.addNewswireMessage("Welcome to tank war 2000!", 'info');
+                this.gameUI.addNewswireMessage("Connected to server successfully!", 'success');
             }, 2000);
-            setTimeout(() => {
-                this.gameUI.addNewswireMessage("Capture all the stations on the map to win.", 'info');
-            }, 4000);
-            setTimeout(() => {
-                this.gameUI.addNewswireMessage("Collect wood from trees and then build walls and roads to help your team.", 'info');
-            }, 6000);
-            setTimeout(() => {
-                this.gameUI.addNewswireMessage("Pick up pillboxes and place them to defend your stations.", 'info');
-            }, 8000);
 
         } catch (e) {
             // couldn't connect
