@@ -1,9 +1,3 @@
-button::-moz-focus-inner,
-input[type="reset"]::-moz-focus-inner,
-input[type="button"]::-moz-focus-inner,
-input[type="submit"]::-moz-focus-inner,
-input[type="file"] > input[type="button"]::-moz-focus-inner {border:0;padding:0;margin:0;}
-
 .pixelated {
   image-rendering:optimizeSpeed;             /* Legal fallback */
   image-rendering:-moz-crisp-edges;          /* Firefox        */
@@ -56,7 +50,7 @@ input[type='range'] {
 html,body{
     background: rgb(0, 0, 0) transparent;
     background: rgba(0, 0, 0, 0);
-    font:700 14px/1em 'Courier Prime', monospace;
+    font:700 16px/1em 'Courier Prime', monospace;
     color: #FFFFFF;
     width: 100%;
     height: 100%;
@@ -74,7 +68,7 @@ p {
 }
 
 .button {    
-    font:700 14px/1em 'Courier Prime', monospace;
+    font:700 16px/1em 'Courier Prime', monospace;
     color: #FFF; 
     height: 46px;
     background-color:#AAA;
@@ -126,10 +120,59 @@ p {
 	z-index:0;
 	touch-action: none;
 }
+
+/* Game UI container */
 #gameContainer {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+    position: absolute;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Touch controls */
+#joystickContainer {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 120px;
+    height: 120px;
+    pointer-events: auto;
+    z-index: 20;
+}
+
+#fireButton {
+    position: absolute;
+    bottom: 100px;
+    right: 20px;
+    width: 100px;
+    height: 60px;
+    border-radius: 5px;
+    background-color: rgba(255, 0, 0, 0.3);
+    border: 2px solid rgba(255, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+    z-index: 20;
+    user-select: none;
+    font-size: 20px;
+}
+
+#forwardButton {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 100px;
+    height: 60px;
+    border-radius: 5px;
+    background-color: rgba(0, 255, 0, 0.3);
+    border: 2px solid rgba(0, 255, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+    z-index: 20;
+    user-select: none;
+    font-size: 20px;
 }
 
 /* Minimap */
@@ -198,15 +241,15 @@ p {
 
 /* The newswire that shows messages */
 #newswireContainer {
-	width: auto;
-    max-width: 100%;
-	position: absolute;
-	right: 0;
-	top: 100%;
-	z-index:1;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: auto;
+    z-index: 20;
 }
+
 #newswire {
-    font:700 14px/1em 'Courier Prime', monospace;
+    font:700 16px/1em 'Courier Prime', monospace;
     color: #FFFFFF;
     background-color:#444;
     border-style: outset;
@@ -217,7 +260,11 @@ p {
     display: inline-block;
     overflow: hidden;
     white-space: nowrap;
+    max-height: 34px;
+    overflow: hidden;
+    width: 100%;
 }
+
 #newswire.expanded {
     min-height: 200px;
     max-height: 300px;
@@ -227,9 +274,12 @@ p {
     overflow-x: hidden;
     white-space: normal;
 }
+
 #newswireText {
     width: 100%;
+    word-wrap: break-word;
 }
+
 #recentMessageContainer {
     width: 100%;
     height: 100%;
@@ -237,23 +287,47 @@ p {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
 #newswire.hidden {
     display: none;
 }
+
 #newswireExpandButton {
     width: 34px;
     height: 34px;
     padding:0;
     background-color:#444;
     content: '▼';
+    pointer-events: auto;
+    margin-left: 2px;
 }
+
+/* Newswire buttons container */
+.newswire-buttons-container {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: 2px;
+}
+
+/* Chat controls */
 #chatContainer {
+    position: absolute;
+    top: -36px;
+    right: 0;
+    display: none;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 5px;
+    width: auto;
+    pointer-events: auto;
+    z-index: 20;
     display: flex;
     flex-direction: row;
     align-items: center;
 }
+
 .chatInput {
-    font:700 14px/1em 'Courier Prime', monospace;   
+    font:700 16px/1em 'Courier Prime', monospace;   
     color: #000000; 
     padding: 1px 4px 1px 4px;
     margin: 0;
@@ -261,30 +335,145 @@ p {
     min-width: 50px;
     border: 2px solid #444;
     border-radius: 3px;
+    width: 300px;
 }
+
 #chatButton {
     width: 34px;
     height: 34px;
     padding:0;
     bottom: 0;
+    height: 28px;
+    margin-left: 5px;
 }
+
 #newswireChatButton {
     width: 34px;
     height: 34px;
     padding:0;
     background-color:#444;
     margin-left: 2px;
+    pointer-events: auto;
 }
+
+/* Context menu */
+.context-menu {
+    position: absolute;
+    display: none;
+    z-index: 200;
+    pointer-events: auto;
+}
+
+.context-menu-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    margin: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 24px;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.5);
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    transition: transform 0.1s ease-in-out;
+}
+
+.context-menu-button:hover {
+    transform: scale(1.1);
+}
+
+.context-menu-button:active {
+    transform: scale(0.95);
+}
+
+.context-menu-button.road {
+    background-color: #4CAF50;
+}
+
+.context-menu-button.wall {
+    background-color: #2196F3;
+}
+
+.context-menu-button.harvest {
+    background-color: #8D6E63;
+}
+
+.context-menu-button.pillbox-button {
+    background-color: #9c27b0;
+}
+
+/* Welcome modal */
+.welcome-modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    pointer-events: auto;
+}
+
+.welcome-modal-content {
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    text-align: left;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+}
+
+.welcome-modal-title {
+    text-align: center;
+    color: #4CAF50;
+    margin-top: 0;
+}
+
+.welcome-modal-button {
+    display: block;
+    margin: 20px auto 0;
+    padding: 10px 30px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.welcome-modal-button:hover {
+    background-color: #45a049;
+}
+
 /* Chat message styling */
 .chat-message .team-prefix {
     color: #ffcc00; /* Yellow for team chat */
 }
+
 .chat-message .all-prefix {
     color: #ff3333; /* Red for all chat */
 }
-#newswireText {
-    word-wrap: break-word;
+
+.chat-message .player-name.team0 {
+    color: #ff3333;
 }
+
+.chat-message .player-name.team1 {
+    color: #3333ff;
+}
+
+.chat-message .message-content {
+    color: #ffffff;
+}
+
 #optionalInputText {
     display: inline-block;
 }
@@ -340,7 +529,8 @@ p {
     background-color: #0b0;
 }
 .percent {
-	font:700 14px/1em 'Courier Prime', monospace;
+	font-family: 'Courier Prime', monospace;
+	font-weight: 700;
 	color: #FFF;
 	position: absolute;   
 	text-align: center;
@@ -349,6 +539,45 @@ p {
     top:50%; 
     height:auto; 
     margin-top:-9px
+}
+
+/* Wood and ammo bars */
+#ammoBar {
+    background-color: #999;
+}
+
+#woodBar {
+    background-color: #4CAF50;
+}
+
+/* Pillbox count element */
+#pillboxCountElement {
+    position: absolute;
+    top: 40px;
+    right: 20px;
+    padding: 5px 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 5px;
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    visibility: hidden;
+}
+
+/* Message element */
+#messageElement {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 5px;
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    display: none;
+    z-index: 20;
 }
 
 /* Animation to show you're firing */
@@ -447,7 +676,7 @@ p {
 
 /* Table for display of team information */
 #teamDisplay {
-    font:700 14px/1em 'Courier Prime', monospace;
+    font:700 16px/1em 'Courier Prime', monospace;
     color: #FFFFFF;
     width: auto;
     height: auto;
