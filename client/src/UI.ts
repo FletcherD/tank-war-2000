@@ -104,15 +104,15 @@ export class GameUI {
     this.fireButton.style.width = '100px';
     this.fireButton.style.height = '60px';
     this.fireButton.style.borderRadius = '5px';
-    this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
-    this.fireButton.style.border = '2px solid rgba(255, 0, 0, 0.8)';
+    this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+    this.fireButton.style.border = '2px solid rgba(255, 0, 0, 0.5)';
     this.fireButton.style.display = 'flex';
     this.fireButton.style.justifyContent = 'center';
     this.fireButton.style.alignItems = 'center';
     this.fireButton.style.pointerEvents = 'auto';
     this.fireButton.style.zIndex = '20';
     this.fireButton.style.userSelect = 'none';
-    this.fireButton.innerHTML = '🔥';
+    this.fireButton.innerHTML = 'Fire';
     this.fireButton.style.fontSize = '40px';
     this.uiContainer.appendChild(this.fireButton);
 
@@ -467,15 +467,15 @@ export class GameUI {
     this.forwardButton.style.width = '100px';
     this.forwardButton.style.height = '60px';
     this.forwardButton.style.borderRadius = '5px';
-    this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
-    this.forwardButton.style.border = '2px solid rgba(0, 255, 0, 0.8)';
+    this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
+    this.forwardButton.style.border = '2px solid rgba(0, 255, 0, 0.5)';
     this.forwardButton.style.display = 'flex';
     this.forwardButton.style.justifyContent = 'center';
     this.forwardButton.style.alignItems = 'center';
     this.forwardButton.style.pointerEvents = 'auto';
     this.forwardButton.style.zIndex = '20';
     this.forwardButton.style.userSelect = 'none';
-    this.forwardButton.innerHTML = '⬆️';
+    this.forwardButton.innerHTML = 'Move';
     this.forwardButton.style.fontSize = '40px';
     this.uiContainer.appendChild(this.forwardButton);
     
