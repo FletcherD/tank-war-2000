@@ -25,13 +25,10 @@ input[type="file"] > input[type="button"]::-moz-focus-inner {border:0;padding:0;
 /* Hue shifts for team colors (from red) */
 .team0 {    
 }
-.team1 {    
-    -webkit-filter: hue-rotate(240deg);
-}
 .team2 {    
-    -webkit-filter: hue-rotate(120deg) brightness(175%);
 }
-
+.team1   {    
+}
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     background-color: #F00;
@@ -478,15 +475,6 @@ p {
     gap: 5px;
 }
 
-.entity-title {
-    font-size: 12px;
-    color: #fff;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 4px;
-    font-family: 'Courier Prime', monospace;
-}
-
 .entity-row {
     display: flex;
     flex-direction: row;
@@ -494,51 +482,31 @@ p {
 }
 
 .entity-icon {
-    width: 24px;
-    height: 24px;
+    width: 14px;
+    height: 14px;
     border: 1px solid #888;
     border-radius: 2px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    position: relative;
 }
 
-.entity-image {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    position: relative;
-    z-index: 1;
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
+.entity-icon.station {
+    background-color: #888;
 }
 
-.entity-icon::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 0;
-    opacity: 0.7;
+.entity-icon.pillbox {
+    background-color: #888;
 }
 
 /* Team colors */
-.entity-icon.team0::before {
-    background-color: #f00; 
+.entity-icon.team0 {
+    background-color: #00f; 
 }
 
-/* This gets hue-rotated so it's ok */
-.entity-icon.team1::before {
+.entity-icon.team1 {
     background-color: #f00; 
 }
 
 /* Neutral/uncontrolled entities */
-.entity-icon.neutral::before {
+.entity-icon.neutral {
     background-color: #888; /* Gray for neutral */
 }
 #teamDisplayTable td {
