@@ -303,8 +303,31 @@ export class GameRoom extends Room<MyRoomState> {
       return;
     }
     
-    // Determine team (alternating assignment)
-    const team = this.state.players.size % 2 === 0 ? 1 : 2;
+    // Determine team (balance based on team size)
+    let team: number;
+    
+    // Count players on each team
+    let team1Count = 0;
+    let team2Count = 0;
+    
+    this.state.players.forEach(player => {
+      if (player.tank.team === 1) {
+        team1Count++;
+      } else if (player.tank.team === 2) {
+        team2Count++;
+      }
+    });
+    
+    if (team1Count < team2Count) {
+      // Team 1 has fewer players, assign to team 1
+      team = 1;
+    } else if (team2Count < team1Count) {
+      // Team 2 has fewer players, assign to team 2
+      team = 2;
+    } else {
+      // Teams are equal, decide randomly
+      team = Math.random() < 0.5 ? 1 : 2;
+    }
     
     // Get spawn position for team
     const spawnPos = this.gameScene.getSpawnPositionForTeam(team);
@@ -326,7 +349,7 @@ export class GameRoom extends Room<MyRoomState> {
     // Add player to state AFTER initializing properties to ensure first state sync is complete
     this.state.players.set(client.sessionId, playerState);
     
-    console.log(`Player ${playerName} (${client.sessionId}) joined at position ${spawnPos.x.toFixed(2)}, ${spawnPos.y.toFixed(2)}, team: ${team}`);
+    console.log(`Player ${playerName} (${client.sessionId}) joined at position ${spawnPos.x.toFixed(2)}, ${spawnPos.y.toFixed(2)}, team: ${team} (Team 1: ${team1Count}, Team 2: ${team2Count})`);
     
     // Send newswire message for player join
     const teamName = team === 1 ? "Blue" : "Red";
