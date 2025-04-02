@@ -634,7 +634,8 @@ export class GameUI {
     // Update joystick position if it exists (handle orientation changes)
     if (this.joystickManager && this.joystickManager.get().length > 0) {
       // Dead zone for turning calculations
-      const DEAD_ZONE = 0.1;
+      const DEAD_ZONE_CENTER = 0.2;
+      const DEAD_ZONE_TURN = 0.05;
       
       // Destroy and recreate the joystick to ensure proper positioning
       this.joystickManager.destroy();
@@ -667,7 +668,7 @@ export class GameUI {
         
         // Skip turning in the dead zone (when joystick is near center)
         const distance = Math.sqrt(x*x + y*y);
-        if (distance < DEAD_ZONE) return;
+        if (distance < DEAD_ZONE_CENTER) return;
         
         // Get the current tank heading in the game
         const tankHeading = this.gameScene.currentPlayer?.heading || 0;
@@ -686,10 +687,10 @@ export class GameUI {
         while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
         
         // Turn based on the angle difference
-        if (angleDiff > DEAD_ZONE) {
+        if (angleDiff > DEAD_ZONE_TURN) {
           // Turn right (clockwise)
           this.gameScene.virtualInputs.right = true;
-        } else if (angleDiff < -DEAD_ZONE) {
+        } else if (angleDiff < -DEAD_ZONE_TURN) {
           // Turn left (counter-clockwise)
           this.gameScene.virtualInputs.left = true;
         }
