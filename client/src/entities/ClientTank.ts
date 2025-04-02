@@ -39,7 +39,7 @@ export class ClientTank extends Tank {
       y: y,
       heading: 0,
       speed: 0,
-      health: 100,
+      health: PHYSICS.TANK_HEALTH,
       ammo: PHYSICS.TANK_MAX_AMMO,
       team: team,
       tick: 0,
@@ -137,6 +137,9 @@ export class ClientTank extends Tank {
     // Update ammunition from server
     if (this.ammo !== data.ammo) {
       this.ammo = data.ammo;
+    }
+    if (this.health !== data.health) {
+      this.health = data.health;
     }
     
     // Update pillbox count
@@ -365,6 +368,9 @@ export class ClientTank extends Tank {
   override fire(): void { 
   }
   
+  // Track previous respawn state
+  private wasRespawning: boolean = false;
+  
   // Handle tank respawning state
   handleRespawnState(isRespawning: boolean, respawnTimer: number): void {
     // If this is the local player, show respawn UI
@@ -382,8 +388,11 @@ export class ClientTank extends Tank {
         // Show respawn message with timer
         if (gameScene.gameUI) {
           const remainingSeconds = Math.ceil(respawnTimer / 1000);
-          gameScene.gameUI.showMessage(`Destroyed! Respawning in ${remainingSeconds}s...`, 1000);
+          gameScene.gameUI.showMessage(`Destroyed. Respawning in ${remainingSeconds}s...`, 1000);
         }
+        
+        // Update respawn state tracker
+        this.wasRespawning = true;
       } else {
         // Tank is active again after respawn
         this.setAlpha(1);
@@ -393,9 +402,11 @@ export class ClientTank extends Tank {
           this.setCollisionCategory(this.scene.matter.world.nextCategory());
         }
         
-        // Show respawn complete message
-        if (gameScene.gameUI) {
-          gameScene.gameUI.showMessage("Respawned at team station!");
+        // Show respawn complete message only when transitioning from respawning to not respawning
+        if (this.wasRespawning && gameScene.gameUI) {
+          console.log("Transition from respawning to active - showing message for 2000ms");
+          gameScene.gameUI.showMessage("Respawned at team station.", 2000);
+          this.wasRespawning = false;
         }
       }
     } else {

@@ -268,7 +268,7 @@ export class ServerTank extends Tank {
     
     // Create a new pillbox at the specified location
     const scene = this.scene as ServerGameScene;
-    const pillbox = scene.createPillbox(x, y, this.team);
+    const pillbox = scene.createPillbox(x, y, this.team, "placed");
     
     // Update schema
     this.updateSchema();

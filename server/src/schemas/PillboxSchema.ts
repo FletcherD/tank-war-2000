@@ -6,5 +6,5 @@ export class PillboxSchema extends Schema {
     @type("number") team: number = 0;
     @type("number") health: number = 8; // Default pillbox health
     @type("string") id: string = "";
-    @type("string") state: string = "placed"; // "placed", "pickup", or "held"
+    @type("string") state: string = "pickup"; // "placed", "pickup", or "held"
 }

@@ -1002,7 +1002,7 @@ export class GameUI {
    */
   public update() {
     if (this.gameScene.currentPlayer) {
-      this.updateHealthBar(this.gameScene.currentPlayer.health);
+      this.updateHealthBar(this.gameScene.currentPlayer.health, PHYSICS.TANK_HEALTH);
       this.updateAmmoBar(this.gameScene.currentPlayer.ammo, PHYSICS.TANK_MAX_AMMO);
       this.updateWoodBar(this.gameScene.currentPlayer.wood, PHYSICS.TANK_MAX_WOOD);
       this.updatePillboxCount(this.gameScene.currentPlayer.pillboxCount);
@@ -1246,8 +1246,11 @@ export class GameUI {
     this.messageElement.textContent = message;
     this.messageElement.style.display = 'block';
     
+    console.log(`Showing message: "${message}" for ${duration}ms`);
+    
     // Hide message after duration
     this.messageTimeout = window.setTimeout(() => {
+      console.log(`Hiding message: "${message}" after ${duration}ms`);
       this.messageElement.style.display = 'none';
       this.messageTimeout = null;
     }, duration);

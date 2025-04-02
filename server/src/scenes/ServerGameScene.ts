@@ -255,7 +255,7 @@ export class ServerGameScene extends GameScene {
   }
   
   // Create a new pillbox at the specified location
-  createPillbox(x: number, y: number, team: number): ServerPillbox {
+  createPillbox(x: number, y: number, team: number, state: string = "pickup"): ServerPillbox {
     // Generate a unique ID for the pillbox
     const id = `pillbox_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     
@@ -265,7 +265,7 @@ export class ServerGameScene extends GameScene {
     
     // Set its ID and update schema
     pillbox.schema.id = id;
-    pillbox.schema.state = "placed";
+    pillbox.schema.state = state;
     pillbox.updateSchema();
     
     // Add to room state

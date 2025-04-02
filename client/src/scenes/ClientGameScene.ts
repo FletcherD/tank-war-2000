@@ -452,7 +452,7 @@ export class ClientGameScene extends GameScene {
             this.room.onMessage("pillboxPlaced", (response) => {
                 if (response.success) {
                     if (this.gameUI) {
-                        this.gameUI.showMessage("Pillbox placed successfully!");
+                        this.gameUI.showMessage("Pillbox placed successfully.");
                     }
                     this.clearSelection();
                 } else {
@@ -497,7 +497,7 @@ export class ClientGameScene extends GameScene {
                     
                     if (this.gameUI) {
                         const tileType = response.tileType || 'tile';
-                        this.gameUI.showMessage(`${tileType.charAt(0).toUpperCase() + tileType.slice(1)} construction started!`);
+                        this.gameUI.showMessage(`${tileType.charAt(0).toUpperCase() + tileType.slice(1)} construction started.`);
                     }
                     this.clearSelection();
                 } else {
@@ -551,11 +551,11 @@ export class ClientGameScene extends GameScene {
                         if (this.gameUI) {
                             // Handle wood harvesting specific message
                             if (data.isHarvesting) {
-                                this.gameUI.showMessage(`Harvested 1 wood from forest!`);
+                                this.gameUI.showMessage(`Harvested 1 wood from forest.`);
                                 this.gameUI.addNewswireMessage(`Player collected wood from the forest`, 'success');
                             } else {
                                 const displayTileType = data.tileType || tileType || 'Tile';
-                                this.gameUI.showMessage(`${displayTileType.charAt(0).toUpperCase() + displayTileType.slice(1)} construction complete!`);
+                                this.gameUI.showMessage(`${displayTileType.charAt(0).toUpperCase() + displayTileType.slice(1)} construction complete.`);
                             }
                         }
                     }
@@ -577,7 +577,7 @@ export class ClientGameScene extends GameScene {
                     if (this.buildQueue.length === 0) {
                         this.isBuilding = false;
                         if (this.gameUI) {
-                            this.gameUI.showMessage("Road construction complete!");
+                            this.gameUI.showMessage("Road construction complete.");
                         }
                     }
                 }
@@ -782,7 +782,7 @@ export class ClientGameScene extends GameScene {
         
         // If player moved too far away, cancel the build
         if (distance > this.MAX_BUILD_DISTANCE) {
-            this.cancelBuild("Too far from build site! Construction canceled.");
+            this.cancelBuild("Too far from build site. Construction canceled.");
             return;
         }
         
@@ -805,9 +805,9 @@ export class ClientGameScene extends GameScene {
                 if (this.gameUI) {
                     // Different message based on what was built
                     if (currentTile.tileType === 'forest') {
-                        this.gameUI.showMessage("Wood harvesting complete!");
+                        this.gameUI.showMessage("Wood harvesting complete.");
                     } else {
-                        this.gameUI.showMessage(`${currentTile.tileType.charAt(0).toUpperCase() + currentTile.tileType.slice(1)} construction complete!`);
+                        this.gameUI.showMessage(`${currentTile.tileType.charAt(0).toUpperCase() + currentTile.tileType.slice(1)} construction complete.`);
                     }
                 }
             }
@@ -957,7 +957,7 @@ export class ClientGameScene extends GameScene {
         } else {
             // Show message that player is too far
             if (this.gameUI) {
-                this.gameUI.showMessage("Too far to build! Move closer to the selected area.");
+                this.gameUI.showMessage("Too far to build. Move closer to the selected area.");
             }
         }
     }
@@ -1042,7 +1042,7 @@ export class ClientGameScene extends GameScene {
         } else {
             // Show message that player is too far
             if (this.gameUI) {
-                this.gameUI.showMessage("Too far to place pillbox! Move closer to the selected area.");
+                this.gameUI.showMessage("Too far to place pillbox. Move closer to the selected area.");
             }
         }
     }

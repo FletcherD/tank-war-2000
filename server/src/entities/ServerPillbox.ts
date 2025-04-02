@@ -15,6 +15,42 @@ export class ServerPillbox extends Pillbox {
         // Initialize schema
         this.schema = new PillboxSchema();
         this.updateSchema();
+        
+        // If the schema state is already set to pickup, configure the physics for pickup
+        if (this.schema.state === "pickup") {
+            this.setupPickupPhysics();
+        }
+    }
+    
+    // Setup the physics body for pickup mode
+    setupPickupPhysics() {
+        console.log(`Setting up pickup physics for pillbox at (${this.x}, ${this.y})`);
+        
+        // Completely rebuild the physics body
+        // First remove existing body to avoid lingering physics objects
+        if (this.body) {
+            this.scene.matter.world.remove(this.body);
+        }
+        
+        // Reset the body completely
+        this.setBody(null);
+        
+        // Create a smaller hitbox for the pickup
+        this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS / 2);
+        
+        // Change from static to dynamic for pickup physics
+        this.setStatic(false);
+        
+        // Keep it from rolling around but allow it to be pushed
+        this.setFriction(0.8);
+        this.setFrictionAir(0.2);
+        
+        // Only collide with players for pickup
+        this.setCollidesWith([COLLISION_CATEGORIES.PLAYER]);
+        this.setCollisionCategory(COLLISION_CATEGORIES.PICKUP);
+        
+        // Make sure it doesn't get destroyed
+        this.health = 1;
     }
     
     // Update the schema with current state
@@ -46,31 +82,8 @@ export class ServerPillbox extends Pillbox {
         // Update schema state
         this.schema.state = "pickup";
         
-        // Completely rebuild the physics body
-        // First remove existing body to avoid lingering physics objects
-        if (this.body) {
-            this.scene.matter.world.remove(this.body);
-        }
-        
-        // Reset the body completely
-        this.setBody(null);
-        
-        // Create a smaller hitbox for the pickup
-        this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS / 2);
-        
-        // Change from static to dynamic for pickup physics
-        this.setStatic(false);
-        
-        // Keep it from rolling around but allow it to be pushed
-        this.setFriction(0.8);
-        this.setFrictionAir(0.2);
-        
-        // Only collide with players for pickup
-        this.setCollidesWith([COLLISION_CATEGORIES.PLAYER]);
-        this.setCollisionCategory(COLLISION_CATEGORIES.PICKUP);
-        
-        // Make sure it doesn't get destroyed
-        this.health = 1;
+        // Setup pickup physics
+        this.setupPickupPhysics();
         
         // Update schema - ensure position is accurate
         this.schema.x = this.x;
@@ -173,7 +186,7 @@ export class ServerPillbox extends Pillbox {
             const tank = gameScene.players.get(sessionId);
             
             // Skip tanks on the same team
-            if (tank.team === this.team) continue;
+            if (tank.team === this.team || this.team === 0) continue;
             
             // Skip tanks that are in respawning state
             if (tank.schema?.isRespawning) continue;
