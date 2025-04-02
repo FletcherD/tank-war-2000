@@ -10,6 +10,8 @@ import { TEAM_COLORS, PHYSICS } from "../../../shared/constants";
 import { ServerPillbox } from "../entities/ServerPillbox";
 import { ServerBullet } from "../entities/ServerBullet";
 import { ServerStation } from "../entities/ServerStation";
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface WorldState {
   players: ServerTank[];
@@ -38,9 +40,39 @@ export class ServerGameScene extends GameScene {
     console.log("ServerGameScene constructor");
   }
 
+  // Store the selected map name
+  selectedMapName: string = "Duff Gardens";
+  
   preload() {
     this.load.image('tileset', '../../../../assets/tiles/tileset.png');
-    this.load.json('mapData', '../../../../assets/maps/Duff Gardens.json');
+    
+    // Select a random map from the assets/maps directory
+    const mapsDir = path.resolve(__dirname, '../../assets/maps');
+    try {
+      // Get all JSON files from the maps directory
+      const mapFiles = fs.readdirSync(mapsDir)
+        .filter(file => file.endsWith('.json'));
+      
+      if (mapFiles.length === 0) {
+        console.error("No map files found in directory:", mapsDir);
+        // Fallback to default map
+        this.selectedMapName = "Duff Gardens";
+        this.load.json('mapData', '../../../../assets/maps/Duff Gardens.json');
+      } else {
+        // Select a random map file
+        const randomMapFile = mapFiles[Math.floor(Math.random() * mapFiles.length)];
+        // Store map name without extension
+        this.selectedMapName = path.basename(randomMapFile, '.json');
+        console.log(`Loading random map: ${randomMapFile}`);
+        this.load.json('mapData', `../../../../assets/maps/${randomMapFile}`);
+      }
+    } catch (error) {
+      console.error("Error loading map files:", error);
+      // Fallback to default map
+      this.selectedMapName = "Duff Gardens";
+      this.load.json('mapData', '../../../../assets/maps/Duff Gardens.json');
+    }
+    
     this.load.json('tilesetData', '../../../../assets/tiles/tileset.json');
   }
 
@@ -50,10 +82,19 @@ export class ServerGameScene extends GameScene {
 
     console.log(this.room.state)
 
-            // Create the game map
+    // Create the game map
     this.gameMap = new ServerMap(this);
     this.gameMap.createTilemapFromFile();
     this.room.state.map = this.gameMap.schema;
+    
+    // Broadcast the map name to all players
+    setTimeout(() => {
+      this.sendNewswire({
+        type: 'info',
+        message: `Map: ${this.selectedMapName}`,
+      });
+      console.log(`Game started with map: ${this.selectedMapName}`);
+    }, 2000); // Small delay to ensure clients are ready
 
     if (!this.gameMap.map) {
         console.error("Failed to create tilemap");

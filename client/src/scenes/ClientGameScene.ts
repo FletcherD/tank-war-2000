@@ -125,21 +125,38 @@ export class ClientGameScene extends GameScene {
                 }
             }
         });
+        
+        // Check if debug mode is enabled via URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const debugMode = urlParams.get('debug') === 'true';
+        
+        // Create debug text elements
         this.debugFPS = this.add.text(4, 4, "", { 
             color: "#ff0000", 
             fontFamily: "'Courier Prime', monospace",
             fontStyle: "bold"
         });
+        this.debugFPS.setDepth(1000);
+        this.debugFPS.setScrollFactor(0); // Fix it to the camera
+        this.debugFPS.setVisible(debugMode);
+        
         this.debugTileInfo = this.add.text(4, 24, "", { 
             color: "#ff0000", 
             fontFamily: "'Courier Prime', monospace",
             fontStyle: "bold"
         });
-        this.debugPrediction = this.add.text(4, 44, "", { 
+        this.debugTileInfo.setDepth(1000);
+        this.debugTileInfo.setScrollFactor(0); // Fix it to the camera
+        this.debugTileInfo.setVisible(debugMode);
+        
+        this.debugPrediction = this.add.text(4, 44, "Debug prediction info", { 
             color: "#ff0000", 
             fontFamily: "'Courier Prime', monospace",
             fontStyle: "bold"
         });
+        this.debugPrediction.setDepth(1000);
+        this.debugPrediction.setScrollFactor(0); // Fix it to the camera
+        this.debugPrediction.setVisible(debugMode);
         this.cameras.main.setBackgroundColor(VISUALS.WATER_COLOR);
         
         // Create selection rectangle (initially invisible)
@@ -630,8 +647,7 @@ export class ClientGameScene extends GameScene {
             // Add initial welcome message once UI is ready
             setTimeout(() => {
                 if (this.gameUI) {
-                    this.gameUI.addNewswireMessage("Welcome to Tank Battle! Use the newswire to stay updated on game events.", 'info');
-                    this.gameUI.addNewswireMessage("Capture stations and build pillboxes to control the map.", 'info');
+                    this.gameUI.addNewswireMessage("Welcome to the game. Capture stations and build pillboxes to control the map.", 'info');
                 }
             }, 500);
 
@@ -732,17 +748,20 @@ export class ClientGameScene extends GameScene {
             this.gameUI.update();
         }
 
-        this.debugFPS.text = `Frame rate: ${this.game.loop.actualFps}`;
-        this.debugTileInfo.text = this.debugText;
-        
-        // Show prediction debug info
-        if (this.currentPlayer) {
-            const pendingInputCount = this.currentPlayer.pendingInputs.length;
-            const serverLastTick = this.currentPlayer.lastServerState.tick;
-            const clientCurrentTick = this.currentTick;
-            const tickDiff = clientCurrentTick - serverLastTick;
+        // Update debug information only if debug elements are visible
+        if (this.debugFPS.visible) {
+            this.debugFPS.text = `Frame rate: ${this.game.loop.actualFps}`;
+            this.debugTileInfo.text = this.debugText;
             
-            this.debugPrediction.text = `Prediction: ${pendingInputCount} pending, Tick diff: ${tickDiff}`;
+            // Show prediction debug info
+            if (this.currentPlayer) {
+                const pendingInputCount = this.currentPlayer.pendingInputs.length;
+                const serverLastTick = this.currentPlayer.lastServerState.tick;
+                const clientCurrentTick = this.currentTick;
+                const tickDiff = clientCurrentTick - serverLastTick;
+                
+                this.debugPrediction.text = `Prediction: ${pendingInputCount} pending, Tick diff: ${tickDiff}`;
+            }
         }
     }
     

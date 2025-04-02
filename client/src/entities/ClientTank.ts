@@ -60,15 +60,17 @@ export class ClientTank extends Tank {
       const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
         color: "#ffffff",
         fontSize: "14px",
-        fontFamily: "Arial",
+        fontFamily: "'Courier Prime', monospace",
         stroke: "#000000",
         strokeThickness: 2,
         align: "center"
       };
       
-      this.nameText = scene.add.text(0, 30, name, textStyle);
-      this.nameText.setOrigin(0.5, 0);
-      this.add(this.nameText);
+      // Create name text but don't add it as a child to the tank container
+      // This keeps it independent of the tank's rotation
+      this.nameText = scene.add.text(this.x, this.y - 30, name, textStyle);
+      this.nameText.setOrigin(0.5, 1);
+      this.nameText.setDepth(150); // Set depth to ensure it's visible but below the player
     }
   }
 
@@ -164,6 +166,11 @@ export class ClientTank extends Tank {
       this.heading = data.heading;
       this.speed = data.speed;
       this.health = data.health;
+      
+      // Update the name text position to follow the tank
+      if (this.nameText) {
+        this.nameText.setPosition(this.x, this.y - 30);
+      }
       
       // Update team and apply team color if it has changed
       if (this.team !== data.team) {
@@ -307,7 +314,7 @@ export class ClientTank extends Tank {
     const framesPerRow: number = 31;
     const framesPerRotation: number = 60;
     const animationSpeed: number = 0.5;
-    const turningSpeed: number = -10;
+    const turningSpeed: number = 1;
 
     const positionDiff = this.lastPosition.subtract(new Phaser.Math.Vector2(this.x, this.y));
     const effectiveDistanceTraveled = positionDiff.dot(new Phaser.Math.Vector2(1, 0).rotate(this.heading));
@@ -350,5 +357,16 @@ export class ClientTank extends Tank {
 
   // Override fire() to do nothing - server will handle bullet creation
   override fire(): void { 
+  }
+  
+  // Override destroy to clean up nameText
+  override destroy(fromScene?: boolean): void {
+    // Clean up the nameText if it exists
+    if (this.nameText) {
+      this.nameText.destroy();
+    }
+    
+    // Call parent destroy method
+    super.destroy(fromScene);
   }
 }
