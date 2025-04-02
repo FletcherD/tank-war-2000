@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
     <title>Colyseus + Phaser Example</title>
     <!-- Google Font: Courier Prime -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +17,14 @@
         a { color: red; }
         input { outline: none; }
     </style>
+      <script>
+        window.addEventListener('load', function() {
+          setTimeout(function() { window.scrollTo(0, 1); }, 100);
+          window.addEventListener('orientationchange', function() {
+            setTimeout(function() { window.scrollTo(0, 1); }, 100);
+          });
+        });
+      </script>
 </head>
 <body>
     <script src="./src/index.ts" type="module"></script>
