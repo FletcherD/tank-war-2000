@@ -99,7 +99,7 @@ export class GameUI {
     this.fireButton = document.createElement('div');
     this.fireButton.id = 'fireButton';
     this.fireButton.style.position = 'absolute';
-    this.fireButton.style.bottom = '80px';
+    this.fireButton.style.bottom = '20px';
     this.fireButton.style.right = '20px';
     this.fireButton.style.width = '100px';
     this.fireButton.style.height = '60px';
@@ -462,7 +462,7 @@ export class GameUI {
     this.forwardButton = document.createElement('div');
     this.forwardButton.id = 'forwardButton';
     this.forwardButton.style.position = 'absolute';
-    this.forwardButton.style.bottom = '150px'; // Position above fire button
+    this.forwardButton.style.bottom = '90px'; // Position above fire button
     this.forwardButton.style.right = '20px';
     this.forwardButton.style.width = '100px';
     this.forwardButton.style.height = '60px';
@@ -482,7 +482,7 @@ export class GameUI {
     // Create the nipplejs joystick
     this.joystickManager = nipplejs.create({
       zone: this.joystickContainer,
-      mode: 'semi',
+      mode: 'dynamic',
       position: { left: '50%', top: '50%' },
       color: 'rgba(255, 255, 255, 0.5)',
       size: 120,
