@@ -23,6 +23,9 @@ const config: Phaser.Types.Core.GameConfig = {
         }
     },
     pixelArt: true,
+    disableContextMenu: true,
+    // Prevent game from sleeping/pausing on mobile
+    disableVisibilityChange: true,
     scene: [SceneSelector, ClientGameScene],
 };
 

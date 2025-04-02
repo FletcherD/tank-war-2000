@@ -118,7 +118,7 @@ export class GameUI {
     this.fireButton.style.zIndex = '20';
     this.fireButton.style.userSelect = 'none';
     this.fireButton.innerHTML = 'Fire';
-    this.fireButton.style.fontSize = '40px';
+    this.fireButton.style.fontSize = '20px';
     this.uiContainer.appendChild(this.fireButton);
 
     // Create the status container (already defined in CSS)
@@ -481,7 +481,7 @@ export class GameUI {
     this.forwardButton.style.zIndex = '20';
     this.forwardButton.style.userSelect = 'none';
     this.forwardButton.innerHTML = 'Move';
-    this.forwardButton.style.fontSize = '40px';
+    this.forwardButton.style.fontSize = '20px';
     this.uiContainer.appendChild(this.forwardButton);
     
     // Create the nipplejs joystick
@@ -565,6 +565,22 @@ export class GameUI {
       this.gameScene.virtualInputs.up = true;
       this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.8)';
       this.forwardButton.style.transform = 'scale(0.95)';
+      
+      // Force game to stay active by requesting animation frame
+      requestAnimationFrame(() => {
+        this.gameScene.scene.game.loop.wake();
+      });
+      
+      // Set up continuous animation frames while moving forward
+      const continuousMove = () => {
+        if (isMovingForward) {
+          requestAnimationFrame(() => {
+            this.gameScene.scene.game.loop.wake();
+            continuousMove();
+          });
+        }
+      };
+      continuousMove();
     });
     
     this.forwardButton.addEventListener('touchend', (event) => {
@@ -575,6 +591,11 @@ export class GameUI {
       this.gameScene.virtualInputs.up = false;
       this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
       this.forwardButton.style.transform = 'scale(1)';
+      
+      // Force an update cycle when button is released
+      requestAnimationFrame(() => {
+        this.gameScene.scene.game.loop.wake();
+      });
     });
     
     this.forwardButton.addEventListener('touchcancel', (event) => {
@@ -585,6 +606,11 @@ export class GameUI {
       this.gameScene.virtualInputs.up = false;
       this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
       this.forwardButton.style.transform = 'scale(1)';
+      
+      // Force an update cycle when button interaction is canceled
+      requestAnimationFrame(() => {
+        this.gameScene.scene.game.loop.wake();
+      });
     });
     
     // Handle the case where the finger moves out of the forward button
@@ -628,6 +654,22 @@ export class GameUI {
       this.gameScene.virtualFiring = true;
       this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
       this.fireButton.style.transform = 'scale(0.95)';
+      
+      // Force game to stay active by requesting animation frame
+      requestAnimationFrame(() => {
+        this.gameScene.scene.game.loop.wake();
+      });
+      
+      // Set up continuous animation frames while firing
+      const continuousFire = () => {
+        if (isFiring) {
+          requestAnimationFrame(() => {
+            this.gameScene.scene.game.loop.wake();
+            continuousFire();
+          });
+        }
+      };
+      continuousFire();
     });
     
     this.fireButton.addEventListener('touchend', (event) => {
@@ -638,6 +680,11 @@ export class GameUI {
       this.gameScene.virtualFiring = false;
       this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
       this.fireButton.style.transform = 'scale(1)';
+      
+      // Force an update cycle when button is released
+      requestAnimationFrame(() => {
+        this.gameScene.scene.game.loop.wake();
+      });
     });
     
     this.fireButton.addEventListener('touchcancel', (event) => {
@@ -647,6 +694,12 @@ export class GameUI {
       isFiring = false;
       this.gameScene.virtualFiring = false;
       this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+      this.fireButton.style.transform = 'scale(1)';
+      
+      // Force an update cycle when button interaction is canceled
+      requestAnimationFrame(() => {
+        this.gameScene.scene.game.loop.wake();
+      });
       this.fireButton.style.transform = 'scale(1)';
     });
     
@@ -879,6 +932,7 @@ export class GameUI {
     this.welcomeModalContent.style.textAlign = 'left';
     this.welcomeModalContent.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
     this.welcomeModalContent.style.fontFamily = "'Courier Prime', monospace";
+    this.welcomeModalContent.style.fontSize = '12px';
     
     // Create title
     const title = document.createElement('h2');
