@@ -3,10 +3,8 @@ import { COLLISION_CATEGORIES, PHYSICS, VISUALS } from "../constants";
 import { GameScene } from "../scenes/Game";
 
 export interface InputData {
-    left: boolean;
-    right: boolean;
+    turnRate: number; // -1.0 to 1.0
     up: boolean;
-    down: boolean;
     fire: boolean;
     tick: number;
   }
@@ -29,8 +27,7 @@ export class Tank extends Phaser.GameObjects.Container
   rightTreadPosition: number = 0;
 
   currentInput: InputData = {
-      left: false,
-      right: false,
+      turnRate: 0,
       up: false,
       down: false,
       fire: false,
@@ -87,11 +84,9 @@ export class Tank extends Phaser.GameObjects.Container
           this.crosshair.setVisible(true);
       }
   
-      // Rotate left/right - in Matter we need to set the angle property
-      if (this.currentInput.left) {
-        this.heading -= rotationSpeed * delta;
-      } else if (this.currentInput.right) {
-        this.heading += rotationSpeed * delta;
+      // Rotate based on turnRate - in Matter we need to set the angle property
+      if (this.currentInput.turnRate !== 0) {
+        this.heading += rotationSpeed * delta * this.currentInput.turnRate;
       }
       this.heading = Phaser.Math.Wrap(this.heading, 0, Math.PI * 2);
       this.setRotation(this.heading);
@@ -182,8 +177,7 @@ export class Tank extends Phaser.GameObjects.Container
       health: this.health,
       ammo: this.ammo,
       team: this.team,
-      left: this.currentInput.left,
-      right: this.currentInput.right,
+      turnRate: this.currentInput.turnRate,
       up: this.currentInput.up,
       down: this.currentInput.down,
       fire: this.currentInput.fire,

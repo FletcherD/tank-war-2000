@@ -43,10 +43,8 @@ export class ServerTank extends Tank {
     if (this.schema.ammo !== this.ammo) this.schema.ammo = this.ammo;
     if (this.schema.team !== this.team) this.schema.team = this.team;
     if (this.schema.name !== this.name) this.schema.name = this.name;
-    if (this.schema.left !== this.currentInput.left) this.schema.left = this.currentInput.left;
-    if (this.schema.right !== this.currentInput.right) this.schema.right = this.currentInput.right;
+    if (this.schema.turnRate !== this.currentInput.turnRate) this.schema.turnRate = this.currentInput.turnRate;
     if (this.schema.up !== this.currentInput.up) this.schema.up = this.currentInput.up;
-    if (this.schema.down !== this.currentInput.down) this.schema.down = this.currentInput.down;
     if (this.schema.fire !== this.currentInput.fire) this.schema.fire = this.currentInput.fire;
     if (this.schema.tick !== this.currentInput.tick) this.schema.tick = this.currentInput.tick;
     // Wood property is updated in other methods, not directly tied to tank properties

@@ -71,7 +71,6 @@ export class ClientTank extends Tank {
       // This keeps it independent of the tank's rotation
       this.nameText = scene.add.text(this.x, this.y - 30, name, textStyle);
       this.nameText.setOrigin(0.5, 1);
-      this.nameText.setDepth(150); // Set depth to ensure it's visible but below the player
     }
   }
 
@@ -112,8 +111,7 @@ export class ClientTank extends Tank {
     }
     
     // Update input state
-    this.currentInput.left = data.left;
-    this.currentInput.right = data.right;
+    this.currentInput.turnRate = data.turnRate;
     this.currentInput.up = data.up;
     this.currentInput.down = data.down;
     this.currentInput.fire = data.fire;
@@ -337,6 +335,7 @@ export class ClientTank extends Tank {
   override animate(delta: number, speed: number, rotationSpeed: number) {
     if(this.scene.currentPlayer && this.team == this.scene.currentPlayer.scene) {
         this.setDepth(200);
+        this.nameText.setDepth(201);
     }
 
     const framesPerRow: number = 31;

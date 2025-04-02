@@ -67,9 +67,8 @@ export class ClientGameScene extends GameScene {
     spaceKey: Phaser.Input.Keyboard.Key;
     
     // Virtual inputs from touch controls
-    virtualInputs: { left: boolean; right: boolean; up: boolean; down: boolean } = {
-      left: false,
-      right: false,
+    virtualInputs: { turnRate: number; up: boolean; down: boolean } = {
+      turnRate: 0,
       up: false,
       down: false
     };
@@ -85,7 +84,7 @@ export class ClientGameScene extends GameScene {
     buildQueue: { 
         tile: { x: number, y: number }, 
         progress: number, 
-        indicator: Phaser.GameObjects.Arc,
+        indicator: Phaser.GameObjects.Line,
         worldX: number,
         worldY: number,
         tileType?: string // Add type of tile being built
@@ -96,10 +95,8 @@ export class ClientGameScene extends GameScene {
     MAX_BUILD_DISTANCE: number = PHYSICS.BUILD_MAX_DISTANCE;
 
     inputPayload: InputData = {
-        left: false,
-        right: false,
+        turnRate: 0,
         up: false,
-        down: false,
         fire: false,
         tick: 0,
     };
@@ -490,12 +487,13 @@ export class ClientGameScene extends GameScene {
                         const worldPos = this.gameMap.groundLayer.tileToWorldXY(tile.x, tile.y);
                         
                         // Create a progress indicator for this tile
-                        const indicator = this.add.circle(
-                            worldPos.x + 16, // Center of tile (assuming 32x32 tiles)
-                            worldPos.y + 16, 
-                            10, // Radius
-                            0x00ff00, // Color
-                            0.1 // Alpha (start almost transparent)
+                        const indicator = this.add.line(
+                            worldPos.x + 8, // Center of tile (assuming 32x32 tiles)
+                            worldPos.y + 8, 
+                            0, 0,
+                            8, 8,
+                            0xffffff, // Color
+                            1.0
                         );
                         indicator.setDepth(110); // Ensure it's visible above other elements
                         
@@ -723,15 +721,25 @@ export class ClientGameScene extends GameScene {
         const isChatActive = this.gameUI && this.gameUI.isChatActive;
         if (isChatActive) {
             // Clear inputs when chat is active
-            this.inputPayload.left = false;
-            this.inputPayload.right = false;
+            this.inputPayload.turnRate = 0;
             this.inputPayload.up = false;
             this.inputPayload.down = false;
             this.inputPayload.fire = false;
         } else {
-            // Update input payload based on keyboard state OR virtual inputs from touch controls
-            this.inputPayload.left = this.cursorKeys.left.isDown || this.virtualInputs.left;
-            this.inputPayload.right = this.cursorKeys.right.isDown || this.virtualInputs.right;
+            // Handle keyboard input for turning
+            let turnRate = 0;
+            
+            // Convert left/right keys to turnRate
+            if (this.cursorKeys.left.isDown) {
+                turnRate = -1.0;
+            } else if (this.cursorKeys.right.isDown) {
+                turnRate = 1.0;
+            } else {
+                // Use joystick turnRate if available
+                turnRate = this.virtualInputs.turnRate;
+            }
+            
+            this.inputPayload.turnRate = turnRate;
             this.inputPayload.up = this.cursorKeys.up.isDown || this.virtualInputs.up;
             this.inputPayload.down = this.cursorKeys.down.isDown || this.virtualInputs.down;
             this.inputPayload.fire = this.spaceKey.isDown || this.virtualFiring;

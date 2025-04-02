@@ -394,17 +394,16 @@ export class GameUI {
     const DEAD_ZONE = 0.5;
     const HYSTERESIS = 0.5;
     
-    // Add event listeners for joystick movements - now only controls turning
+    // Add event listeners for joystick movements - now uses turnRate
     this.joystickManager.on('move', (evt, data) => {
       if (!this.gameScene || !data || !data.vector) return;
       
       const { x, y } = data.vector;
       const angle = data.angle.radian;
       
-      // Reset tank turning inputs
+      // Reset turnRate
       this.gameScene.virtualInputs = {
-        left: false,
-        right: false,
+        turnRate: 0,
         up: this.gameScene.virtualInputs.up,
         down: false
       };
@@ -429,23 +428,18 @@ export class GameUI {
       while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
       
-      // Turn based on the angle difference
-      if (angleDiff > HYSTERESIS) {
-        // Turn right (clockwise)
-        this.gameScene.virtualInputs.right = true;
-      } else if (angleDiff < -HYSTERESIS) {
-        // Turn left (counter-clockwise)
-        this.gameScene.virtualInputs.left = true;
-      }
+      // Set turnRate proportional to angle difference
+      // Clamp to [-1.0, 1.0] range
+      const turnRate = Math.max(-1.0, Math.min(1.0, angleDiff / Math.PI));
+      this.gameScene.virtualInputs.turnRate = turnRate;
     });
     
     // Reset inputs when joystick is released
     this.joystickManager.on('end', () => {
       if (!this.gameScene) return;
       
-      // Only reset turning inputs, not forward
-      this.gameScene.virtualInputs.left = false;
-      this.gameScene.virtualInputs.right = false;
+      // Reset turning rate, but not forward movement
+      this.gameScene.virtualInputs.turnRate = 0;
     });
     
     // Set up forward button events
