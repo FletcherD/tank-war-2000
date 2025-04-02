@@ -3,7 +3,7 @@ import { Tank } from "../objects/Tank";
 import { Bullet } from "../objects/Bullet";
 import { Pillbox } from "../objects/Pillbox";
 import { Station } from "../objects/Station";
-import { PHYSICS, DAMAGE, TEAM_COLORS } from "../constants";
+import { PHYSICS, DAMAGE, TEAM_COLORS, TILE_INDICES } from "../constants";
 
 export { InputData } from "../objects/Tank";
 
@@ -184,7 +184,8 @@ export class GameScene extends Phaser.Scene {
         const wallTile = this.gameMap.map.getTileAtWorldXY(wallTilePos.x, wallTilePos.y);
 
         // Adding 192 gets us the 'crater' tile with the same wang index
-        const newTileIndex = wallTile.index+192;
+        const wangIndex = wallTile.index % 64;
+        const newTileIndex = TILE_INDICES.CRATER + wangIndex;
         this.gameMap.setTile(wallTile.x, wallTile.y, newTileIndex, false);
     }
 }
