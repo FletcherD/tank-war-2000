@@ -152,11 +152,17 @@ export class Tank extends Phaser.GameObjects.Container
 
   animate(delta: number, speed: number, rotationSpeed: number) {}
 
-  takeDamage(amount: number) {
+  takeDamage(amount: number, attackerId: string = "") {
     this.health -= amount;
     if (this.health <= 0) {
-      this.destroy();
+      this.onDestroyed(attackerId);
     }
+  }
+  
+  onDestroyed(attackerId: string = "") {
+    // Base implementation just destroys the tank
+    // Server/Client implementations will handle respawn logic
+    this.destroy();
   }
 
   canFire(): boolean {

@@ -19,4 +19,6 @@ export class TankSchema extends Schema {
   @type("number") tick: number = 0;
   @type("number") pillboxCount: number = 0; // Number of pillboxes in inventory
   @type("number") wood: number = 0; // Amount of wood resource collected
+  @type("boolean") isRespawning: boolean = false; // Whether the tank is in respawn state
+  @type("number") respawnTimer: number = 0; // Respawn countdown timer in milliseconds
 }

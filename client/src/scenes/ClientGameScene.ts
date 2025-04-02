@@ -23,6 +23,7 @@ import { ClientMap } from "./ClientMap";
 import { ClientStation } from "../entities/ClientStation";
 import { ClientPillbox } from "../entities/ClientPillbox";
 import { ClientBullet } from "../entities/ClientBullet";
+import { Bullet } from "../../../shared/entities/Bullet";
 
 // import @geckos.io/snapshot-interpolation
 import { SnapshotInterpolation, Snapshot, Vault } from '@geckos.io/snapshot-interpolation'
@@ -630,6 +631,9 @@ export class ClientGameScene extends GameScene {
                             case 'player_leave':
                                 messageType = 'info';
                                 break;
+                            case 'player_destroyed':
+                                messageType = 'error';
+                                break;
                             case 'pillbox_placed':
                                 messageType = 'success';
                                 break;
@@ -1065,5 +1069,7 @@ export class ClientGameScene extends GameScene {
         }
     }
 
-
+    override handleWallBulletCollision(bullet: Bullet, wall: MatterJS.Body) {
+        bullet.destroy();
+    }
 }

@@ -2,6 +2,7 @@ import { Tank, InputData } from "../../../shared/objects/Tank";
 import { GameScene } from "../../../shared/scenes/Game";
 import { ClientGameScene } from "../scenes/ClientGameScene";
 import { VISUALS, PHYSICS, TEAM_COLORS } from "../../../shared/constants";
+import { GameUI } from "../UI";
 
 export class ClientTank extends Tank {
   sessionId: string;
@@ -119,6 +120,11 @@ export class ClientTank extends Tank {
       wood: data.wood || 0,
       name: data.name || this.name
     };
+    
+    // Check for respawn state
+    if (data.isRespawning !== undefined) {
+      this.handleRespawnState(data.isRespawning, data.respawnTimer);
+    }
     
     // Update player name if changed
     if (data.name && this.name !== data.name) {
@@ -357,6 +363,69 @@ export class ClientTank extends Tank {
 
   // Override fire() to do nothing - server will handle bullet creation
   override fire(): void { 
+  }
+  
+  // Handle tank respawning state
+  handleRespawnState(isRespawning: boolean, respawnTimer: number): void {
+    // If this is the local player, show respawn UI
+    if (this.isLocalPlayer) {
+      const gameScene = this.scene as ClientGameScene;
+      if (isRespawning) {
+        // Make tank transparent when respawning
+        this.setAlpha(0.5);
+        
+        // Deactivate physics body during respawn
+        if (this.body) {
+          this.setCollisionCategory(0);
+        }
+        
+        // Show respawn message with timer
+        if (gameScene.gameUI) {
+          const remainingSeconds = Math.ceil(respawnTimer / 1000);
+          gameScene.gameUI.showMessage(`Destroyed! Respawning in ${remainingSeconds}s...`, 1000);
+        }
+      } else {
+        // Tank is active again after respawn
+        this.setAlpha(1);
+        
+        // Reactivate physics body
+        if (this.body && this.scene.matter) {
+          this.setCollisionCategory(this.scene.matter.world.nextCategory());
+        }
+        
+        // Show respawn complete message
+        if (gameScene.gameUI) {
+          gameScene.gameUI.showMessage("Respawned at team station!");
+        }
+      }
+    } else {
+      // For non-local players, just update visuals
+      this.setAlpha(isRespawning ? 0.5 : 1);
+      
+      // Update physics body status
+      if (this.body) {
+        this.setCollisionCategory(isRespawning ? 0 : this.scene.matter.world.nextCategory());
+      }
+    }
+  }
+  
+  // Override onDestroyed to handle visual effects
+  override onDestroyed(attackerId: string = ""): void {
+    // Add destruction visual effects here
+    const scene = this.scene as Phaser.Scene;
+    
+    // Flash the tank red
+    scene.tweens.add({
+      targets: this,
+      alpha: 0.2,
+      duration: 100,
+      ease: 'Linear',
+      yoyo: true,
+      repeat: 3
+    });
+    
+    // Don't actually destroy the tank as the server will handle respawning
+    // super.destroy() would be called here in the base class
   }
   
   // Override destroy to clean up nameText

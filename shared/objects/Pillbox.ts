@@ -51,7 +51,7 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
   }
   
   
-  takeDamage(amount: number) {
+  takeDamage(amount: number, attackerId: string = "") {
     this.health -= amount;
     
     // Calculate damage percentage for the pie chart

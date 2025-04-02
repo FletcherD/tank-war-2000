@@ -27,20 +27,20 @@ export class ServerPillbox extends Pillbox {
     }
     
     // Override takeDamage to update schema when damage is taken
-    takeDamage(amount: number) {
+    takeDamage(amount: number, attackerId: string = "") {
         super.takeDamage(amount);
         
         // Check if health is at or below 0 but we're still active (about to be destroyed)
         if (this.health <= 0 && this.active) {
             // Transition to pickup state
-            this.convertToPickup();
+            this.convertToPickup(attackerId);
         }
         
         this.updateSchema();
     }
     
     // Convert from placed to pickup state
-    convertToPickup() {
+    convertToPickup(attackerId: string = "") {
         console.log("Converting pillbox to pickup state");
         
         // Update schema state
@@ -84,14 +84,35 @@ export class ServerPillbox extends Pillbox {
         if (gameScene.room) {
             const teamName = this.team === 0 ? "Neutral" : this.team === 1 ? "Blue" : "Red";
             
-            const message: NewswireMessage = {
+            // Get destroyer info if available
+            let destroyerName = "Unknown";
+            let destroyerType = "player";
+            let message = `A ${teamName} pillbox was destroyed!`;
+            
+            if (attackerId) {
+                // Check if destroyed by a player
+                const destroyerTank = gameScene.players.get(attackerId);
+                if (destroyerTank) {
+                    destroyerName = destroyerTank.name;
+                    message = `A ${teamName} pillbox was destroyed by ${destroyerName}!`;
+                } else {
+                    // Check if destroyed by another pillbox
+                    const pillboxes = gameScene.pillboxes.filter(p => p.schema?.id === attackerId);
+                    if (pillboxes.length > 0) {
+                        destroyerType = "pillbox";
+                        message = `A ${teamName} pillbox was destroyed by an enemy pillbox!`;
+                    }
+                }
+            }
+            
+            const newswireMessage: NewswireMessage = {
                 type: 'pillbox_destroyed',
                 team: this.team,
                 position: { x: this.x, y: this.y },
-                message: `A ${teamName} pillbox was destroyed!`
+                message: message
             };
             
-            gameScene.room.broadcastNewswire(message);
+            gameScene.room.broadcastNewswire(newswireMessage);
         }
     }
     
@@ -137,24 +158,25 @@ export class ServerPillbox extends Pillbox {
         
         // If a target is found and cooldown is complete, fire
         if (targetTank && this.firingTimer <= 0) {
-        this.fireAtTarget(targetTank);
-        this.firingTimer = this.firingCooldown;
+            this.fireAtTarget(targetTank);
+            this.firingTimer = this.firingCooldown;
         }
     }
 
     findTargetTank(): Tank | null {
-        const gameScene = this.scene as any; // We'll cast to access the playerEntities
-        if (!gameScene.playerEntities) return null;
-        
+        const gameScene = this.scene as ServerGameScene; // We'll cast to access the playerEntities        
         let closestTank: Tank | null = null;
         let closestDistance = this.detectionRange;
         
         // Check all tanks in the scene
-        for (const sessionId in gameScene.playerEntities) {
-            const tank = gameScene.playerEntities[sessionId];
+        for (const sessionId of gameScene.players.keys()) {
+            const tank = gameScene.players.get(sessionId);
             
             // Skip tanks on the same team
-            if (tank.team === this.team && this.team !== 0) continue;
+            if (tank.team === this.team) continue;
+            
+            // Skip tanks that are in respawning state
+            if (tank.schema?.isRespawning) continue;
             
             // Calculate distance
             const distance = Phaser.Math.Distance.Between(this.x, this.y, tank.x, tank.y);
@@ -208,8 +230,7 @@ export class ServerPillbox extends Pillbox {
             this.x + fireLocation.x, 
             this.y + fireLocation.y, 
             angle, 
-            this.team, 
-            this.schemaId
+            this.schema.id
         );
     }
 }

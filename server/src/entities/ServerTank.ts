@@ -1,7 +1,9 @@
 import { Tank, InputData } from "../../../shared/objects/Tank";
 import { TankSchema } from "../schemas/TankSchema";
 import { ServerGameScene } from "../scenes/ServerGameScene";
-import { VISUALS, TILE_INDICES, PHYSICS } from "../../../shared/constants";
+import { VISUALS, TILE_INDICES, PHYSICS, COLLISION_CATEGORIES } from "../../../shared/constants";
+import { ServerBullet } from "./ServerBullet";
+import { ServerPillbox } from "./ServerPillbox";
 
 // Define the build queue item type
 export interface BuildQueueItem {
@@ -77,7 +79,99 @@ export class ServerTank extends Tank {
   }
 
   override preUpdate(time: number, delta: number): void {
-    super.preUpdate(time, delta);
+    // Only update physics for non-respawning tanks
+    if (!this.schema.isRespawning) {
+      super.preUpdate(time, delta);
+    } else {
+      // Update respawn timer if in respawn state
+      this.updateRespawnTimer(delta);
+    }
+    
+    this.updateSchema();
+  }
+  
+  updateRespawnTimer(delta: number): void {
+    if (this.schema.isRespawning && this.schema.respawnTimer > 0) {
+      this.schema.respawnTimer -= delta;
+      
+      // When timer expires, respawn the tank
+      if (this.schema.respawnTimer <= 0) {
+        this.respawn();
+      }
+    }
+  }
+  
+  override onDestroyed(attackerId: string = ""): void {
+    const scene = this.scene as ServerGameScene;
+    
+    // Determine destroyer info (player or pillbox)
+    let destroyerName = "Unknown";
+    let destroyerType = "player";
+    let destroyerTeam = 0;
+    
+    // Check if the destroyer was a player
+    const destroyerTank = scene.players.get(attackerId);
+    if (destroyerTank) {
+      destroyerName = destroyerTank.name;
+      destroyerTeam = destroyerTank.team;
+    } else {
+      // Check if the destroyer was a pillbox
+      const pillboxes = scene.pillboxes.filter(p => p.schema?.id === attackerId);
+      if (pillboxes.length > 0) {
+        const pillbox = pillboxes[0] as ServerPillbox;
+        destroyerName = `Pillbox ${pillbox.schema.id}`;
+        destroyerType = "pillbox";
+        destroyerTeam = pillbox.team;
+      }
+    }
+    
+    // Send a message to newswire
+    scene.sendNewswire({
+      type: 'player_destroyed',
+      playerId: this.sessionId,
+      playerName: this.name,
+      team: this.team,
+      message: `${this.name} was destroyed by ${destroyerType === "pillbox" ? "a pillbox" : destroyerName}`
+    });
+    
+    // Put the tank in respawn state
+    this.schema.isRespawning = true;
+    this.schema.respawnTimer = 5000; // 5 seconds to respawn
+    this.schema.health = 0;
+    
+    // Disable collisions during respawn state
+    if (this.body) {
+      // Set collision category to 0 which means no collisions
+      this.body.collisionFilter.category = 0;
+      this.body.collisionFilter.mask = 0;
+    }
+    
+    // Visual effect can be handled on the client side
+    // Don't destroy the tank object, just set its respawn state
+  }
+  
+  respawn(): void {
+    const scene = this.scene as ServerGameScene;
+    
+    // Find a team station for respawning
+    const spawnPos = scene.getSpawnPositionForTeam(this.team);
+    
+    // Reset tank position and properties
+    this.x = spawnPos.x;
+    this.y = spawnPos.y;
+    this.health = PHYSICS.TANK_HEALTH;
+    this.ammo = PHYSICS.TANK_MAX_AMMO;
+    this.schema.isRespawning = false;
+    this.schema.respawnTimer = 0;
+    
+    // Re-enable collisions
+    if (this.body) {
+      // Restore original collision categories from shared Tank
+      this.body.collisionFilter.category = COLLISION_CATEGORIES.PLAYER;
+      this.body.collisionFilter.mask = COLLISION_CATEGORIES.WALL | COLLISION_CATEGORIES.PLAYER;
+    }
+    
+    // Update schema to sync with clients
     this.updateSchema();
   }
   

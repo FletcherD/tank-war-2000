@@ -844,6 +844,12 @@ export class GameUI {
     this.mapStatusContainer.id = 'mapStatusContainer';
     this.uiContainer.appendChild(this.mapStatusContainer);
     
+    // Add title
+    const titleElement = document.createElement('div');
+    titleElement.className = 'entity-title';
+    titleElement.textContent = 'Team Assets:';
+    this.mapStatusContainer.appendChild(titleElement);
+    
     // Create station row
     const stationRow = document.createElement('div');
     stationRow.className = 'entity-row';
@@ -855,6 +861,13 @@ export class GameUI {
       stationIcon.className = 'entity-icon station neutral';
       stationIcon.setAttribute('data-index', i.toString());
       stationIcon.title = `Station ${i + 1}`;
+      
+      // Add station image
+      const stationImg = document.createElement('img');
+      stationImg.src = 'assets/station0.png';
+      stationImg.className = 'entity-image';
+      stationIcon.appendChild(stationImg);
+      
       stationRow.appendChild(stationIcon);
       this.stationIcons.push(stationIcon);
     }
@@ -870,6 +883,13 @@ export class GameUI {
       pillboxIcon.className = 'entity-icon pillbox neutral';
       pillboxIcon.setAttribute('data-index', i.toString());
       pillboxIcon.title = `Pillbox ${i + 1}`;
+      
+      // Add pillbox image
+      const pillboxImg = document.createElement('img');
+      pillboxImg.src = 'assets/pillbox0.png';
+      pillboxImg.className = 'entity-image';
+      pillboxIcon.appendChild(pillboxImg);
+      
       pillboxRow.appendChild(pillboxIcon);
       this.pillboxIcons.push(pillboxIcon);
     }
@@ -909,10 +929,18 @@ export class GameUI {
           
           // Update tooltip with additional info if available
           this.stationIcons[index].title = `Station ${index + 1}: ${
-            station.team === 0 ? 'Red Team' : 
-            station.team === 1 ? 'Blue Team' : 
-            'Neutral'
+            station.team === 0 ? 'Neutral' : 
+            station.team === 1 ? 'Red Team' : 
+            'Blue Team'
           }`;
+          
+          // Make sure the image is still present
+          if (!this.stationIcons[index].querySelector('.entity-image')) {
+            const stationImg = document.createElement('img');
+            stationImg.src = 'assets/station0.png';
+            stationImg.className = 'entity-image';
+            this.stationIcons[index].appendChild(stationImg);
+          }
         }
       });
     }
@@ -936,17 +964,34 @@ export class GameUI {
           
           // Update tooltip with additional info if available
           this.pillboxIcons[index].title = `Pillbox ${index + 1}: ${
-            pillbox.team === 0 ? 'Red Team' : 
-            pillbox.team === 1 ? 'Blue Team' : 
-            'Neutral'
+            pillbox.team === 0 ? 'Neutral' : 
+            pillbox.team === 1 ? 'Red Team' : 
+            'Blue Team'
           }`;
+          
+          // Make sure the image is still present
+          if (!this.pillboxIcons[index].querySelector('.entity-image')) {
+            const pillboxImg = document.createElement('img');
+            pillboxImg.src = 'assets/pillbox0.png';
+            pillboxImg.className = 'entity-image';
+            this.pillboxIcons[index].appendChild(pillboxImg);
+          }
         }
       });
     }
     
-    // Fill in any missing icons with a count of active entities
+    // Hide unused icons beyond the actual count of entities
     const stationCount = this.gameScene.stations ? this.gameScene.stations.length : 0;
     const pillboxCount = this.gameScene.pillboxes ? this.gameScene.pillboxes.length : 0;
+    
+    // Hide unused icons
+    for (let i = 0; i < this.stationIcons.length; i++) {
+      this.stationIcons[i].style.display = i < stationCount ? 'flex' : 'none';
+    }
+    
+    for (let i = 0; i < this.pillboxIcons.length; i++) {
+      this.pillboxIcons[i].style.display = i < pillboxCount ? 'flex' : 'none';
+    }
     
     // Update the container title to show entity counts
     this.mapStatusContainer.title = `Stations: ${stationCount}/16, Pillboxes: ${pillboxCount}/16`;

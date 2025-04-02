@@ -27,7 +27,7 @@ export class MyRoomState extends Schema {
 
 // Define the newswire message interface
 export interface NewswireMessage {
-  type: 'player_join' | 'player_leave' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed' | 'wood_harvested' | 'chat';
+  type: 'player_join' | 'player_leave' | 'player_destroyed' | 'station_capture' | 'pillbox_placed' | 'pillbox_destroyed' | 'wood_harvested' | 'chat';
   playerId?: string;
   playerName?: string;
   team?: number;
