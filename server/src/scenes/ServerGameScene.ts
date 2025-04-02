@@ -266,6 +266,14 @@ export class ServerGameScene extends GameScene {
     // Set its ID and update schema
     pillbox.schema.id = id;
     pillbox.schema.state = state;
+    
+    // Configure physics based on state
+    if (state === "placed") {
+      pillbox.setupPlacedPhysics();
+    } else if (state === "pickup") {
+      pillbox.setupPickupPhysics();
+    }
+    
     pillbox.updateSchema();
     
     // Add to room state

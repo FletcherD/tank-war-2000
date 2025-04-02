@@ -22,6 +22,38 @@ export class ServerPillbox extends Pillbox {
         }
     }
     
+    // Setup physics for a placed pillbox
+    setupPlacedPhysics() {
+        console.log(`Setting up placed physics for pillbox at (${this.x}, ${this.y})`);
+        
+        // Completely rebuild the physics body
+        // First remove existing body to avoid lingering physics objects
+        if (this.body) {
+            this.scene.matter.world.remove(this.body);
+        }
+        
+        // Reset the body completely
+        this.setBody(null);
+        
+        // Create hitbox for the placed pillbox
+        this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS);
+        
+        // Make it static
+        this.setStatic(true);
+        
+        // Set up collisions
+        this.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
+        this.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER, COLLISION_CATEGORIES.PROJECTILE]);
+        
+        // Reset health to maximum
+        this.health = PHYSICS.PILLBOX_HEALTH;
+        
+        // Make sure top sprite is visible
+        if (this.topSprite) {
+            this.topSprite.setVisible(true);
+        }
+    }
+    
     // Setup the physics body for pickup mode
     setupPickupPhysics() {
         console.log(`Setting up pickup physics for pillbox at (${this.x}, ${this.y})`);
@@ -64,15 +96,20 @@ export class ServerPillbox extends Pillbox {
     
     // Override takeDamage to update schema when damage is taken
     takeDamage(amount: number, attackerId: string = "") {
-        super.takeDamage(amount);
-        
-        // Check if health is at or below 0 but we're still active (about to be destroyed)
-        if (this.health <= 0 && this.active) {
-            // Transition to pickup state
-            this.convertToPickup(attackerId);
+        // Only take damage if in "placed" state
+        if (this.schema.state === "placed") {
+            console.log(`Pillbox taking ${amount} damage, health before: ${this.health}`);
+            super.takeDamage(amount);
+            console.log(`Pillbox health after: ${this.health}`);
+            
+            // Check if health is at or below 0 but we're still active (about to be destroyed)
+            if (this.health <= 0 && this.active) {
+                // Transition to pickup state
+                this.convertToPickup(attackerId);
+            }
+            
+            this.updateSchema();
         }
-        
-        this.updateSchema();
     }
     
     // Convert from placed to pickup state

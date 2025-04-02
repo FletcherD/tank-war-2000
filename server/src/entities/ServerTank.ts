@@ -270,6 +270,11 @@ export class ServerTank extends Tank {
     const scene = this.scene as ServerGameScene;
     const pillbox = scene.createPillbox(x, y, this.team, "placed");
     
+    // Set up the physics body for the placed pillbox
+    if (pillbox) {
+      pillbox.setupPlacedPhysics();
+    }
+    
     // Update schema
     this.updateSchema();
     
