@@ -341,15 +341,15 @@ export class ClientTank extends Tank {
         this.setAlpha(visibility);
     }
     else if(gameScene.currentPlayer && this.team !== gameScene.currentPlayer.team) {
-        this.setDepth(0);
+        this.setDepth(1);
         if(this.nameText) {
-            this.nameText.setDepth(-1);
+            this.nameText.setDepth(1);
         }
 
-        const visibility = gameScene.gameMap.isEntityHiddenAt(this.x, this.y);
-        this.setVisible(visibility);
+        const isHidden = gameScene.gameMap.isEntityHiddenAt(this.x, this.y);
+        this.setVisible(!isHidden);
         if(this.nameText) {
-            this.nameText.setVisible(visibility);
+            this.nameText.setVisible(!isHidden);
         }
     }
 

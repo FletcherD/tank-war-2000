@@ -447,14 +447,14 @@ export class GameMap {
         }
 
         for(const station of this.scene.stations) {
-            const [x2, y2] = this.groundLayer.worldToTileXY(x, y);
-            if (checkBuildingPos(x2, y2)) {
+            const tilePos = this.groundLayer.worldToTileXY(x, y);
+            if (checkBuildingPos(tilePos.x, tilePos.y)) {
                 return true;
             }
         }
         for(const pillbox of this.scene.pillboxes) {
-            const [x2, y2] = this.groundLayer.worldToTileXY(x, y);
-            if (checkBuildingPos(x2, y2)) {
+            const tilePos = this.groundLayer.worldToTileXY(x, y);
+            if (checkBuildingPos(tilePos.x, tilePos.y)) {
                 return true;
             }
         }
