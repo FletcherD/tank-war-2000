@@ -822,7 +822,7 @@ export class GameUI {
   public updatePillboxCount(count: number) {
     if (!this.pillboxCountElement) return;
     
-    this.pillboxCountElement.style.visibility = (count > 0 ? 'visible' : 'hidden');
+    //this.pillboxCountElement.style.visibility = (count > 0 ? 'visible' : 'hidden');
     this.pillboxCountElement.textContent = `Pillboxes: ${count}`;
   }
   

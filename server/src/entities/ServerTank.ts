@@ -193,18 +193,18 @@ export class ServerTank extends Tank {
     // If building is complete
     if (currentBuild.progress >= 1) {
       if (currentBuild.isHarvesting) {
-        // For harvesting forest, convert to grass and award 1 wood
+        // For harvesting forest, convert to grass and award wood
         scene.gameMap.setTile(currentBuild.tile.x, currentBuild.tile.y, TILE_INDICES.GRASS, true);
         
         // Award wood resource
-        this.addWood(1);
+        this.addWood(PHYSICS.WOOD_PER_FOREST_TILE);
         
         // Notify clients about completion
         scene.room.broadcast("tileBuildComplete", {
           tile: currentBuild.tile,
           tileType: "grass",
           isHarvesting: true,
-          woodAwarded: 1
+          woodAwarded: PHYSICS.WOOD_PER_FOREST_TILE
         });
       } else {
         // Normal road/wall building

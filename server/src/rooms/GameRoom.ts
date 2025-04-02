@@ -135,8 +135,10 @@ export class GameRoom extends Room<MyRoomState> {
           validTiles.push(tile);
           
           // Count wood cost for roads and walls
-          if (data.tileType === "road" || data.tileType === "wall") {
-            woodCost += 1; // 1 wood per tile
+          if (data.tileType === "road") {
+            woodCost += PHYSICS.WOOD_COST_ROAD; 
+          } else if (data.tileType === "wall") {
+            woodCost += PHYSICS.WOOD_COST_WALL;
           }
         }
       }
@@ -171,7 +173,7 @@ export class GameRoom extends Room<MyRoomState> {
       tank.buildQueue = validTiles.map(tile => ({
         tile,
         progress: 0,
-        buildTime: 1500, // Same as client BUILD_TIME_PER_TILE
+        buildTime: PHYSICS.BUILD_TIME_PER_TILE, // Use constant from shared constants.ts
         playerId: client.sessionId,
         tileType: data.tileType, // Add the tile type to the build queue
         isHarvesting: isHarvesting // Mark as harvesting if forest tiles

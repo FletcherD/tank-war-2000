@@ -19,7 +19,7 @@ export const PHYSICS = {
 
   // Pillbox
   PILLBOX_DETECTION_RANGE: 256, // pixels
-  PILLBOX_FIRE_COOLDOWN: 1000, // milliseconds
+  PILLBOX_FIRE_COOLDOWN: 500, // milliseconds
   PILLBOX_HEALTH: 7,
   PILLBOX_HITBOX_RADIUS: 16, // pixels
 
@@ -28,6 +28,12 @@ export const PHYSICS = {
   STATION_REFILL_RATE: 5, // ammo per second
 
   BUILD_MAX_DISTANCE: 96,
+  
+  // Building and resources
+  BUILD_TIME_PER_TILE: 500, // milliseconds per tile
+  WOOD_PER_FOREST_TILE: 2, // wood collected per forest tile
+  WOOD_COST_ROAD: 1, // wood required to build a road tile
+  WOOD_COST_WALL: 1, // wood required to build a wall tile
 
   // Game timing
   FIXED_TIMESTEP: 1000 / 60, // 60 FPS

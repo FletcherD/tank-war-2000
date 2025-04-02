@@ -91,8 +91,9 @@ export class ClientGameScene extends GameScene {
         tileType?: string // Add type of tile being built
     }[] = [];
     isBuilding: boolean = false;
-    BUILD_TIME_PER_TILE: number = 1500; // milliseconds per tile
-    MAX_BUILD_DISTANCE: number = 100; // maximum distance for building
+    // Use constants from shared constants.ts for consistency
+    BUILD_TIME_PER_TILE: number = PHYSICS.BUILD_TIME_PER_TILE;
+    MAX_BUILD_DISTANCE: number = PHYSICS.BUILD_MAX_DISTANCE;
 
     inputPayload: InputData = {
         left: false,
