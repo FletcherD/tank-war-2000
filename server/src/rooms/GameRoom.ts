@@ -8,7 +8,7 @@ import { WorldMapSchema } from "../schemas/WorldMapSchema";
 import { StationSchema } from "../schemas/StationSchema";
 import { PillboxSchema } from "../schemas/PillboxSchema";
 import { BulletSchema } from "../schemas/BulletSchema";
-import { TILE_INDICES } from "../../../shared/constants";
+import { TILE_INDICES, PHYSICS } from "../../../shared/constants";
 
 import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
 

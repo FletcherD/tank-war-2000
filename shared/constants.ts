@@ -7,24 +7,24 @@ export const PHYSICS = {
   TANK_HEALTH: 7,
   TANK_MAX_AMMO: 20,
   TANK_AMMO_PER_SHOT: 1,
-  TANK_FIRE_COOLDOWN: 1000, // milliseconds
+  TANK_FIRE_COOLDOWN: 500, // milliseconds
   TANK_HITBOX_RADIUS: 14, // pixels
   TANK_MAX_WOOD: 25, // maximum wood a tank can carry
 
   // Bullets
-  BULLET_SPEED: 10, // units/timestep
+  BULLET_SPEED: 6.25, // units/timestep
   BULLET_RANGE: 256, // pixels (max travel distance)
   BULLET_HITBOX_RADIUS: 1, // pixels
   BULLET_BOUNCE: 1, // bounce factor
 
   // Pillbox
-  PILLBOX_DETECTION_RANGE: 256, // pixels
+  PILLBOX_DETECTION_RANGE: 256+16, // pixels
   PILLBOX_FIRE_COOLDOWN: 500, // milliseconds
   PILLBOX_HEALTH: 7,
   PILLBOX_HITBOX_RADIUS: 16, // pixels
 
   // Station
-  STATION_CAPTURE_RANGE: 16, // pixels
+  STATION_CAPTURE_RANGE: 32, // pixels
   STATION_REFILL_RATE: 5, // ammo per second
 
   BUILD_MAX_DISTANCE: 96,

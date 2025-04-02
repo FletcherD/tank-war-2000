@@ -776,7 +776,7 @@ export class ClientGameScene extends GameScene {
         // Process build queue
         this.updateBuildQueue(delta);
 
-        if (this.selectedTiles.length && this.getSelectionDistance() >= this.MAX_BUILD_DISTANCE) {
+        if (this.selectedTiles.length && this.getSelectionDistance() >= this.MAX_BUILD_DISTANCE * 2) {
             this.clearSelection();
         } 
 
@@ -824,7 +824,7 @@ export class ClientGameScene extends GameScene {
         
         // Update visual indicator
         const progressRatio = Math.min(currentTile.progress / this.BUILD_TIME_PER_TILE, 1);
-        currentTile.indicator.setFillStyle(0x00ff00, 0.7 * progressRatio);
+        currentTile.indicator.rotation = progressRatio * Math.PI * 2;
         
         // If the tile is complete
         if (currentTile.progress >= this.BUILD_TIME_PER_TILE) {
@@ -912,7 +912,7 @@ export class ClientGameScene extends GameScene {
         if (pointer.downTime === pointer.upTime && !this.isBuilding) {
             this.clearSelection();
         }
-        if (this.selectedTiles.length && this.getSelectionDistance() >= this.MAX_BUILD_DISTANCE) {
+        if (this.selectedTiles.length && this.getSelectionDistance() >= this.MAX_BUILD_DISTANCE*2) {
             this.clearSelection();
         } 
         // Otherwise, keep the currently selected tiles
