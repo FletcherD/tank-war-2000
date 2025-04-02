@@ -393,7 +393,7 @@ export class GameUI {
     // Dead zone for turning calculations
     const DEAD_ZONE_CENTER = 0.3;
     const DEAD_ZONE_ANGLUAR = 0.1;
-    const CONTROL_SLOPE = 10.0;
+    const CONTROL_SLOPE = 2.0;
     
     // Add event listeners for joystick movements - now uses turnRate
     this.joystickManager.on('move', (evt, data) => {
@@ -624,86 +624,6 @@ export class GameUI {
       this.joystickContainer.style.height = joystickSize + 'px';
       this.joystickContainer.style.left = '20px';
       this.joystickContainer.style.bottom = '20px';
-    }
-    
-    // Update joystick position if it exists (handle orientation changes)
-    if (this.joystickManager && this.joystickManager.get().length > 0) {
-      // Dead zone for turning calculations
-      const DEAD_ZONE_CENTER = 0.2;
-      const DEAD_ZONE_TURN = 0.05;
-      
-      // Destroy and recreate the joystick to ensure proper positioning
-      this.joystickManager.destroy();
-      const joystickSize = Math.min(150, Math.max(100, canvas.offsetWidth * 0.2));
-      this.joystickManager = nipplejs.create({
-        zone: this.joystickContainer,
-        mode: 'static',
-        position: { left: '50%', top: '50%' },
-        color: 'rgba(255, 255, 255, 0.5)',
-        size: joystickSize,
-        lockX: false,
-        lockY: false
-      });
-      
-      // Re-add event listeners for joystick movements - now only controls turning
-      this.joystickManager.on('move', (evt, data) => {
-        if (!this.gameScene || !data || !data.vector) return;
-        
-        const { x, y } = data.vector;
-        const angle = data.angle.radian;
-        
-        // Reset tank turning inputs
-        const forwardState = this.gameScene.virtualInputs.up;
-        this.gameScene.virtualInputs = {
-          left: false,
-          right: false,
-          up: forwardState, // Preserve forward state
-          down: false
-        };
-        
-        // Skip turning in the dead zone (when joystick is near center)
-        const distance = Math.sqrt(x*x + y*y);
-        if (distance < DEAD_ZONE_CENTER) return;
-        
-        // Get the current tank heading in the game
-        const tankHeading = this.gameScene.currentPlayer?.heading || 0;
-        
-        // Calculate the difference between joystick angle and tank heading
-        // First convert joystick angle to same coordinate system as tank heading
-        // In Phaser, heading 0 is to the right, increasing clockwise
-        // In nipplejs, angle 0 is to the right, increasing counter-clockwise
-        const joystickHeading = Math.PI * 2 - angle;
-        
-        // Find the smallest angle between the two directions
-        let angleDiff = joystickHeading - tankHeading;
-        
-        // Normalize to -PI to PI
-        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-        
-        // Turn based on the angle difference
-        if (angleDiff > DEAD_ZONE_TURN) {
-          // Turn right (clockwise)
-          this.gameScene.virtualInputs.right = true;
-        } else if (angleDiff < -DEAD_ZONE_TURN) {
-          // Turn left (counter-clockwise)
-          this.gameScene.virtualInputs.left = true;
-        }
-      });
-      
-      // Reset inputs when joystick is released
-      this.joystickManager.on('end', () => {
-        if (!this.gameScene) return;
-        
-        // Only reset turning inputs, not forward
-        const forwardState = this.gameScene.virtualInputs.up;
-        this.gameScene.virtualInputs = {
-          left: false,
-          right: false,
-          up: forwardState, // Preserve forward state
-          down: false
-        };
-      });
     }
   }
 

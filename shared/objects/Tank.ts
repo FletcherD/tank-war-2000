@@ -29,7 +29,6 @@ export class Tank extends Phaser.GameObjects.Container
   currentInput: InputData = {
       turnRate: 0,
       up: false,
-      down: false,
       fire: false,
       tick: 0,
   };
@@ -86,7 +85,8 @@ export class Tank extends Phaser.GameObjects.Container
   
       // Rotate based on turnRate - in Matter we need to set the angle property
       if (this.currentInput.turnRate !== 0) {
-        this.heading += rotationSpeed * delta * this.currentInput.turnRate;
+        const turnRate = Math.max(-1.0, Math.min(1.0, this.currentInput.turnRate));
+        this.heading += rotationSpeed * delta * turnRate;
       }
       this.heading = Phaser.Math.Wrap(this.heading, 0, Math.PI * 2);
       this.setRotation(this.heading);
