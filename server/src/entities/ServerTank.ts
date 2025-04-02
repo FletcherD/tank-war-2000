@@ -237,14 +237,6 @@ export class ServerTank extends Tank {
     this.updateSchema();
     pillbox.updateSchema();
     
-    // Send a notification message to the player
-    const scene = this.scene as ServerGameScene;
-    if (scene.room) {
-      scene.room.sendMessage(this.sessionId, "notification", {
-        message: "You picked up a pillbox.",
-        duration: 2000
-      });
-    }
     
     console.log(`Tank ${this.sessionId} picked up pillbox. Now has ${this.schema.pillboxCount} pillboxes.`);
     
@@ -252,13 +244,13 @@ export class ServerTank extends Tank {
     // but we should destroy the actual physics object to avoid having invisible
     // bodies left in the scene
     if (pillbox.body) {
-      pillbox.scene.matter.world.remove(pillbox.body);
+      this.scene.matter.world.remove(pillbox.body);
     }
     
     // Remove from the scene but keep the schema
-    const pillboxIndex = scene.pillboxes.indexOf(pillbox);
+    const pillboxIndex = this.scene.pillboxes.indexOf(pillbox);
     if (pillboxIndex !== -1) {
-      scene.pillboxes.splice(pillboxIndex, 1);
+      this.scene.pillboxes.splice(pillboxIndex, 1);
     }
   }
 
