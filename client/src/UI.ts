@@ -104,7 +104,7 @@ export class GameUI {
     this.fireButton = document.createElement('div');
     this.fireButton.id = 'fireButton';
     this.fireButton.style.position = 'absolute';
-    this.fireButton.style.bottom = '80px';
+    this.fireButton.style.bottom = '100px';
     this.fireButton.style.right = '20px';
     this.fireButton.style.width = '100px';
     this.fireButton.style.height = '60px';
@@ -118,7 +118,7 @@ export class GameUI {
     this.fireButton.style.zIndex = '20';
     this.fireButton.style.userSelect = 'none';
     this.fireButton.innerHTML = 'Fire';
-    this.fireButton.style.fontSize = '40px';
+    this.fireButton.style.fontSize = '20px';
     this.uiContainer.appendChild(this.fireButton);
 
     // Create the status container (already defined in CSS)
@@ -467,7 +467,7 @@ export class GameUI {
     this.forwardButton = document.createElement('div');
     this.forwardButton.id = 'forwardButton';
     this.forwardButton.style.position = 'absolute';
-    this.forwardButton.style.bottom = '150px'; // Position above fire button
+    this.forwardButton.style.bottom = '20px'; 
     this.forwardButton.style.right = '20px';
     this.forwardButton.style.width = '100px';
     this.forwardButton.style.height = '60px';
@@ -481,7 +481,7 @@ export class GameUI {
     this.forwardButton.style.zIndex = '20';
     this.forwardButton.style.userSelect = 'none';
     this.forwardButton.innerHTML = 'Move';
-    this.forwardButton.style.fontSize = '40px';
+    this.forwardButton.style.fontSize = '20px';
     this.uiContainer.appendChild(this.forwardButton);
     
     // Create the nipplejs joystick
@@ -555,6 +555,9 @@ export class GameUI {
     
     // Set up forward button events
     let isMovingForward = false;
+
+    const buttonOpacity = 0.3;
+    const buttonOpacityActive = 0.5;
     
     // Set active styles for visual feedback
     this.forwardButton.addEventListener('touchstart', (event) => {
@@ -563,7 +566,7 @@ export class GameUI {
       
       isMovingForward = true;
       this.gameScene.virtualInputs.up = true;
-      this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.8)';
+      this.forwardButton.style.backgroundColor = `rgba(0, 255, 0, ${buttonOpacityActive})`;
       this.forwardButton.style.transform = 'scale(0.95)';
     });
     
@@ -573,7 +576,7 @@ export class GameUI {
       
       isMovingForward = false;
       this.gameScene.virtualInputs.up = false;
-      this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
+      this.forwardButton.style.backgroundColor = `rgba(0, 255, 0, ${buttonOpacity})`;
       this.forwardButton.style.transform = 'scale(1)';
     });
     
@@ -583,7 +586,7 @@ export class GameUI {
       
       isMovingForward = false;
       this.gameScene.virtualInputs.up = false;
-      this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
+      this.forwardButton.style.backgroundColor = `rgba(0, 255, 0, ${buttonOpacity})`;
       this.forwardButton.style.transform = 'scale(1)';
     });
     
@@ -611,7 +614,7 @@ export class GameUI {
       if (!touchOnButton && isMovingForward) {
         isMovingForward = false;
         this.gameScene.virtualInputs.up = false;
-        this.forwardButton.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
+        this.forwardButton.style.backgroundColor = `rgba(0, 255, 0, ${buttonOpacity})`;
         this.forwardButton.style.transform = 'scale(1)';
       }
     });
@@ -626,7 +629,7 @@ export class GameUI {
       
       isFiring = true;
       this.gameScene.virtualFiring = true;
-      this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
+      this.fireButton.style.backgroundColor = `rgba(255, 0, 0, ${buttonOpacityActive})`;
       this.fireButton.style.transform = 'scale(0.95)';
     });
     
@@ -636,7 +639,7 @@ export class GameUI {
       
       isFiring = false;
       this.gameScene.virtualFiring = false;
-      this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+      this.fireButton.style.backgroundColor = `rgba(255, 0, 0, ${buttonOpacity})`;
       this.fireButton.style.transform = 'scale(1)';
     });
     
@@ -646,7 +649,7 @@ export class GameUI {
       
       isFiring = false;
       this.gameScene.virtualFiring = false;
-      this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+      this.fireButton.style.backgroundColor = `rgba(255, 0, 0, ${buttonOpacity})`;
       this.fireButton.style.transform = 'scale(1)';
     });
     
@@ -674,7 +677,7 @@ export class GameUI {
       if (!touchOnButton && isFiring) {
         isFiring = false;
         this.gameScene.virtualFiring = false;
-        this.fireButton.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+        this.fireButton.style.backgroundColor = `rgba(255, 0, 0, ${buttonOpacity})`;
         this.fireButton.style.transform = 'scale(1)';
       }
     });
