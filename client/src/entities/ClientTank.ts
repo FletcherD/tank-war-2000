@@ -311,6 +311,8 @@ export class ClientTank extends Tank {
 
     const positionDiff = this.lastPosition.subtract(new Phaser.Math.Vector2(this.x, this.y));
     const effectiveDistanceTraveled = positionDiff.dot(new Phaser.Math.Vector2(1, 0).rotate(this.heading));
+    const headingDiff = Phaser.Math.Wrap(Math.abs(this.heading - this.lastHeading), 0, Math.PI * 2);
+
 
     function getTreadFrameForPosition(position: number): number {
       if (position > framesPerRow) return 0;
@@ -326,12 +328,12 @@ export class ClientTank extends Tank {
       // Handle turning - treads move in opposite directions when turning
       if (this.currentInput.left) {
         // Left tread moves backward, right tread moves forward
-        frameIncrementL -= (rotationSpeed * delta) * turningSpeed;
-        frameIncrementR += (rotationSpeed * delta) * turningSpeed;
+        frameIncrementL -= headingDiff * turningSpeed;
+        frameIncrementR += headingDiff * turningSpeed;
       } else if (this.currentInput.right) {
         // Left tread moves forward, right tread moves backward
-        frameIncrementL += (rotationSpeed * delta) * turningSpeed;
-        frameIncrementR -= (rotationSpeed * delta) * turningSpeed;
+        frameIncrementL += headingDiff * turningSpeed;
+        frameIncrementR -= headingDiff * turningSpeed;
       }
 
       function mod(n: number, m: number): number {

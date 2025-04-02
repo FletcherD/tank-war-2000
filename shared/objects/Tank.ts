@@ -39,6 +39,7 @@ export class Tank extends Phaser.GameObjects.Container
   speed: number = 0;
   heading: number = 0;
   lastPosition: Phaser.Math.Vector2 = new Phaser.Math.Vector2(0, 0);
+  lastHeading: number = 0;
 
   baseMaxSpeed: number = PHYSICS.TANK_MAX_SPEED;
   baseRotationSpeed: number = PHYSICS.TANK_ROTATION_SPEED;
@@ -141,6 +142,7 @@ export class Tank extends Phaser.GameObjects.Container
       this.animate(delta, this.speed, rotationSpeed);
 
       this.lastPosition = new Phaser.Math.Vector2(this.x, this.y);
+      this.lastHeading = this.heading;
   }
   
 
