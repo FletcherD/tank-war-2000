@@ -66,6 +66,12 @@ export class ClientGameScene extends GameScene {
     cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
     spaceKey: Phaser.Input.Keyboard.Key;
     
+    // WASD keys
+    keyW: Phaser.Input.Keyboard.Key;
+    keyA: Phaser.Input.Keyboard.Key;
+    keyS: Phaser.Input.Keyboard.Key;
+    keyD: Phaser.Input.Keyboard.Key;
+    
     // Virtual inputs from touch controls
     virtualInputs: { turnRate: number; up: boolean; down: boolean } = {
       turnRate: 0,
@@ -110,6 +116,12 @@ export class ClientGameScene extends GameScene {
 
         this.cursorKeys = this.input.keyboard.createCursorKeys();
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        
+        // Initialize WASD keys
+        this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+        this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+        this.keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         
         // Prevent game inputs while chat is active by capturing key events
         this.input.keyboard.on('keydown', (event) => {
@@ -729,10 +741,10 @@ export class ClientGameScene extends GameScene {
             // Handle keyboard input for turning
             let turnRate = 0;
             
-            // Convert left/right keys to turnRate
-            if (this.cursorKeys.left.isDown) {
+            // Convert left/right keys or A/D keys to turnRate
+            if (this.cursorKeys.left.isDown || this.keyA.isDown) {
                 turnRate = -1.0;
-            } else if (this.cursorKeys.right.isDown) {
+            } else if (this.cursorKeys.right.isDown || this.keyD.isDown) {
                 turnRate = 1.0;
             } else {
                 // Use joystick turnRate if available
@@ -740,8 +752,8 @@ export class ClientGameScene extends GameScene {
             }
             
             this.inputPayload.turnRate = turnRate;
-            this.inputPayload.up = this.cursorKeys.up.isDown || this.virtualInputs.up;
-            this.inputPayload.down = this.cursorKeys.down.isDown || this.virtualInputs.down;
+            this.inputPayload.up = this.cursorKeys.up.isDown || this.keyW.isDown || this.virtualInputs.up;
+            this.inputPayload.down = this.cursorKeys.down.isDown || this.keyS.isDown || this.virtualInputs.down;
             this.inputPayload.fire = this.spaceKey.isDown || this.virtualFiring;
         }
         

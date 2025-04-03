@@ -726,8 +726,8 @@ export class GameUI {
       
       <h3>Controls:</h3>
       <ul>
-        <li>Left joystick - Turn</li>
-        <li>Right buttons - Move / Fire</li>
+        <li>Desktop: WASD or arrow keys to move, spacebar to fire</li>
+        <li>Mobile: Left joystick to turn, right buttons to move and fire</li>
         <li>Select tiles on the map to harvest wood or build structures.</li>
       </ul>
     `;
