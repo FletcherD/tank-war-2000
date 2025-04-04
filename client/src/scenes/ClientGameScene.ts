@@ -1079,7 +1079,7 @@ export class ClientGameScene extends GameScene {
         );
         
         // Check if player is close enough
-        if (distance <= 100) { // Using the same distance as for building roads
+        if (distance <= PHYSICS.BUILD_MAX_DISTANCE) { // Using the same distance as for building roads
             // Send placement request to server with the top-left tile coordinates
             this.room.send("placePillbox", { 
                 x: centerX, 
@@ -1087,11 +1087,6 @@ export class ClientGameScene extends GameScene {
                 tileX: minX, 
                 tileY: minY 
             });
-            
-            // Show message
-            if (this.gameUI) {
-                this.gameUI.showMessage("Placing pillbox...");
-            }
         } else {
             // Show message that player is too far
             if (this.gameUI) {

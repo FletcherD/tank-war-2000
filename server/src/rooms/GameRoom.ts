@@ -202,7 +202,7 @@ export class GameRoom extends Room<MyRoomState> {
             success: false, 
             x: data.x, 
             y: data.y,
-            reason: "Invalid placement area. Pillboxes require a 2x2 area of land."
+            reason: "Invalid placement area."
           });
           return;
         }
@@ -285,6 +285,7 @@ export class GameRoom extends Room<MyRoomState> {
    * Broadcasts a newswire message to all connected clients
    */
   broadcastNewswire(message: NewswireMessage) {
+    console.log(message);
     this.broadcast("newswire", message);
   }
 

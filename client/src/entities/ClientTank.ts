@@ -157,7 +157,7 @@ export class ClientTank extends Tank {
     }
     
     // Update pillbox count
-    if (this.pillboxCount !== data.pillboxCount) {
+    if (this.pillboxCount < data.pillboxCount) {
       this.pillboxCount = data.pillboxCount || 0;
       console.log(`Player ${this.sessionId} has ${this.pillboxCount} pillboxes.`);
       

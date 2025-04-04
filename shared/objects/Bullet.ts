@@ -6,6 +6,10 @@ export class Bullet extends Phaser.GameObjects.Sprite
   distanceToLive: number = PHYSICS.BULLET_RANGE;
   distanceTraveled: number = 0; // Track total distance traveled
 
+  ownerId: string;
+  ownerName: string;
+  team: number;
+
   constructor(scene: Phaser.Scene, x: number, y: number, rotation: number) {
     super(scene, x, y, 'bullet');    
     

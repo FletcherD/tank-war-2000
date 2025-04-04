@@ -216,7 +216,28 @@ export class ServerGameScene extends GameScene {
 
   // Create a server bullet (from tank or pillbox)
   createBullet(x: number, y: number, angle: number, ownerId: string = "") {
-    const bullet = new ServerBullet(this, x, y, angle, ownerId);
+    // Get owner information
+    let ownerName = "Unknown";
+    let team = 0;
+    
+    // Check if owner is a tank
+    if (ownerId) {
+      const tank = this.players.get(ownerId);
+      if (tank) {
+        ownerName = tank.name;
+        team = tank.team;
+      } else {
+        // Check if owner is a pillbox
+        const pillboxes = this.pillboxes.filter(p => p.schema?.id === ownerId);
+        if (pillboxes.length > 0) {
+          const pillbox = pillboxes[0] as ServerPillbox;
+          ownerName = `Pillbox ${pillbox.schema.id.split('_').pop()}`;
+          team = pillbox.team;
+        }
+      }
+    }
+    
+    const bullet = new ServerBullet(this, x, y, angle, ownerId, ownerName, team);
     this.serverBullets.push(bullet);
     
     // Add to room state
@@ -260,19 +281,11 @@ export class ServerGameScene extends GameScene {
     const id = `pillbox_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     
     // Create the pillbox
-    const pillbox = new ServerPillbox(this, x, y, team);
+    const pillbox = new ServerPillbox(this, x, y, team, state);
     this.pillboxes.push(pillbox);
     
     // Set its ID and update schema
     pillbox.schema.id = id;
-    pillbox.schema.state = state;
-    
-    // Configure physics based on state
-    if (state === "placed") {
-      pillbox.setupPlacedPhysics();
-    } else if (state === "pickup") {
-      pillbox.setupPickupPhysics();
-    }
     
     pillbox.updateSchema();
     

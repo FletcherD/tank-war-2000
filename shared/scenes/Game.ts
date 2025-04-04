@@ -138,11 +138,11 @@ export class GameScene extends Phaser.Scene {
             if (bullet) {
                 if (otherBody.gameObject instanceof Tank) {
                     const tank = otherBody.gameObject as Tank;
-                    tank.takeDamage(DAMAGE.BULLET_TO_TANK);
+                    tank.takeDamage(DAMAGE.BULLET_TO_TANK, bullet.ownerId);
                     bullet.destroy();
                 } else if (otherBody.gameObject instanceof Pillbox) {
                     const pillbox = otherBody.gameObject as Pillbox;
-                    pillbox.takeDamage(DAMAGE.BULLET_TO_PILLBOX);
+                    pillbox.takeDamage(DAMAGE.BULLET_TO_PILLBOX, bullet.ownerId);
                     bullet.destroy();
                 } else {
                     this.handleWallBulletCollision(bullet, otherBody);
@@ -183,7 +183,6 @@ export class GameScene extends Phaser.Scene {
         this.gameMap.map.setLayer(0);
         const wallTile = this.gameMap.map.getTileAtWorldXY(wallTilePos.x, wallTilePos.y);
 
-        // Adding 192 gets us the 'crater' tile with the same wang index
         const wangIndex = wallTile.index % 64;
         const newTileIndex = TILE_INDICES.CRATER + wangIndex;
         this.gameMap.setTile(wallTile.x, wallTile.y, newTileIndex, false);

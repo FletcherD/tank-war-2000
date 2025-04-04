@@ -2,7 +2,8 @@ node_modules
 .parcel-cache
 .DS_Store
 phaser-docs
+colyseus-docs
 client/dist
-CLAUDE_CODE_LOG.txt
+CLAUDE_CODE_LOG*.txt
 
 **/CLAUDE.local.md

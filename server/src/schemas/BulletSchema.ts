@@ -7,4 +7,5 @@ export class BulletSchema extends Schema {
     @type("number") team: number = 0;
     @type("string") id: string = "";
     @type("string") ownerId: string = ""; // ID of the tank or pillbox that fired it
+    @type("string") ownerName: string = ""; // Name of the tank or pillbox that fired it
 }

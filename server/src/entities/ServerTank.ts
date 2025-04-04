@@ -117,7 +117,7 @@ export class ServerTank extends Tank {
       const pillboxes = scene.pillboxes.filter(p => p.schema?.id === attackerId);
       if (pillboxes.length > 0) {
         const pillbox = pillboxes[0] as ServerPillbox;
-        destroyerName = `Pillbox ${pillbox.schema.id}`;
+        destroyerName = `Pillbox ${pillbox.schema.id.split('_').pop()}`;
         destroyerType = "pillbox";
         destroyerTeam = pillbox.team;
       }
@@ -129,7 +129,7 @@ export class ServerTank extends Tank {
       playerId: this.sessionId,
       playerName: this.name,
       team: this.team,
-      message: `${this.name} was destroyed by ${destroyerType === "pillbox" ? "a pillbox" : destroyerName}`
+      message: `${this.name} was destroyed by ${destroyerName}!`
     });
     
     // Put the tank in respawn state
@@ -267,11 +267,6 @@ export class ServerTank extends Tank {
     // Create a new pillbox at the specified location
     const scene = this.scene as ServerGameScene;
     const pillbox = scene.createPillbox(x, y, this.team, "placed");
-    
-    // Set up the physics body for the placed pillbox
-    if (pillbox) {
-      pillbox.setupPlacedPhysics();
-    }
     
     // Update schema
     this.updateSchema();

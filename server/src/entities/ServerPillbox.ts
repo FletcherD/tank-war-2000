@@ -9,23 +9,22 @@ export class ServerPillbox extends Pillbox {
     // Schema to be synced with clients
     schema: PillboxSchema;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, team: number = 0) {
+    constructor(scene: Phaser.Scene, x: number, y: number, team: number = 0, state: string = "pickup") {
         super(scene, x, y, team);
         
         // Initialize schema
         this.schema = new PillboxSchema();
-        this.updateSchema();
+        this.schema.state = state;
         
-        // If the schema state is already set to pickup, configure the physics for pickup
-        if (this.schema.state === "pickup") {
+        if (state === "pickup") {
             this.setupPickupPhysics();
+        } else if (state === "placed") {
+            this.setupPlacedPhysics();
         }
     }
     
     // Setup physics for a placed pillbox
-    setupPlacedPhysics() {
-        console.log(`Setting up placed physics for pillbox at (${this.x}, ${this.y})`);
-        
+    setupPlacedPhysics() {        
         // Completely rebuild the physics body
         // First remove existing body to avoid lingering physics objects
         if (this.body) {
@@ -55,9 +54,7 @@ export class ServerPillbox extends Pillbox {
     }
     
     // Setup the physics body for pickup mode
-    setupPickupPhysics() {
-        console.log(`Setting up pickup physics for pillbox at (${this.x}, ${this.y})`);
-        
+    setupPickupPhysics() {        
         // Completely rebuild the physics body
         // First remove existing body to avoid lingering physics objects
         if (this.body) {
@@ -91,6 +88,7 @@ export class ServerPillbox extends Pillbox {
         this.schema.y = this.y;
         this.schema.team = this.team;
         this.schema.health = this.health;
+        this.schema.state = this.schema.state;
         // State and ownerId already handled in state transition methods
     }
     
@@ -98,9 +96,7 @@ export class ServerPillbox extends Pillbox {
     takeDamage(amount: number, attackerId: string = "") {
         // Only take damage if in "placed" state
         if (this.schema.state === "placed") {
-            console.log(`Pillbox taking ${amount} damage, health before: ${this.health}`);
             super.takeDamage(amount);
-            console.log(`Pillbox health after: ${this.health}`);
             
             // Check if health is at or below 0 but we're still active (about to be destroyed)
             if (this.health <= 0 && this.active) {
@@ -149,8 +145,10 @@ export class ServerPillbox extends Pillbox {
                     // Check if destroyed by another pillbox
                     const pillboxes = gameScene.pillboxes.filter(p => p.schema?.id === attackerId);
                     if (pillboxes.length > 0) {
+                        const pillbox = pillboxes[0] as ServerPillbox;
+                        destroyerName = `Pillbox ${pillbox.schema.id.split('_').pop()}`;
                         destroyerType = "pillbox";
-                        message = `A ${teamName} pillbox was destroyed by an enemy pillbox!`;
+                        message = `A ${teamName} pillbox was destroyed by ${destroyerName}!`;
                     }
                 }
             }
