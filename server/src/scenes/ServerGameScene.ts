@@ -298,7 +298,7 @@ export class ServerGameScene extends GameScene {
   sendSnapshots(): void {
     this.worldState.players = [];
     this.players.forEach(tank => {
-      let thisPlayerState = tank.schema;
+      let thisPlayerState = tank.getState();
       thisPlayerState.id = tank.sessionId;
       this.worldState.players.push(thisPlayerState);
     });
