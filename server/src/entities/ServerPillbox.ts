@@ -93,7 +93,7 @@ export class ServerPillbox extends Pillbox {
     }
     
     // Override takeDamage to update schema when damage is taken
-    takeDamage(amount: number, attackerId: string = "") {
+    override takeDamage(amount: number, attackerId: string = "") {
         // Only take damage if in "placed" state
         if (this.schema.state === "placed") {
             super.takeDamage(amount);

@@ -4,50 +4,6 @@ import { VISUALS, PHYSICS, COLLISION_CATEGORIES, TEAM_COLORS } from "../../../sh
 import { Tank } from "../../../shared/objects/Tank";
 
 export class ClientPillbox extends Pillbox {
-    // Override fireAtTarget to do nothing - server handles all bullets
-    override fireAtTarget(target: Tank): void {
-        // Only show visual effects if ready to fire
-        if (this.firingTimer <= 0) {
-            // Reset firing timer
-            this.firingTimer = this.firingCooldown;
-            
-            // Flash effect
-            this.setTint(0xFFFFFF);
-            this.scene.time.delayedCall(50, () => {
-                this.clearTint();
-            });
-            
-            // Calculate angle to target
-            const angle = Phaser.Math.Angle.Between(
-                this.x, 
-                this.y, 
-                target.x, 
-                target.y
-            );
-            
-            // Position for muzzle flash
-            const fireLocation = new Phaser.Math.Vector2(VISUALS.FIRING_OFFSET, 0.0).rotate(angle);
-            
-            // Add particle effect for muzzle flash
-            const particles = this.scene.add.particles(
-                this.x + fireLocation.x, 
-                this.y + fireLocation.y, 
-                'bullet', 
-                {
-                    speed: 100,
-                    scale: { start: 0.5, end: 0 },
-                    blendMode: 'ADD',
-                    lifespan: 100,
-                    quantity: 1
-                }
-            );
-            
-            // Destroy particles after a short time
-            this.scene.time.delayedCall(100, () => {
-                particles.destroy();
-            });
-        }
-    }
     constructor(scene: Phaser.Scene, x: number, y: number, team: number = 0) {
         super(scene, x, y, team);
     }
@@ -102,6 +58,7 @@ export class ClientPillbox extends Pillbox {
             if (oldHealth > this.health) {
                 // We pass 0 as the amount since we already updated the health directly
                 this.takeDamage(0);
+                this.playDamageAnimation();
             }
         }
     }
@@ -188,6 +145,30 @@ export class ClientPillbox extends Pillbox {
             this.setStatic(true);
             this.setCollidesWith([COLLISION_CATEGORIES.WALL, COLLISION_CATEGORIES.PLAYER, COLLISION_CATEGORIES.PROJECTILE]);
             this.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
+        }
+    }
+    
+    // Implement damage animation
+    override playDamageAnimation(): void {
+        const scene = this.scene as Phaser.Scene;
+        
+        // Flash the pillbox white (if it has a top sprite)
+        if (this.topSprite && this.topSprite.active) {
+            const originalTint = this.topSprite.tintTopLeft;
+            
+            // Set to white
+            this.topSprite.setTint(0xffffff);
+            
+            // Reset tint after a short time
+            scene.time.delayedCall(50, () => {
+                if (this.active && this.topSprite && this.topSprite.active) {
+                    if (originalTint !== 0xffffff) {
+                        this.topSprite.setTint(originalTint);
+                    } else {
+                        this.topSprite.clearTint();
+                    }
+                }
+            });
         }
     }
     

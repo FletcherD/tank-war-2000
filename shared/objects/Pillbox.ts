@@ -62,7 +62,14 @@ export class Pillbox extends Phaser.Physics.Matter.Sprite {
     if (this.health < maxHealth && this.health > 0) {
       const healthFraction = 255.0 * this.health / maxHealth;
       this.setTint(Phaser.Display.Color.GetColor(healthFraction, healthFraction, healthFraction));
+      
+      // Play damage animation
+      this.playDamageAnimation();
     }
+  }
+  
+  playDamageAnimation() {
+    // This will be overridden in client implementation
   }
   
   destroy() {

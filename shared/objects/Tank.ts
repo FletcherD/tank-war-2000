@@ -139,9 +139,19 @@ export class Tank extends Phaser.GameObjects.Container
 
   takeDamage(amount: number, attackerId: string = "") {
     this.health -= amount;
+    
+    // Play damage animation if health is still above 0
+    if (this.health > 0) {
+      this.playDamageAnimation();
+    }
+    
     if (this.health <= 0) {
       this.onDestroyed(attackerId);
     }
+  }
+  
+  playDamageAnimation() {
+    // This will be overridden in client implementation
   }
   
   onDestroyed(attackerId: string = "") {

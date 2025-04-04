@@ -442,6 +442,28 @@ export class ClientTank extends Tank {
     }
   }
   
+  // Override playDamageAnimation to flash white
+  override playDamageAnimation(): void {
+    const scene = this.scene as Phaser.Scene;
+    
+    // Flash the tank white
+    const originalTint = this.tankBody.tintTopLeft;
+    
+    // Set to white
+    this.tankBody.setTint(0xffffff);
+    
+    // Reset tint after a short time
+    scene.time.delayedCall(100, () => {
+      if (this.active) {
+        if (originalTint !== 0xffffff) {
+          this.tankBody.setTint(originalTint);
+        } else {
+          this.tankBody.clearTint();
+        }
+      }
+    });
+  }
+  
   // Override onDestroyed to handle visual effects
   override onDestroyed(attackerId: string = ""): void {
     // Add destruction visual effects here
