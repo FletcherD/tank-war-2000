@@ -65,7 +65,6 @@ export class ServerStation extends Station {
     const oldTeam = this.team;
     
     if (oldTeam !== newTeam) {
-      console.log(`Station ${this.schema.id} captured by team ${newTeam}, from ${oldTeam}`);
       this.team = newTeam;
       
       // Update the top sprite tint

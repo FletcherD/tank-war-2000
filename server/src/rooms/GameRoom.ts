@@ -289,8 +289,13 @@ export class GameRoom extends Room<MyRoomState> {
     this.broadcast("newswire", message);
   }
 
-  onJoin(client: Client, options: any) {
-    console.log(client.sessionId, "joined!", options);
+  onAuth(client: Client, options: any, auth: any) {
+    console.log("Player authenticated: ", client.sessionId, auth.ip);
+    return true;
+  }
+
+  onJoin(client: Client, options: any, auth: any) {
+    console.log("Player joined: ", client.sessionId, options.playerName);
 
     // Extract player name from options or use default
     const playerName = options.playerName || "Player";
@@ -350,7 +355,6 @@ export class GameRoom extends Room<MyRoomState> {
     // Add player to state AFTER initializing properties to ensure first state sync is complete
     this.state.players.set(client.sessionId, playerState);
     
-    console.log(`Player ${playerName} (${client.sessionId}) joined at position ${spawnPos.x.toFixed(2)}, ${spawnPos.y.toFixed(2)}, team: ${team} (Team 1: ${team1Count}, Team 2: ${team2Count})`);
     
     // Send newswire message for player join
     const teamName = team === 1 ? "Blue" : "Red";
