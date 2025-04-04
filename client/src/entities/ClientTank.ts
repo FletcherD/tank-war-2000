@@ -216,7 +216,7 @@ export class ClientTank extends Tank {
       this.currentInput.tick = data.tick;
     } else {
       // For local player, perform reconciliation with rollback
-      //this.reconcileWithServer();
+      this.reconcileWithServer();
     }
   }
 
@@ -258,11 +258,18 @@ export class ClientTank extends Tank {
     //if (needsReconciliation) {
       //console.log(`Reconciling position. Distance: ${distanceToServer.toFixed(2)}, Heading diff: ${headingDifference.toFixed(2)}`);
       
+      const lerpZ = 0.5;
+
       // Rollback to server state
-      this.x = this.lastServerState.x;
-      this.y = this.lastServerState.y;
-      this.heading = this.lastServerState.heading;
-      this.speed = this.lastServerState.speed;
+      this.x = this.x * (1-lerpZ)  + this.lastServerState.x * lerpZ;
+      this.y = this.y * (1-lerpZ)  + this.lastServerState.y * lerpZ;
+      this.speed = this.speed * 0.9 + this.lastServerState.speed * lerpZ;
+
+      let headingDiff = this.lastServerState.heading - this.heading;
+      while (headingDiff > Math.PI) headingDiff -= Math.PI * 2;
+      while (headingDiff < -Math.PI) headingDiff += Math.PI * 2;
+
+      this.heading += headingDiff * (1-lerpZ);
       this.rotation = this.heading;
       
       // Re-apply all pending inputs to get back to current predicted state
@@ -271,12 +278,7 @@ export class ClientTank extends Tank {
       
       // Save current input
       const currentInput = { ...this.currentInput };
-      
-      // Re-apply each pending input
-      for (const input of this.pendingInputs) {
-        this.currentInput = input;
-        super.preUpdate(0, delta, true);
-      }
+
       
       // Restore current input
       this.currentInput = currentInput;

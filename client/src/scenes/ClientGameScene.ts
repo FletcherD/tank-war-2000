@@ -458,10 +458,6 @@ export class ClientGameScene extends GameScene {
             // connection successful!
             connectionStatusText.destroy();
             console.log("Connected to server with name: " + this.playerName);
-
-            this.room.onMessage("snapshot", (snapshot) => {
-                SI.snapshot.add(snapshot)
-            });
             
             // Listen for notification messages
             this.room.onMessage("notification", (data) => {
