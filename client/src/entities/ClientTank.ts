@@ -216,7 +216,7 @@ export class ClientTank extends Tank {
       this.currentInput.tick = data.tick;
     } else {
       // For local player, perform reconciliation with rollback
-      this.reconcileWithServer();
+      //this.reconcileWithServer();
     }
   }
 
