@@ -479,8 +479,32 @@ export class ClientTank extends Tank {
       repeat: 3
     });
     
+    // Add a larger destruction animation
+    this.playDestroyAnimation();
+    
     // Don't actually destroy the tank as the server will handle respawning
     // super.destroy() would be called here in the base class
+  }
+  
+  // Play a larger white circle explosion animation when destroyed
+  playDestroyAnimation(): void {
+    const scene = this.scene;
+    
+    // Create a white circle at the tank's position
+    const explosion = scene.add.circle(this.x, this.y, 30, 0xffffff, 1);
+    explosion.setDepth(1001); // Above most objects
+    
+    // Animate the circle - fade out and grow
+    scene.tweens.add({
+      targets: explosion,
+      alpha: 0,
+      scale: 2.5,
+      duration: 300,
+      ease: 'Power2',
+      onComplete: () => {
+        explosion.destroy();
+      }
+    });
   }
   
   // Override destroy to clean up nameText

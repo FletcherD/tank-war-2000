@@ -68,6 +68,11 @@ export class ClientPillbox extends Pillbox {
         console.log(`Pillbox state changing from ${oldState} to ${newState}`);
         
         if (newState === "pickup") {
+            // Play destroy animation when transitioning from placed to pickup state
+            if (oldState === "placed") {
+                this.playDestroyAnimation();
+            }
+            
             // Completely rebuild the object for pickup state
             
             // First destroy any existing physics body to prevent lingering objects
@@ -172,8 +177,34 @@ export class ClientPillbox extends Pillbox {
         }
     }
     
+    // Play a larger white circle explosion animation when destroyed
+    playDestroyAnimation(): void {
+        const scene = this.scene;
+        
+        // Create a white circle at the pillbox's position
+        const explosion = scene.add.circle(this.x, this.y, 25, 0xffffff, 1);
+        explosion.setDepth(1001); // Above most objects
+        
+        // Animate the circle - fade out and grow
+        scene.tweens.add({
+            targets: explosion,
+            alpha: 0,
+            scale: 2.0,
+            duration: 250,
+            ease: 'Power2',
+            onComplete: () => {
+                explosion.destroy();
+            }
+        });
+    }
+    
     // Override destroy to ensure complete cleanup
     override destroy() {
+        // Play destroy animation if we're transitioning to a pickup state
+        if (this.state === "placed") {
+            this.playDestroyAnimation();
+        }
+        
         // Properly destroy the topSprite
         if (this.topSprite && this.topSprite.active) {
             this.topSprite.destroy();
