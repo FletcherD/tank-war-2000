@@ -98,17 +98,6 @@ export class ClientTank extends Tank {
     this.speed = data.speed;
     this.health = data.health;
     
-    // Update team and apply team color if it has changed
-    if (this.team !== data.team) {
-      this.team = data.team;
-      
-      // Apply team color if team > 0, otherwise clear tint
-      if (this.team > 0 && TEAM_COLORS[this.team]) {
-        this.tankBody.setTint(TEAM_COLORS[this.team]);
-      } else {
-        this.tankBody.clearTint();
-      }
-    }
     
     // Update input state
     this.currentInput.turnRate = data.turnRate;
@@ -134,6 +123,18 @@ export class ClientTank extends Tank {
       wood: data.wood || 0,
       name: data.name || this.name
     };
+
+    // Update team and apply team color if it has changed
+    if (this.team !== data.team) {
+      this.team = data.team;
+      
+      // Apply team color if team > 0, otherwise clear tint
+      if (this.team > 0 && TEAM_COLORS[this.team]) {
+        this.tankBody.setTint(TEAM_COLORS[this.team]);
+      } else {
+        this.tankBody.clearTint();
+      }
+    }
     
     // Check for respawn state
     if (data.isRespawning !== undefined) {

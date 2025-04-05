@@ -35,19 +35,23 @@ export class ServerTank extends Tank {
 
   updateSchema(): void {
     // Instead of just assignment, explicitly set each property to trigger change detection
-    if (this.schema.x !== this.x) this.schema.x = this.x;
-    if (this.schema.y !== this.y) this.schema.y = this.y;
-    if (this.schema.heading !== this.heading) this.schema.heading = this.heading;
-    if (this.schema.speed !== this.speed) this.schema.speed = this.speed;
     if (this.schema.health !== this.health) this.schema.health = this.health;
     if (this.schema.ammo !== this.ammo) this.schema.ammo = this.ammo;
     if (this.schema.team !== this.team) this.schema.team = this.team;
     if (this.schema.name !== this.name) this.schema.name = this.name;
-    if (this.schema.turnRate !== this.currentInput.turnRate) this.schema.turnRate = this.currentInput.turnRate;
-    if (this.schema.up !== this.currentInput.up) this.schema.up = this.currentInput.up;
-    if (this.schema.fire !== this.currentInput.fire) this.schema.fire = this.currentInput.fire;
     if (this.schema.tick !== this.currentInput.tick) this.schema.tick = this.currentInput.tick;
     // Wood property is updated in other methods, not directly tied to tank properties
+  }
+
+  getSnapshot() {
+    return {
+      x: this.x,
+      y: this.y,
+      heading: this.heading,
+      speed: this.speed,
+      turnRate: this.currentInput.turnRate,
+      up: this.currentInput.up,
+    }
   }
 
   override fire() {
