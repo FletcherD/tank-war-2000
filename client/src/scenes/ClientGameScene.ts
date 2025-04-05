@@ -713,7 +713,7 @@ export class ClientGameScene extends GameScene {
             this.playerVault.add(SI.snapshot.create([ this.currentPlayer.getState()]))
             const serverSnapshot = SI.vault.get()
             if(serverSnapshot && serverSnapshot.time > this.lastReconciliationTime) {
-                const playerSnapshot = this.playerVault.get(serverSnapshot.time, false)
+                const playerSnapshot = this.playerVault.get(serverSnapshot.time, true)
                 if(playerSnapshot) {
                     this.lastReconciliationTime = serverSnapshot.time;
                     const playerState = playerSnapshot.state[0];
