@@ -710,11 +710,12 @@ export class ClientGameScene extends GameScene {
 
     serverReconciliation() {
         if(this.currentPlayer) {
+            this.playerVault.add(SI.snapshot.create([ this.currentPlayer.getState()]))
             const serverSnapshot = SI.vault.get()
-            if(serverSnapshot) {
-                const playerSnapshot = this.playerVault.get(serverSnapshot.time, true)
-                if(playerSnapshot && playerSnapshot.time > this.lastReconciliationTime) {
-                    this.lastReconciliationTime = playerSnapshot.time;
+            if(serverSnapshot && serverSnapshot.time > this.lastReconciliationTime) {
+                const playerSnapshot = this.playerVault.get(serverSnapshot.time, false)
+                if(playerSnapshot) {
+                    this.lastReconciliationTime = serverSnapshot.time;
                     const playerState = playerSnapshot.state[0];
                     const serverState = serverSnapshot.state.players.filter(s => s.id === this.currentPlayer.sessionId)[0]
 
@@ -726,7 +727,7 @@ export class ClientGameScene extends GameScene {
                     const offsetSpeed = playerState.speed - serverState.speed;
                     console.log(playerSnapshot.time - serverSnapshot.time, playerState.heading, serverState.heading);
 
-                    const correctionAmt = 0.5;
+                    const correctionAmt = 0.2;
                     this.currentPlayer.x -= offsetX * correctionAmt;
                     this.currentPlayer.y -= offsetY * correctionAmt;
                     this.currentPlayer.heading -= offsetHeading * correctionAmt;
@@ -778,7 +779,6 @@ export class ClientGameScene extends GameScene {
         if (this.currentPlayer && this.currentPlayer.active) {
             // Use sendInput to properly handle input buffering and prediction
             this.currentPlayer.sendInput({...this.inputPayload});
-            this.playerVault.add(SI.snapshot.create([ this.currentPlayer.getState()]))
         }
     }
     
