@@ -52,6 +52,7 @@ export class ClientGameScene extends GameScene {
     currentPlayer: ClientTank;
 
     playerVault = new Vault()
+    lastReconciliationTime = 0
     
     // UI instance
     gameUI: GameUI;
@@ -458,10 +459,6 @@ export class ClientGameScene extends GameScene {
             // connection successful!
             connectionStatusText.destroy();
             console.log("Connected to server with name: " + this.playerName);
-
-            this.room.onMessage("snapshot", (snapshot) => {
-                SI.snapshot.add(snapshot)
-            });
             
             // Listen for notification messages
             this.room.onMessage("notification", (data) => {
@@ -693,8 +690,8 @@ export class ClientGameScene extends GameScene {
 
     }
 
-    doInterpolation() {
-        
+    // This is only done for non-player tanks
+    doInterpolation() {        
         const snapshot = SI.calcInterpolation('x y speed heading(rad) ', 'players');
         if(!snapshot) return;
         const playerStates = snapshot.state;
@@ -715,12 +712,27 @@ export class ClientGameScene extends GameScene {
         if(this.currentPlayer) {
             const serverSnapshot = SI.vault.get()
             if(serverSnapshot) {
+                const playerSnapshot = this.playerVault.get(serverSnapshot.time, true)
+                if(playerSnapshot && playerSnapshot.time > this.lastReconciliationTime) {
+                    this.lastReconciliationTime = playerSnapshot.time;
+                    const playerState = playerSnapshot.state[0];
+                    const serverState = serverSnapshot.state.players.filter(s => s.id === this.currentPlayer.sessionId)[0]
 
-                const serverPos = serverSnapshot.state.players.filter(s => s.id === this.currentPlayer.sessionId)[0]
+                    const offsetX = playerState.x - serverState.x;
+                    const offsetY = playerState.y - serverState.y;
+                    let offsetHeading = playerState.heading - serverState.heading;                    
+                    while (offsetHeading > Math.PI) offsetHeading -= Math.PI * 2;
+                    while (offsetHeading < -Math.PI) offsetHeading += Math.PI * 2;
+                    const offsetSpeed = playerState.speed - serverState.speed;
+                    console.log(playerState.heading, serverState.heading);
 
-                const nowTime = this.playerVault.get().time
+                    const correctionAmt = 0.1;
+                    this.currentPlayer.x -= offsetX * correctionAmt;
+                    this.currentPlayer.y -= offsetY * correctionAmt;
+                    this.currentPlayer.heading -= offsetHeading * correctionAmt;
+                    this.currentPlayer.speed -= offsetSpeed * correctionAmt;
 
-                this.currentPlayer.updateFromServer(serverPos)
+                }
             }
             
         }
