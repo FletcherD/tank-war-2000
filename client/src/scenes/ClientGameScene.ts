@@ -724,9 +724,9 @@ export class ClientGameScene extends GameScene {
                     while (offsetHeading > Math.PI) offsetHeading -= Math.PI * 2;
                     while (offsetHeading < -Math.PI) offsetHeading += Math.PI * 2;
                     const offsetSpeed = playerState.speed - serverState.speed;
-                    console.log(playerState.heading, serverState.heading);
+                    console.log(playerSnapshot.time - serverSnapshot.time, playerState.heading, serverState.heading);
 
-                    const correctionAmt = 0.1;
+                    const correctionAmt = 0.5;
                     this.currentPlayer.x -= offsetX * correctionAmt;
                     this.currentPlayer.y -= offsetY * correctionAmt;
                     this.currentPlayer.heading -= offsetHeading * correctionAmt;
