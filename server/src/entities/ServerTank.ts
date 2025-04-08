@@ -43,7 +43,7 @@ export class ServerTank extends Tank {
     if (this.schema.ammo !== this.ammo) this.schema.ammo = this.ammo;
     if (this.schema.team !== this.team) this.schema.team = this.team;
     if (this.schema.name !== this.name) this.schema.name = this.name;
-    if (this.schema.turnRate !== this.currentInput.turnRate) this.schema.turnRate = this.currentInput.turnRate;
+    if (this.schema.targetHeading !== this.currentInput.targetHeading) this.schema.targetHeading = this.currentInput.targetHeading;
     if (this.schema.up !== this.currentInput.up) this.schema.up = this.currentInput.up;
     if (this.schema.fire !== this.currentInput.fire) this.schema.fire = this.currentInput.fire;
     if (this.schema.tick !== this.currentInput.tick) this.schema.tick = this.currentInput.tick;

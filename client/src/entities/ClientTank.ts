@@ -111,7 +111,7 @@ export class ClientTank extends Tank {
     }
     
     // Update input state
-    this.currentInput.turnRate = data.turnRate;
+    this.currentInput.targetHeading = data.targetHeading;
     this.currentInput.up = data.up;
     this.currentInput.fire = data.fire;
     this.currentInput.tick = data.tick;
@@ -210,7 +210,7 @@ export class ClientTank extends Tank {
       }
       
       // Update input state
-      this.currentInput.turnRate = data.turnRate;
+      this.currentInput.targetHeading = data.targetHeading;
       this.currentInput.up = data.up;
       this.currentInput.fire = data.fire;
       this.currentInput.tick = data.tick;

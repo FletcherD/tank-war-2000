@@ -402,9 +402,9 @@ export class GameUI {
       const { x, y } = data.vector;
       const angle = data.angle.radian;
       
-      // Reset turnRate
+      // Reset targetHeading
       this.gameScene.virtualInputs = {
-        turnRate: 0,
+        targetHeading: 0,
         up: this.gameScene.virtualInputs.up,
         down: false
       };
@@ -413,34 +413,21 @@ export class GameUI {
       const distance = Math.sqrt(x*x + y*y);
       if (distance < DEAD_ZONE_CENTER) return;
       
-      // Get the current tank heading in the game
-      const tankHeading = this.gameScene.currentPlayer?.heading || 0;
-      
-      // Calculate the difference between joystick angle and tank heading
-      // First convert joystick angle to same coordinate system as tank heading
       // In Phaser, heading 0 is to the right, increasing clockwise
       // In nipplejs, angle 0 is to the right, increasing counter-clockwise
       const joystickHeading = Math.PI * 2 - angle;
       
-      // Find the smallest angle between the two directions
-      let angleDiff = joystickHeading - tankHeading;
-      
-      // Normalize to -PI to PI
-      while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-      while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-      
-      // Set turnRate proportional to angle difference
-      // Clamp to [-1.0, 1.0] range
-      const turnRate = Math.max(-1.0, Math.min(1.0, angleDiff * CONTROL_SLOPE));
-      this.gameScene.virtualInputs.turnRate = turnRate;
+      // Set the targetHeading directly to the joystick heading
+      // The tank class will handle the rotation logic
+      this.gameScene.virtualInputs.targetHeading = joystickHeading;
     });
     
     // Reset inputs when joystick is released
     this.joystickManager.on('end', () => {
       if (!this.gameScene) return;
       
-      // Reset turning rate, but not forward movement
-      this.gameScene.virtualInputs.turnRate = 0;
+      // Reset target heading, but not forward movement
+      this.gameScene.virtualInputs.targetHeading = 0;
     });
     
     // Set up forward button events

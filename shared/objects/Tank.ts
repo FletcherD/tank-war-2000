@@ -3,7 +3,7 @@ import { COLLISION_CATEGORIES, PHYSICS, VISUALS } from "../constants";
 import { GameScene } from "../scenes/Game";
 
 export interface InputData {
-    turnRate: number; // -1.0 to 1.0
+    targetHeading: number; // Use Infinity/-Infinity for keyboard turning, or specific angle for joystick
     up: boolean;
     fire: boolean;
     tick: number;
@@ -27,7 +27,7 @@ export class Tank extends Phaser.GameObjects.Container
   rightTreadPosition: number = 0;
 
   currentInput: InputData = {
-      turnRate: 0,
+      targetHeading: 0,
       up: false,
       fire: false,
       tick: 0,
@@ -83,11 +83,33 @@ export class Tank extends Phaser.GameObjects.Container
           this.crosshair.setVisible(true);
       }
   
-      // Rotate based on turnRate - in Matter we need to set the angle property
-      if (this.currentInput.turnRate !== 0) {
-        const turnRate = Math.max(-1.0, Math.min(1.0, this.currentInput.turnRate));
+      // Rotate based on targetHeading - in Matter we need to set the angle property
+      const targetHeading = this.currentInput.targetHeading;
+      
+      if (targetHeading === Infinity) {
+        // Special value for turning right (keyboard input)
+        this.heading += rotationSpeed * delta;
+      } else if (targetHeading === -Infinity) {
+        // Special value for turning left (keyboard input)
+        this.heading -= rotationSpeed * delta;
+      } else if (targetHeading !== 0 && isFinite(targetHeading)) {
+        // Joystick control with specific desired heading
+        // Calculate the difference between joystick angle and tank heading
+        let angleDiff = targetHeading - this.heading;
+        
+        // Normalize to -PI to PI for shortest turn direction
+        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+        
+        // Set turn rate proportional to angle difference, with a multiplier for smoother control
+        const CONTROL_SLOPE = 2.0;  // Imported from UI.ts
+        const turnRate = Math.max(-1.0, Math.min(1.0, angleDiff * CONTROL_SLOPE));
+        
+        // Apply the turn
         this.heading += rotationSpeed * delta * turnRate;
       }
+      
+      // Wrap heading to 0-2π range
       this.heading = Phaser.Math.Wrap(this.heading, 0, Math.PI * 2);
       this.setRotation(this.heading);
 
@@ -187,7 +209,7 @@ export class Tank extends Phaser.GameObjects.Container
       health: this.health,
       ammo: this.ammo,
       team: this.team,
-      turnRate: this.currentInput.turnRate,
+      targetHeading: this.currentInput.targetHeading,
       up: this.currentInput.up,
       down: this.currentInput.down,
       fire: this.currentInput.fire,

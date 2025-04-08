@@ -11,7 +11,7 @@ export class TankSchema extends Schema {
   @type("number") health: number = 100;
   @type("number") ammo: number = PHYSICS.TANK_MAX_AMMO;
   @type("number") team: number = 0;
-  @type("number") turnRate: number = 0;
+  @type("number") targetHeading: number = 0;
   @type("boolean") up: boolean = false;
   @type("boolean") fire: boolean = false;
   @type("number") tick: number = 0;

@@ -74,8 +74,8 @@ export class ClientGameScene extends GameScene {
     keyD: Phaser.Input.Keyboard.Key;
     
     // Virtual inputs from touch controls
-    virtualInputs: { turnRate: number; up: boolean; down: boolean } = {
-      turnRate: 0,
+    virtualInputs: { targetHeading: number; up: boolean; down: boolean } = {
+      targetHeading: 0,
       up: false,
       down: false
     };
@@ -102,7 +102,7 @@ export class ClientGameScene extends GameScene {
     MAX_BUILD_DISTANCE: number = PHYSICS.BUILD_MAX_DISTANCE;
 
     inputPayload: InputData = {
-        turnRate: 0,
+        targetHeading: 0,
         up: false,
         fire: false,
         tick: 0,
@@ -746,25 +746,25 @@ export class ClientGameScene extends GameScene {
         const isChatActive = this.gameUI && this.gameUI.isChatActive;
         if (isChatActive) {
             // Clear inputs when chat is active
-            this.inputPayload.turnRate = 0;
+            this.inputPayload.targetHeading = 0;
             this.inputPayload.up = false;
             this.inputPayload.down = false;
             this.inputPayload.fire = false;
         } else {
             // Handle keyboard input for turning
-            let turnRate = 0;
+            let targetHeading = 0;
             
-            // Convert left/right keys or A/D keys to turnRate
+            // Convert left/right keys or A/D keys to special values for targetHeading
             if (this.cursorKeys.left.isDown || this.keyA.isDown) {
-                turnRate = -1.0;
+                targetHeading = -Infinity; // Special value for turning left with keyboard
             } else if (this.cursorKeys.right.isDown || this.keyD.isDown) {
-                turnRate = 1.0;
+                targetHeading = Infinity; // Special value for turning right with keyboard
             } else {
-                // Use joystick turnRate if available
-                turnRate = this.virtualInputs.turnRate;
+                // Use joystick targetHeading if available
+                targetHeading = this.virtualInputs.targetHeading;
             }
             
-            this.inputPayload.turnRate = turnRate;
+            this.inputPayload.targetHeading = targetHeading;
             this.inputPayload.up = this.cursorKeys.up.isDown || this.keyW.isDown || this.virtualInputs.up;
             this.inputPayload.down = this.cursorKeys.down.isDown || this.keyS.isDown || this.virtualInputs.down;
             this.inputPayload.fire = this.spaceKey.isDown || this.virtualFiring;
