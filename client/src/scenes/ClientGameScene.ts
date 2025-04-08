@@ -312,7 +312,7 @@ export class ClientGameScene extends GameScene {
                     //console.log("Current player tank state changed:", player.tank);
                     
                     // Update client's position based on server state
-                    //this.currentPlayer.updateFromServer(player.tank);
+                    this.currentPlayer.updateFromServer(player.tank);
                     
                     // Update debug rectangle position
                     this.remoteRef.x = player.tank.x;

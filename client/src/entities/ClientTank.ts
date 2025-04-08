@@ -190,23 +190,10 @@ export class ClientTank extends Tank {
       this.y = data.y;
       this.heading = data.heading;
       this.speed = data.speed;
-      this.health = data.health;
       
       // Update the name text position to follow the tank
       if (this.nameText) {
         this.nameText.setPosition(this.x, this.y - 30);
-      }
-      
-      // Update team and apply team color if it has changed
-      if (this.team !== data.team) {
-        this.team = data.team;
-        
-        // Apply team color if team > 0, otherwise clear tint
-        if (this.team > 0 && TEAM_COLORS[this.team]) {
-          this.tankBody.setTint(TEAM_COLORS[this.team]);
-        } else {
-          this.tankBody.clearTint();
-        }
       }
       
       // Update input state
@@ -214,8 +201,6 @@ export class ClientTank extends Tank {
       this.currentInput.up = data.up;
       this.currentInput.fire = data.fire;
       this.currentInput.tick = data.tick;
-    } else {
-      // TODO
     }
   }
 
