@@ -157,18 +157,18 @@ export class ClientTank extends Tank {
     }
     
     // Update pillbox count
-    if (this.pillboxCount < data.pillboxCount) {
-      this.pillboxCount = data.pillboxCount || 0;
-      console.log(`Player ${this.sessionId} has ${this.pillboxCount} pillboxes.`);
-      
-      // If this is the local player, we might want to update the UI
+    if (this.pillboxCount !== data.pillboxCount) {      
       if (this.isLocalPlayer) {
         const gameScene = this.scene as ClientGameScene;
         if (gameScene.gameUI) {
-          gameScene.gameUI.showMessage("Picked up a pillbox!\nSelect a tile and place it for your team.")
-          gameScene.gameUI.updatePillboxCount(this.pillboxCount);
+          if (data.pillboxCount > this.pillboxCount) {
+            gameScene.gameUI.showMessage("Picked up a pillbox!\nSelect a tile and place it for your team.")
+            gameScene.gameUI.updatePillboxCount(data.pillboxCount);
+          }
         }
       }
+
+      this.pillboxCount = data.pillboxCount || 0;
     }
     
     // Update wood count

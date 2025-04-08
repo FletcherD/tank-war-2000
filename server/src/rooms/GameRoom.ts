@@ -119,6 +119,13 @@ export class GameRoom extends Room<MyRoomState> {
         // Get the current tile and check if it can be built on
         const currentTile = this.gameScene.gameMap.getTileAt(tile.x, tile.y);
         if (!currentTile) continue;
+
+        const tileWorldPos = this.gameScene.gameMap.groundLayer.tileToWorldXY(tile.x, tile.y);
+        const distance = Phaser.Math.Distance.Between(
+          tank.x, tank.y, 
+          tileWorldPos.x, tileWorldPos.y
+        );
+        if(distance > PHYSICS.BUILD_MAX_DISTANCE) continue;
         
         const baseTileType = this.gameScene.gameMap.getBaseTileType(currentTile);
         

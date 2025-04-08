@@ -1010,15 +1010,13 @@ export class GameUI {
         // Update build road button state
         if (!isInRange || nWallTiles == 4) {
           this.buildRoadContextButton.style.opacity = '0.5';
-          this.buildRoadContextButton.style.cursor = 'not-allowed';
-          this.buildRoadContextButton.style.backgroundColor = '#888888'; // Grey
           this.buildRoadContextButton.onclick = null; // Remove click handler when disabled
+          this.buildRoadContextButton.classList.add('disabled');
           this.buildRoadContextButton.title = "Can't build road on a wall";
         } else {
           isValidSelection = true;
           this.buildRoadContextButton.style.opacity = '1';
-          this.buildRoadContextButton.style.cursor = 'pointer';
-          this.buildRoadContextButton.style.backgroundColor = '#4CAF50'; // Green
+          this.buildRoadContextButton.classList.remove('disabled');
           this.buildRoadContextButton.onclick = () => this.gameScene.buildTile('road');
           this.buildRoadContextButton.title = "Build Road";
         }
@@ -1026,15 +1024,13 @@ export class GameUI {
         // Update build wall button state
         if (!isInRange || nWallTiles == 4) {
           this.buildWallContextButton.style.opacity = '0.5';
-          this.buildWallContextButton.style.cursor = 'not-allowed';
-          this.buildWallContextButton.style.backgroundColor = '#888888'; // Grey
+          this.buildWallContextButton.classList.add('disabled');
           this.buildWallContextButton.onclick = null; // Remove click handler when disabled
           this.buildWallContextButton.title = "Can't build wall on a wall";
         } else {
           isValidSelection = true;
           this.buildWallContextButton.style.opacity = '1';
-          this.buildWallContextButton.style.cursor = 'pointer';
-          this.buildWallContextButton.style.backgroundColor = '#2196F3'; // Blue
+          this.buildWallContextButton.classList.remove('disabled');
           this.buildWallContextButton.onclick = () => this.gameScene.buildTile('wall');
           this.buildWallContextButton.title = "Build Wall";
         }
@@ -1042,15 +1038,13 @@ export class GameUI {
         // Update harvest wood button state
         if (!isInRange || nForestTiles == 0) {
           this.harvestWoodContextButton.style.opacity = '0.5';
-          this.harvestWoodContextButton.style.cursor = 'not-allowed';
-          this.harvestWoodContextButton.style.backgroundColor = '#888888'; // Grey
+          this.harvestWoodContextButton.classList.add('disabled');
           this.harvestWoodContextButton.onclick = null; // Remove click handler when disabled
           this.harvestWoodContextButton.title = "No forest to harvest";
         } else {
           isValidSelection = true;
           this.harvestWoodContextButton.style.opacity = '1';
-          this.harvestWoodContextButton.style.cursor = 'pointer';
-          this.harvestWoodContextButton.style.backgroundColor = '#8D6E63'; // Brown
+          this.harvestWoodContextButton.classList.remove('disabled');
           this.harvestWoodContextButton.onclick = () => this.gameScene.buildTile('forest');
           this.harvestWoodContextButton.title = "Harvest Wood";
         }

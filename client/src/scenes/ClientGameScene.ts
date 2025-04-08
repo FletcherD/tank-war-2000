@@ -725,14 +725,12 @@ export class ClientGameScene extends GameScene {
                     while (offsetHeading > Math.PI) offsetHeading -= Math.PI * 2;
                     while (offsetHeading < -Math.PI) offsetHeading += Math.PI * 2;
                     const offsetSpeed = playerState.speed - serverState.speed;
-                    console.log(playerSnapshot.time - serverSnapshot.time, playerState.heading, serverState.heading);
-
+                    
                     const correctionAmt = 0.2;
                     this.currentPlayer.x -= offsetX * correctionAmt;
                     this.currentPlayer.y -= offsetY * correctionAmt;
                     this.currentPlayer.heading -= offsetHeading * correctionAmt;
                     this.currentPlayer.speed -= offsetSpeed * correctionAmt;
-
                 }
             }
             
@@ -874,12 +872,11 @@ export class ClientGameScene extends GameScene {
     // Start tile selection process - simplified to always select 2x2
     startTileSelection(pointer: Phaser.Input.Pointer) {
         // Convert pointer position to tile coordinates
-        const tileXY = this.gameMap.groundLayer.worldToTileXY(pointer.worldX, pointer.worldY);
+        let tilePos = this.gameMap.groundLayer.worldToTileXY(pointer.worldX, pointer.worldY);
         
         // Get the top-left corner of a 2x2 area centered at cursor
-        // For even-sized selections like 2x2, we need to offset by -1,-1 from the cursor
-        const startX = tileXY.x - 1;
-        const startY = tileXY.y - 1;
+        const startX = tilePos.x - (tilePos.x % 2);
+        const startY = tilePos.y - (tilePos.y % 2);
         
         // Set selection to be exactly 2x2
         this.selectionStartTile = { x: startX, y: startY };
@@ -907,11 +904,11 @@ export class ClientGameScene extends GameScene {
         if (!pointer.isDown) return;
         
         // Convert pointer position to tile coordinates
-        const tileXY = this.gameMap.groundLayer.worldToTileXY(pointer.worldX+8, pointer.worldY+8);
+        let tilePos = this.gameMap.groundLayer.worldToTileXY(pointer.worldX, pointer.worldY);
         
         // Get the top-left corner of a 2x2 area centered at cursor
-        const startX = tileXY.x - 1;
-        const startY = tileXY.y - 1;
+        const startX = tilePos.x - (tilePos.x % 2);
+        const startY = tilePos.y - (tilePos.y % 2);
         
         // Set selection to be exactly 2x2
         this.selectionStartTile = { x: startX, y: startY };

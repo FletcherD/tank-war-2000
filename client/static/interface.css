@@ -389,19 +389,23 @@ p {
 }
 
 .context-menu-button.road {
-    background-color: #4CAF50;
-}
-
-.context-menu-button.wall {
     background-color: #2196F3;
 }
 
-.context-menu-button.harvest {
-    background-color: #8D6E63;
+.context-menu-button.wall {
+    background-color: #c2905e;
 }
 
-.context-menu-button.pillbox-button {
+.context-menu-button.harvest {
+    background-color: #1fad1a;
+}
+
+.context-menu-button.pillbox {
     background-color: #9c27b0;
+}
+
+.context-menu-button.disabled {
+    background-color: #858585;
 }
 
 /* Welcome modal */
