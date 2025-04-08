@@ -131,8 +131,8 @@ p {
 /* Touch controls */
 #joystickContainer {
     position: absolute;
-    bottom: 20px;
-    left: 20px;
+    bottom: 40px;
+    left: 40px;
     width: 120px;
     height: 120px;
     pointer-events: auto;
