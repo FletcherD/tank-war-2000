@@ -313,8 +313,8 @@ p {
 /* Chat controls */
 #chatContainer {
     position: absolute;
-    bottom: 50px;
-    left: 10px;
+    top: 75px;
+    right: 45px;
     display: none;
     background-color: rgba(0, 0, 0, 0.7);
     padding: 5px;
@@ -573,10 +573,10 @@ p {
 /* Message element - enhanced for newswire replacement */
 #messageElement {
     position: absolute;
-    top: 100px;
+    top: 10px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 10px 20px;
+    padding: 8px 15px;
     background-color: rgba(0, 0, 0, 0.8);
     color: white;
     border-radius: 5px;

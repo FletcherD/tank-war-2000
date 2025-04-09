@@ -237,7 +237,7 @@ export class GameUI {
     this.chatInput = document.createElement('input');
     this.chatInput.type = 'text';
     this.chatInput.className = 'chatInput';
-    this.chatInput.placeholder = 'Team chat (Shift+Enter for all)';
+    this.chatInput.placeholder = 'All chat (Shift+Enter for team)'; // Updated to make all chat the default
     this.chatInput.maxLength = 100; // Limit message length
     this.chatContainer.appendChild(this.chatInput);
     
@@ -254,8 +254,8 @@ export class GameUI {
     chatIconButton.textContent = '💬';
     chatIconButton.className = 'button';
     chatIconButton.style.position = 'absolute';
-    chatIconButton.style.bottom = '10px';
-    chatIconButton.style.left = '10px';
+    chatIconButton.style.top = '75px';
+    chatIconButton.style.right = '10px';
     chatIconButton.style.zIndex = '20';
     chatIconButton.style.pointerEvents = 'auto';
     this.uiContainer.appendChild(chatIconButton);
@@ -270,14 +270,14 @@ export class GameUI {
         this.closeChat();
         event.preventDefault();
       } else if (event.key === 'Enter' && this.isChatActive) {
-        this.sendChatMessage(event.shiftKey);
+        this.sendChatMessage(event.shiftKey); // Shift now means team chat
         event.preventDefault();
       }
     });
     
     // Add click handlers for chat buttons
     chatIconButton.onclick = () => this.toggleChat();
-    this.chatButton.onclick = () => this.sendChatMessage(false);
+    this.chatButton.onclick = () => this.sendChatMessage(false); // false means all chat now
     
     // Add blur handler to close chat when clicking outside
     this.chatInput.onblur = (e) => {
@@ -1189,21 +1189,28 @@ export class GameUI {
   
   /**
    * Sends a chat message to the server
-   * @param isAllChat Whether the message should be sent to all players or just team
+   * @param isTeamChat Whether the message should be sent to team only (true) or all players (false)
    */
-  public sendChatMessage(isAllChat: boolean) {
+  public sendChatMessage(isTeamChat: boolean) { // Changed parameter name to reflect inverted behavior
     const messageText = this.chatInput.value.trim();
     if (messageText.length === 0) {
       this.closeChat();
       return;
     }
     
-    // Check for /all prefix overriding the isAllChat parameter
-    let finalIsAllChat = isAllChat;
+    // Check for team chat prefixes
+    let finalIsTeamChat = isTeamChat;
     let finalMessageText = messageText;
     
-    if (messageText.startsWith('/all ')) {
-      finalIsAllChat = true;
+    // Support /team or /t prefix to override to team chat
+    if (messageText.startsWith('/team ') || messageText.startsWith('/t ')) {
+      finalIsTeamChat = true;
+      finalMessageText = messageText.startsWith('/team ') ? 
+        messageText.substring(6).trim() : 
+        messageText.substring(3).trim();
+    } else if (messageText.startsWith('/all ')) {
+      // Still support /all for clarity
+      finalIsTeamChat = false;
       finalMessageText = messageText.substring(5).trim();
     }
     
@@ -1215,7 +1222,7 @@ export class GameUI {
     // Send message to server
     this.gameScene.room.send("chatMessage", {
       message: finalMessageText,
-      isAllChat: finalIsAllChat
+      isAllChat: !finalIsTeamChat // Invert the flag for server compatibility
     });
     
     // Clear input after sending
