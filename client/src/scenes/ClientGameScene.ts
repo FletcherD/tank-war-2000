@@ -662,7 +662,7 @@ export class ClientGameScene extends GameScene {
                             case 'game_win':
                                 messageType = 'success';
                                 // Show a big win message with the game UI
-                                this.gameUI.showMessage(message.message, 10000);
+                                this.gameUI.showMessage(message.message, 10000, 'success');
                                 break;
                             case 'info':
                                 messageType = 'info';
@@ -678,9 +678,9 @@ export class ClientGameScene extends GameScene {
                 SI.snapshot.add(snapshot);
             });
             
-            // Add initial server connection message to newswire
+            // Add initial server connection message as popup
             setTimeout(() => {
-                this.gameUI.addNewswireMessage("Connected to server successfully!", 'success');
+                this.gameUI.showMessage("Connected to server successfully!", 3000);
             }, 2000);
 
         } catch (e) {

@@ -81,7 +81,7 @@ export class GameRoom extends Room<MyRoomState> {
           if (state.tank.team === team) {
             const thisClient = this.clients.getById(sessionId);
             if (!thisClient) return;
-            this.send(thisClient, "newswire", {
+            thisClient.send("newswire", {
               type: 'chat',
               playerId: client.sessionId,
               playerName: playerName,
@@ -151,7 +151,7 @@ export class GameRoom extends Room<MyRoomState> {
       
       // If no valid tiles, send failure response
       if (validTiles.length === 0) {
-        this.send(client, "tileBuildStarted", {
+        client.send("tileBuildStarted", {
           success: false,
           reason: `No valid tiles for ${data.tileType} building.`
         });
@@ -162,7 +162,7 @@ export class GameRoom extends Room<MyRoomState> {
       if (!isHarvesting && woodCost > 0) {
         // Check if player has enough wood
         if (tank.schema.wood < woodCost) {
-          this.send(client, "tileBuildStarted", {
+          client.send("tileBuildStarted", {
             success: false,
             reason: `Not enough wood. Need ${woodCost}, have ${tank.schema.wood}.`
           });
@@ -186,7 +186,7 @@ export class GameRoom extends Room<MyRoomState> {
       }));
       
       // Send success response with the valid tiles
-      this.send(client, "tileBuildStarted", {
+      client.send("tileBuildStarted", {
         success: true,
         tiles: validTiles,
         tileType: data.tileType,
@@ -204,7 +204,7 @@ export class GameRoom extends Room<MyRoomState> {
         
         if (!isValid) {
           // If the area is not valid, inform the client
-          this.send(client, "pillboxPlaced", { 
+          client.send("pillboxPlaced", { 
             success: false, 
             x: data.x, 
             y: data.y,
@@ -222,7 +222,7 @@ export class GameRoom extends Room<MyRoomState> {
         const success = tank.placePillbox(pillboxX, pillboxY);
         
         // Inform client of success/failure
-        this.send(client, "pillboxPlaced", { 
+        client.send("pillboxPlaced", { 
           success, 
           x: data.x, 
           y: data.y,

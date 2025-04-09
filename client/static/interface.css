@@ -313,17 +313,19 @@ p {
 /* Chat controls */
 #chatContainer {
     position: absolute;
-    top: -36px;
-    right: 0;
+    bottom: 50px;
+    left: 10px;
     display: none;
     background-color: rgba(0, 0, 0, 0.7);
     padding: 5px;
     width: auto;
     pointer-events: auto;
-    z-index: 20;
+    z-index: 30;
     display: flex;
     flex-direction: row;
     align-items: center;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .chatInput {
@@ -568,20 +570,24 @@ p {
     visibility: hidden;
 }
 
-/* Message element */
+/* Message element - enhanced for newswire replacement */
 #messageElement {
     position: absolute;
     top: 100px;
     left: 50%;
     transform: translateX(-50%);
     padding: 10px 20px;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8);
     color: white;
     border-radius: 5px;
     font-family: 'Courier Prime', monospace;
     font-weight: 700;
     display: none;
-    z-index: 20;
+    z-index: 50;
+    max-width: 80%;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* Animation to show you're firing */

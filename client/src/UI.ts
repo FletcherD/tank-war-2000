@@ -16,16 +16,8 @@ export class GameUI {
   private harvestWoodButton: HTMLButtonElement;
   private messageElement: HTMLDivElement;
   private messageTimeout: number | null = null;
+  private messageQueue: Array<{message: string, duration: number, type: string}> = [];
   private gameScene: ClientGameScene;
-  
-  // Newswire elements
-  private newswireContainer: HTMLDivElement;
-  private newswire: HTMLDivElement;
-  private newswireText: HTMLDivElement;
-  private recentMessageContainer: HTMLDivElement;
-  private newswireExpandButton: HTMLButtonElement;
-  private isNewswireExpanded: boolean = false;
-  // No longer limiting number of messages, using scrollbar instead
   
   // Chat elements
   private chatContainer: HTMLDivElement;
@@ -160,10 +152,6 @@ export class GameUI {
     woodBarOuter.appendChild(this.woodTextElement);
 
 
-    // Create newswire container directly under the health/ammo/wood bars on the top right
-    this.newswireContainer = document.createElement('div');
-    this.newswireContainer.id = 'newswireContainer';
-    this.healthBarContainer.appendChild(this.newswireContainer);
     
     // Create context menu for tile selection
     this.contextMenu = document.createElement('div');
@@ -238,59 +226,12 @@ export class GameUI {
     this.uiContainer.appendChild(this.messageElement);
 
     
-    // Create newswire
-    this.newswire = document.createElement('div');
-    this.newswire.id = 'newswire';
-    this.newswireContainer.appendChild(this.newswire);
-    
-    // Create newswire text container
-    this.newswireText = document.createElement('div');
-    this.newswireText.id = 'newswireText';
-    this.newswire.appendChild(this.newswireText);
-    
-    // Create a container for the most recent message (shown when collapsed)
-    this.recentMessageContainer = document.createElement('div');
-    this.recentMessageContainer.id = 'recentMessageContainer';
-    this.newswire.appendChild(this.recentMessageContainer);
-    
-    // Create a container for newswire buttons
-    const newswireButtonsContainer = document.createElement('div');
-    newswireButtonsContainer.className = 'newswire-buttons-container';
-    this.newswireContainer.appendChild(newswireButtonsContainer);
-    
-    // Create expand button
-    this.newswireExpandButton = document.createElement('button');
-    this.newswireExpandButton.id = 'newswireExpandButton';
-    this.newswireExpandButton.textContent = '▼';
-    this.newswireExpandButton.className = 'button';
-    newswireButtonsContainer.appendChild(this.newswireExpandButton);
-    
-    // Add click handler to expand/collapse the newswire
-    this.newswireExpandButton.onclick = () => {
-      this.isNewswireExpanded = !this.isNewswireExpanded;
-      if (this.isNewswireExpanded) {
-        this.newswire.classList.add('expanded');
-        this.newswireExpandButton.textContent = '▲';
-        // Show all messages
-        this.newswireText.style.display = 'block';
-        this.recentMessageContainer.style.display = 'none';
-      } else {
-        this.newswire.classList.remove('expanded');
-        this.newswireExpandButton.textContent = '▼';
-        // Only show most recent message
-        this.newswireText.style.display = 'none';
-        this.recentMessageContainer.style.display = 'block';
-      }
-    };
-    
-    // Initially hide all messages except most recent
-    this.newswireText.style.display = 'none';
     
     // Create chat container, will be shown/hidden as needed
     this.chatContainer = document.createElement('div');
     this.chatContainer.id = 'chatContainer';
     this.chatContainer.style.display = 'none'; // Initially hidden
-    this.newswireContainer.appendChild(this.chatContainer);
+    this.uiContainer.appendChild(this.chatContainer);
     
     // Create chat input field
     this.chatInput = document.createElement('input');
@@ -307,12 +248,17 @@ export class GameUI {
     this.chatButton.className = 'button';
     this.chatContainer.appendChild(this.chatButton);
     
-    // Create a chat icon button in the newswire buttons container
+    // Create a chat icon button
     const chatIconButton = document.createElement('button');
-    chatIconButton.id = 'newswireChatButton';
+    chatIconButton.id = 'chatButton';
     chatIconButton.textContent = '💬';
     chatIconButton.className = 'button';
-    newswireButtonsContainer.appendChild(chatIconButton);
+    chatIconButton.style.position = 'absolute';
+    chatIconButton.style.bottom = '10px';
+    chatIconButton.style.left = '10px';
+    chatIconButton.style.zIndex = '20';
+    chatIconButton.style.pointerEvents = 'auto';
+    this.uiContainer.appendChild(chatIconButton);
     
     // Add keyboard event listener for Enter key to toggle chat
     document.addEventListener('keydown', (event) => {
@@ -1129,77 +1075,86 @@ export class GameUI {
    * Shows a temporary message to the player
    * @param message The message to display
    * @param duration How long to show the message in milliseconds (default 3000ms)
+   * @param type Optional type for styling (info, warning, error, success)
    */
-  public showMessage(message: string, duration: number = 3000) {
-    // Clear any existing message timeout
-    if (this.messageTimeout !== null) {
-      clearTimeout(this.messageTimeout);
-      this.messageTimeout = null;
+  public showMessage(message: string, duration: number = 3000, type: 'info' | 'warning' | 'error' | 'success' = 'info') {
+    // Add the message to the queue
+    this.messageQueue.push({ message, duration, type });
+    
+    // If there's no active timeout, show the first message in the queue immediately
+    if (this.messageTimeout === null) {
+      this.showNextMessage();
     }
+  }
+  
+  /**
+   * Processes the next message in the queue
+   */
+  private showNextMessage() {
+    // If queue is empty, do nothing
+    if (this.messageQueue.length === 0) {
+      return;
+    }
+    
+    // Get the next message from the queue
+    const { message, duration, type } = this.messageQueue.shift();
     
     // Set message content and show it
     this.messageElement.textContent = message;
     this.messageElement.style.display = 'block';
     
+    // Apply styling based on message type
+    switch (type) {
+      case 'info':
+        this.messageElement.style.color = '#ffffff'; // White
+        break;
+      case 'success':
+        this.messageElement.style.color = '#4caf50'; // Green
+        break;
+      case 'warning':
+        this.messageElement.style.color = '#ff9800'; // Orange
+        break;
+      case 'error':
+        this.messageElement.style.color = '#f44336'; // Red
+        break;
+    }
+    
     console.log(`Showing message: "${message}" for ${duration}ms`);
     
-    // Hide message after duration
+    // Hide message after duration and show the next one
     this.messageTimeout = window.setTimeout(() => {
       console.log(`Hiding message: "${message}" after ${duration}ms`);
       this.messageElement.style.display = 'none';
       this.messageTimeout = null;
+      
+      // Process next message if any
+      if (this.messageQueue.length > 0) {
+        this.showNextMessage();
+      }
     }, duration);
   }
   
   /**
-   * Adds a message to the newswire
-   * @param message The message to add to the newswire
+   * Adds a message that previously went to the newswire but now goes to the popup system
+   * @param message The message to add
    * @param type Optional type for styling (info, warning, error, success)
    */
   public addNewswireMessage(message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info') {
-    // Create a message element
-    const messageElement = document.createElement('div');
-    messageElement.className = `newswire-message ${type}`;
-    messageElement.textContent = message;
+    // Use different duration based on message type
+    let duration = 3000; // Default 3 seconds
     
-    // Add to the main newswire text container (shown when expanded)
-    this.newswireText.appendChild(messageElement);
-    
-    // Auto-scroll to the bottom if newswire is expanded
-    if (this.isNewswireExpanded) {
-      this.newswire.scrollTop = this.newswire.scrollHeight;
+    switch (type) {
+      case 'warning':
+      case 'error':
+        duration = 5000; // 5 seconds for important messages
+        break;
+      case 'success':
+        duration = 4000; // 4 seconds for success messages
+        break;
     }
     
-    // Update the recent message container with a clone of the newest message
-    this.updateRecentMessage(message, type);
-  
-    // No longer remove old messages - scrollbar will appear if needed
-  }
-  
-  /**
-   * Updates the recent message container with the newest message
-   * @param message The message text
-   * @param type The message type for styling
-   */
-  private updateRecentMessage(message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info') {
-    // Clear previous recent message
-    this.recentMessageContainer.innerHTML = '';
-    
-    // Create a new message element for the recent container
-    const recentMessage = document.createElement('div');
-    recentMessage.className = `newswire-message ${type}`;
-    recentMessage.textContent = message;
-    
-    // Add to recent message container
-    this.recentMessageContainer.appendChild(recentMessage);
-  }
-  
-  /**
-   * Clears all messages from the newswire
-   */
-  public clearNewswire() {
-    this.newswireText.innerHTML = '';
-    this.recentMessageContainer.innerHTML = '';
+    // Use the popup message system instead, passing along the message type
+    this.showMessage(message, duration, type);
   }
   
   /**
@@ -1212,13 +1167,6 @@ export class GameUI {
     if (this.isChatActive) {
       // Focus the input field when opening
       this.chatInput.focus();
-      
-      // Ensure newswire is expanded when chat is active
-      if (!this.isNewswireExpanded) {
-        this.isNewswireExpanded = true;
-        this.newswire.classList.add('expanded');
-        this.newswireExpandButton.textContent = '▲';
-      }
     }
   }
   
@@ -1276,106 +1224,19 @@ export class GameUI {
   }
   
   /**
-   * Adds a chat message to the newswire
+   * Adds a chat message as a popup
    * @param message The message content
    * @param playerName The name/id of the player who sent the message
    * @param isTeamChat Whether this is a team-only message
    * @param team The team number of the sender
    */
   public addChatMessage(message: string, playerName: string, isTeamChat: boolean, team: number) {
-    // Create a message element
-    const messageElement = document.createElement('div');
-    messageElement.className = `newswire-message chat-message`;
+    // Format the complete message as text
+    const chatPrefix = isTeamChat ? '(Team) ' : '(All) ';
+    const formattedMessage = `${chatPrefix}${playerName}: ${message}`;
     
-    // Create prefix element (Team) or (All) with appropriate color
-    const prefixElement = document.createElement('span');
-    if (isTeamChat) {
-      prefixElement.textContent = '(Team) ';
-      prefixElement.style.color = '#ffcc00'; // Yellow for team chat
-    } else {
-      prefixElement.textContent = '(All) ';
-      prefixElement.style.color = '#ff3333'; // Red for all chat
-    }
-    
-    // Create player name element
-    const playerNameElement = document.createElement('span');
-    playerNameElement.textContent = playerName + ': ';
-    
-    // Set player name color based on team
-    if (team === 1) { // Blue team
-      playerNameElement.style.color = '#3333ff';
-    } else { // Red team
-      playerNameElement.style.color = '#ff3333';
-    }
-    
-    // Create message content element
-    const messageContentElement = document.createElement('span');
-    messageContentElement.textContent = message;
-    messageContentElement.style.color = '#ffffff';
-    
-    // Add all parts to the message element
-    messageElement.appendChild(prefixElement);
-    messageElement.appendChild(playerNameElement);
-    messageElement.appendChild(messageContentElement);
-    
-    // Add to newswire at the end (newest messages at the bottom)
-    this.newswireText.appendChild(messageElement);
-    
-    // Auto-scroll to the bottom if newswire is expanded
-    if (this.isNewswireExpanded) {
-      this.newswire.scrollTop = this.newswire.scrollHeight;
-    }
-    
-    // Update the recent message container as well
-    this.updateRecentChatMessage(message, playerName, isTeamChat, team);
-    
-    // No longer remove old messages - scrollbar will appear if needed
-  }
-  
-  /**
-   * Updates the recent message container with a chat message
-   */
-  private updateRecentChatMessage(message: string, playerName: string, isTeamChat: boolean, team: number) {
-    // Clear previous recent message
-    this.recentMessageContainer.innerHTML = '';
-    
-    // Create a new message element for the recent container
-    const recentMessage = document.createElement('div');
-    recentMessage.className = `newswire-message chat-message`;
-    
-    // Create prefix element (Team) or (All) with appropriate color
-    const prefixElement = document.createElement('span');
-    if (isTeamChat) {
-      prefixElement.textContent = '(Team) ';
-      prefixElement.style.color = '#ffcc00'; // Yellow for team chat
-    } else {
-      prefixElement.textContent = '(All) ';
-      prefixElement.style.color = '#ff3333'; // Red for all chat
-    }
-    
-    // Create player name element
-    const playerNameElement = document.createElement('span');
-    playerNameElement.textContent = playerName + ': ';
-    
-    // Set player name color based on team
-    if (team === 1) { // Blue team
-      playerNameElement.style.color = '#3333ff';
-    } else { // Red team
-      playerNameElement.style.color = '#ff3333';
-    }
-    
-    // Create message content element
-    const messageContentElement = document.createElement('span');
-    messageContentElement.textContent = message;
-    messageContentElement.style.color = '#ffffff';
-    
-    // Add all parts to the message element
-    recentMessage.appendChild(prefixElement);
-    recentMessage.appendChild(playerNameElement);
-    recentMessage.appendChild(messageContentElement);
-    
-    // Add to recent message container
-    this.recentMessageContainer.appendChild(recentMessage);
+    // Show as a popup message with longer duration for chat messages
+    this.showMessage(formattedMessage, 6000);
   }
 
 }
