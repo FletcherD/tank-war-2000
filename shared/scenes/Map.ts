@@ -55,10 +55,7 @@ export class GameMap {
         
         console.log("Loading tileset:", tilesetData.name);
 
-        // Read and add tile properties from tilesetData to the tileset
         const tileProperties = {};
-        // Loop through all tiles in the tileset data
-        console.log(`Processing tileset data with ${tilesetData.tiles ? tilesetData.tiles.length : 0} tiles`);
         
         if (tilesetData.tiles) {
             for (const tileKey in tilesetData.tiles) {

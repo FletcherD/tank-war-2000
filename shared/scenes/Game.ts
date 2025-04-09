@@ -29,7 +29,6 @@ export class GameScene extends Phaser.Scene {
     teamStations: { [team: number]: Station[] } = {};
 
     constructor() {
-      console.log("GameScene constructor");
         super({ key: "game" });
     }
 

@@ -57,7 +57,34 @@ export class PhaserServer {
   
   shutdown() {
     if (this.game) {
-      this.game.destroy(true);
+      try {
+        // Fix for "Cannot read properties of undefined (reading 'destroy')" 
+        // by ensuring TextureManager.stamp exists before destroying the game
+        if (this.game.textures && !this.game.textures.stamp) {
+          this.game.textures.stamp = {
+            destroy: () => {} // Provide empty destroy method
+          };
+        }
+        
+        // Fix for "screen.orientation.removeEventListener is not a function"
+        // JSDOM doesn't fully implement the screen.orientation API
+        if (typeof global !== 'undefined' && global.screen && global.screen.orientation) {
+          if (!global.screen.orientation.removeEventListener) {
+            global.screen.orientation.removeEventListener = () => {};
+          }
+        }
+        
+        // Fix for "window.cancelAnimationFrame is not a function"
+        if (typeof window !== 'undefined' && !window.cancelAnimationFrame) {
+          window.cancelAnimationFrame = (id) => {
+            if (id) clearTimeout(id);
+          };
+        }
+        
+        this.game.destroy(true);
+      } catch (error) {
+        console.error('Error shutting down Phaser game:', error);
+      }
     }
   }
 }

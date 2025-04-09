@@ -78,10 +78,6 @@ export class ServerGameScene extends GameScene {
 
   create() {
     super.create();
-    console.log("ServerGameScene created");
-
-    console.log(this.room.state)
-
     // Create the game map
     this.gameMap = new ServerMap(this);
     this.gameMap.createTilemapFromFile();
@@ -110,7 +106,6 @@ export class ServerGameScene extends GameScene {
     // Add stations to the map
     const mapData = this.cache.json.get('mapData');
     if (mapData.stations) {
-        console.log("Adding stations from map data:", mapData.stations);
         const stationLocations = mapData.stations;
         
         for (let i = 0; i < stationLocations.length; i++) {
@@ -144,7 +139,6 @@ export class ServerGameScene extends GameScene {
     
     // Add pillboxes to the map
     if (mapData.pillboxes) {
-        console.log("Adding pillboxes from map data:", mapData.pillboxes);
         const pillboxLocations = mapData.pillboxes;
         
         this.addPillbox = (x, y, team) => {

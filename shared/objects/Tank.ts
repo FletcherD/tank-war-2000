@@ -154,7 +154,6 @@ export class Tank extends Phaser.GameObjects.Container
   
 
   fire() {
-    console.log("Base Tank fire")
   }
 
   animate(delta: number, speed: number, rotationSpeed: number) {}

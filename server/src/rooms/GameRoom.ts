@@ -108,7 +108,6 @@ export class GameRoom extends Room<MyRoomState> {
     this.onMessage("buildTile", (client, data: { tiles: { x: number, y: number }[], tileType: string }) => {
       const tank = this.gameScene.players.get(client.sessionId);
       if (!tank) return;
-      console.log(`Received tile build request from ${client.sessionId}:`, data);
       
       // Validate tiles for building (ensure they are valid terrain types)
       const validTiles = [];
@@ -174,7 +173,7 @@ export class GameRoom extends Room<MyRoomState> {
         tank.useWood(woodCost);
       }
 
-      console.log(`Starting tile construction for ${client.sessionId} - ${data.tileType}`);
+      console.log(`Starting tile construction for ${client.sessionId} - ${data.tileType} at ${validTiles[0]}`);
       
       // Add to player's build queue
       tank.buildQueue = validTiles.map(tile => ({
@@ -273,17 +272,13 @@ export class GameRoom extends Room<MyRoomState> {
         if (playerState.tank.health !== schema.health) playerState.tank.health = schema.health;
         if (playerState.tank.ammo !== schema.ammo) playerState.tank.ammo = schema.ammo;
         if (playerState.tank.team !== schema.team) playerState.tank.team = schema.team;
-        if (playerState.tank.left !== schema.left) playerState.tank.left = schema.left;
-        if (playerState.tank.right !== schema.right) playerState.tank.right = schema.right;
+        if (playerState.tank.targetHeading !== schema.targetHeading) playerState.tank.targetHeading = schema.targetHeading;
         if (playerState.tank.up !== schema.up) playerState.tank.up = schema.up;
-        if (playerState.tank.down !== schema.down) playerState.tank.down = schema.down;
         if (playerState.tank.fire !== schema.fire) playerState.tank.fire = schema.fire;
         if (playerState.tank.tick !== schema.tick) playerState.tank.tick = schema.tick;
         if (playerState.tank.pillboxCount !== schema.pillboxCount) playerState.tank.pillboxCount = schema.pillboxCount;
         if (playerState.tank.wood !== schema.wood) playerState.tank.wood = schema.wood;
         
-        // Add debugging to check if updates are happening on the server side
-        //console.log(`Player ${sessionId} position: ${schema.x.toFixed(2)}, ${schema.y.toFixed(2)}`);
       }
     });
   }
@@ -292,7 +287,7 @@ export class GameRoom extends Room<MyRoomState> {
    * Broadcasts a newswire message to all connected clients
    */
   broadcastNewswire(message: NewswireMessage) {
-    console.log(message);
+    console.log("Newswire:", message.message);
     this.broadcast("newswire", message);
   }
 

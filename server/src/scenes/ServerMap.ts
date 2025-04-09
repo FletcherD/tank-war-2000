@@ -58,8 +58,6 @@ export class ServerMap extends GameMap {
         this.schema.tileIndices.push(tileIndex);
       }
     }
-
-    console.log(`Map schema initialized: ${this.schema.mapName}, ${this.schema.mapWidth}x${this.schema.mapHeight}, ${this.schema.tileIndices.length} tiles`);
   }
 
   createTilemapFromFile() {
