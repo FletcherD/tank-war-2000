@@ -346,8 +346,6 @@ export class ClientTank extends Tank {
         
         // Show respawn complete message only when transitioning from respawning to not respawning
         if (this.wasRespawning && gameScene.gameUI) {
-          console.log("Transition from respawning to active - showing message for 2000ms");
-          gameScene.gameUI.showMessage("Respawned at team station.", 2000);
           this.wasRespawning = false;
         }
       }

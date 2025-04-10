@@ -32,7 +32,8 @@
     "phaser": "3.88.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "v8-profiler-next": "^1.10.0"
   },
   "dependencies": {
     "@colyseus/core": "^0.16.13",

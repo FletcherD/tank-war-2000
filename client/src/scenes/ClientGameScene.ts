@@ -517,10 +517,10 @@ export class ClientGameScene extends GameScene {
                         });
                     }
                     
-                    if (this.gameUI) {
-                        const tileType = response.tileType || 'tile';
-                        this.gameUI.showMessage(`${tileType.charAt(0).toUpperCase() + tileType.slice(1)} construction started.`);
-                    }
+                    // if (this.gameUI) {
+                    //     const tileType = response.tileType || 'tile';
+                    //     this.gameUI.showMessage(`${tileType.charAt(0).toUpperCase() + tileType.slice(1)} construction started.`);
+                    // }
                     this.clearSelection();
                 } else {
                     if (this.gameUI) {
@@ -570,16 +570,6 @@ export class ClientGameScene extends GameScene {
                     // If queue is empty, building is complete
                     if (this.buildQueue.length === 0) {
                         this.isBuilding = false;
-                        if (this.gameUI) {
-                            // Handle wood harvesting specific message
-                            if (data.isHarvesting) {
-                                this.gameUI.showMessage(`Harvested 1 wood from forest.`);
-                                this.gameUI.addNewswireMessage(`Player collected wood from the forest`, 'success');
-                            } else {
-                                const displayTileType = data.tileType || tileType || 'Tile';
-                                this.gameUI.showMessage(`${displayTileType.charAt(0).toUpperCase() + displayTileType.slice(1)} construction complete.`);
-                            }
-                        }
                     }
                 }
             });
@@ -598,9 +588,6 @@ export class ClientGameScene extends GameScene {
                     // If queue is empty, building is complete
                     if (this.buildQueue.length === 0) {
                         this.isBuilding = false;
-                        if (this.gameUI) {
-                            this.gameUI.showMessage("Road construction complete.");
-                        }
                     }
                 }
             });
@@ -677,11 +664,6 @@ export class ClientGameScene extends GameScene {
             this.room.onMessage("snapshot", (snapshot: any) => {
                 SI.snapshot.add(snapshot);
             });
-            
-            // Add initial server connection message as popup
-            setTimeout(() => {
-                this.gameUI.showMessage("Connected to server successfully!", 3000);
-            }, 2000);
 
         } catch (e) {
             // couldn't connect
@@ -857,14 +839,6 @@ export class ClientGameScene extends GameScene {
             // If we've completed all tiles, finish building
             if (this.buildQueue.length === 0) {
                 this.isBuilding = false;
-                if (this.gameUI) {
-                    // Different message based on what was built
-                    if (currentTile.tileType === 'forest') {
-                        this.gameUI.showMessage("Wood harvesting complete.");
-                    } else {
-                        this.gameUI.showMessage(`${currentTile.tileType.charAt(0).toUpperCase() + currentTile.tileType.slice(1)} construction complete.`);
-                    }
-                }
             }
         }
     }
@@ -991,8 +965,6 @@ export class ClientGameScene extends GameScene {
     buildTile(tileType: string = 'road') {
         // Check if already building or no tiles selected
         if (this.isBuilding || !this.selectedTiles.length || !this.currentPlayer) return;
-
-        console.log(`Starting tile construction for ${this.currentPlayer.sessionId} - ${tileType}`);
         
         const distance = this.getSelectionDistance();
         
@@ -1002,15 +974,6 @@ export class ClientGameScene extends GameScene {
                 tiles: this.selectedTiles,
                 tileType: tileType
             });
-            
-            // Show message to user based on tile type
-            if (this.gameUI) {
-                if (tileType === 'forest') {
-                    this.gameUI.showMessage(`Wood harvesting request sent to server...`);
-                } else {
-                    this.gameUI.showMessage(`${tileType.charAt(0).toUpperCase() + tileType.slice(1)} construction request sent to server...`);
-                }
-            }
             
             // Clear selection rectangle but keep selected tiles stored
             if (this.selectionRect) {
