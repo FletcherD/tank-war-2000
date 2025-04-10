@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
     <title>tank war 2000</title>
     <!-- Google Font: Courier Prime -->
@@ -18,11 +19,25 @@
             height: 100%;
             width: 100%;
             overflow: hidden;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
         }
         canvas {
             display: block;
             width: 100% !important;
             height: 100% !important;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
         }
         a { color: red; }
         input { outline: none; }
@@ -35,10 +50,16 @@
           });
         });
         
-        // Prevent bounce effect on iOS
+        // Prevent bounce effect on iOS and text selection issues
         document.addEventListener('touchmove', function(e) {
           e.preventDefault();
         }, { passive: false });
+        
+        // Prevent text selection on the entire document
+        document.addEventListener('selectstart', function(e) {
+          e.preventDefault();
+          return false;
+        });
       </script>
 </head>
 <body>
