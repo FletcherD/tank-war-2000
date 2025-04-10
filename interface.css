@@ -57,6 +57,13 @@ html,body{
     margin: 0;
     padding: 0;
     overflow: hidden;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
 }
 div {
     box-sizing: border-box;
@@ -126,6 +133,12 @@ p {
     position: absolute;
     pointer-events: none;
     z-index: 10;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 /* Touch controls */
@@ -155,6 +168,13 @@ p {
     z-index: 20;
     user-select: none;
     font-size: 20px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
 }
 
 #forwardButton {
@@ -173,6 +193,13 @@ p {
     z-index: 20;
     user-select: none;
     font-size: 20px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
 }
 
 /* Minimap */
@@ -380,6 +407,13 @@ p {
     border: 2px solid rgba(255,255,255,0.5);
     box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
     transition: transform 0.1s ease-in-out;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
 }
 
 .context-menu-button:hover {
