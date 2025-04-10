@@ -12,18 +12,18 @@ export class SceneSelector extends Phaser.Scene {
         this.cameras.main.setBackgroundColor(0x000000);
 
         // preload demo assets
-        this.load.image('tank', './assets/tank.png');
-        this.load.image('tankTreads', './assets/tankTreads.png');
-        this.load.image('bullet', './assets/bullet.png');
-        this.load.image('crosshair', './assets/crosshair.png');
+        this.load.image('tank', './assets/'+PHYSICS.TILE_SIZE+'/tank.png');
+        this.load.image('tankTreads', './assets/'+PHYSICS.TILE_SIZE+'/tankTreads.png');
+        this.load.image('bullet', './assets/'+PHYSICS.TILE_SIZE+'/bullet.png');
+        this.load.image('crosshair', './assets/'+PHYSICS.TILE_SIZE+'/crosshair.png');
         
         // Load pillbox sprites (single frame images instead of spritesheet)
-        this.load.image('pillbox0', './assets/pillbox0.png');
-        this.load.image('pillbox1', './assets/pillbox1.png');
+        this.load.image('pillbox0', './assets/'+PHYSICS.TILE_SIZE+'/pillbox0.png');
+        this.load.image('pillbox1', './assets/'+PHYSICS.TILE_SIZE+'/pillbox1.png');
         
         // Load station sprite images
-        this.load.image('station0', './assets/station0.png');
-        this.load.image('station1', './assets/station1.png');
+        this.load.image('station0', './assets/'+PHYSICS.TILE_SIZE+'/station0.png');
+        this.load.image('station1', './assets/'+PHYSICS.TILE_SIZE+'/station1.png');
         
         // Load tileset image, tileset data, and tilemap
         this.load.image('tileset', './assets/tiles/tileset'+PHYSICS.TILE_SIZE+'.png');

@@ -25,8 +25,9 @@ const config: Phaser.Types.Core.GameConfig = {
     pixelArt: true,
     scene: [SceneSelector, ClientGameScene],
     scale: {
-        mode: Phaser.Scale.RESIZE,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        mode: Phaser.Scale.NONE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        zoom: window.devicePixelRatio
     }
 };
 
@@ -35,10 +36,15 @@ const game = new Phaser.Game(config);
 // Handle window resize to update UI
 window.addEventListener('resize', () => {
     if (game.scale) {
-        game.scale.resize(window.innerWidth, window.innerHeight);
+        const scaleFactor = window.devicePixelRatio;
+        game.scale.resize(window.innerWidth * scaleFactor, window.innerHeight * scaleFactor);
+        game.scale.setZoom(1/2);
     }
 });
 
+const scaleFactor = window.devicePixelRatio;
+game.scale.resize(window.innerWidth * scaleFactor, window.innerHeight * scaleFactor);
+game.scale.setZoom(1/2);
 /**
  * Create FPS selector
  */

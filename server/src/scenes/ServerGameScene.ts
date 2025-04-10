@@ -44,7 +44,7 @@ export class ServerGameScene extends GameScene {
   selectedMapName: string = "Duff Gardens";
   
   preload() {
-    this.load.image('tileset', '../../../../assets/tiles/tileset.png');
+    this.load.image('tileset', '../../../../assets/tiles/tileset'+PHYSICS.TILE_SIZE+'.png');
     
     // Select a random map from the assets/maps directory
     const mapsDir = path.resolve(__dirname, '../../assets/maps');
@@ -73,7 +73,7 @@ export class ServerGameScene extends GameScene {
       this.load.json('mapData', '../../../../assets/maps/Duff Gardens.json');
     }
     
-    this.load.json('tilesetData', '../../../../assets/tiles/tileset.json');
+    this.load.json('tilesetData', '../../../../assets/tiles/tileset'+PHYSICS.TILE_SIZE+'.json');
   }
 
   create() {

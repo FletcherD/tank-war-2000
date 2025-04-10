@@ -890,14 +890,14 @@ export class GameUI {
         // Get world position of the top-left tile
         const topLeftPos = this.gameScene.gameMap.groundLayer.tileToWorldXY(minX, minY);
         
-        // Calculate center of the 2x2 selection (32 is tile size)
-        const centerX = topLeftPos.x + 32;
-        const centerY = topLeftPos.y + 32;
+        // Calculate center of the 2x2 selection
+        const centerX = topLeftPos.x + PHYSICS.TILE_SIZE*2;
+        const centerY = topLeftPos.y + PHYSICS.TILE_SIZE*2;
         
         // Convert to screen coordinates
         const camera = this.gameScene.cameras.main;
-        const screenX = centerX - camera.scrollX;
-        const screenY = centerY - camera.scrollY;
+        const screenX = (centerX - camera.scrollX) * this.gameScene.scale.zoom;
+        const screenY = (centerY - camera.scrollY) * this.gameScene.scale.zoom;
         
         // Position context menu near selection but ensure it stays on screen
         const menuWidth = 150; // Approximate width of context menu
@@ -905,8 +905,8 @@ export class GameUI {
         const padding = 10; // Padding from selection
         
         // Position above the selection if possible, otherwise below
-        let menuX = screenX - menuWidth / 2 - PHYSICS.TILE_SIZE;
-        let menuY = screenY - menuHeight - padding - 32;
+        let menuX = (screenX - menuWidth / 2 - PHYSICS.TILE_SIZE/2);
+        let menuY = (screenY - menuHeight - padding - 32);
         
         // Keep menu on screen
         menuX = Math.max(padding, Math.min(window.innerWidth - menuWidth - padding, menuX));
@@ -1061,15 +1061,15 @@ export class GameUI {
       if (this.gameScene.selectionRect && hasSelection) {
         if (!isInRange) {
           // Selection is valid but out of range - color it grey
-          this.gameScene.selectionRect.setStrokeStyle(2, 0x888888);
+          this.gameScene.selectionRect.setStrokeStyle(4, 0x888888);
           this.gameScene.selectionRect.setFillStyle(0x888888, 0.3);
         } else if (isValidSelection && isInRange) {
           // Selection is valid and in range - color it green
-          this.gameScene.selectionRect.setStrokeStyle(2, 0x00ff00);
+          this.gameScene.selectionRect.setStrokeStyle(4, 0x00ff00);
           this.gameScene.selectionRect.setFillStyle(0x00ff00, 0.3);
         } else {
           // Selection is invalid - color it red
-          this.gameScene.selectionRect.setStrokeStyle(2, 0xff0000);
+          this.gameScene.selectionRect.setStrokeStyle(4, 0xff0000);
           this.gameScene.selectionRect.setFillStyle(0xff0000, 0.3);
         }
       }

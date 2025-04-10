@@ -5,9 +5,9 @@ export const PHYSICS = {
   TILE_SIZE: TILE_SIZE,
 
   // Tank movement
-  TANK_MAX_SPEED: 1.15, // meters/timestep
+  TANK_MAX_SPEED: (0.071875 * TILE_SIZE),
   TANK_ROTATION_SPEED: 0.0025, // radians/timestep
-  TANK_ACCELERATION: 0.005, // meters/timestep^2
+  TANK_ACCELERATION: (0.0003125 * TILE_SIZE), // meters/timestep^2
   TANK_HEALTH: 7,
   TANK_MAX_AMMO: 20,
   TANK_AMMO_PER_SHOT: 1,
@@ -16,9 +16,9 @@ export const PHYSICS = {
   TANK_MAX_WOOD: 25, // maximum wood a tank can carry
 
   // Bullets
-  BULLET_SPEED: 6.25, // units/timestep
+  BULLET_SPEED: (0.390625 * TILE_SIZE), // units/timestep
   BULLET_RANGE: TILE_SIZE * 16, // pixels (max travel distance)
-  BULLET_HITBOX_RADIUS: 1, // pixels
+  BULLET_HITBOX_RADIUS: (1/16) * TILE_SIZE, // pixels
   BULLET_BOUNCE: 1, // bounce factor
 
   // Pillbox

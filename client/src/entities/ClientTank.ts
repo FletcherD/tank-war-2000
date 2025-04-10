@@ -69,7 +69,7 @@ export class ClientTank extends Tank {
       
       // Create name text but don't add it as a child to the tank container
       // This keeps it independent of the tank's rotation
-      this.nameText = scene.add.text(this.x, this.y - 30, name, textStyle);
+      this.nameText = scene.add.text(this.x, this.y - PHYSICS.TILE_SIZE, name, textStyle);
       this.nameText.setOrigin(0.5, 1);
     }
   }
@@ -226,9 +226,9 @@ export class ClientTank extends Tank {
     
     // If the frames haven't been set up yet, create them
     if (texture.frameTotal <= 1) {
-      // Create frames for a 31x2 grid of 32x32 sprites
-      const frameWidth = 32;
-      const frameHeight = 32;
+      // Create frames for a 31x2 grid of sprites
+      const frameWidth = PHYSICS.TILE_SIZE*2;
+      const frameHeight = PHYSICS.TILE_SIZE*2;
       const framesPerRow = 31;
       
       for (let row = 0; row < 2; row++) {
@@ -275,7 +275,7 @@ export class ClientTank extends Tank {
 
     const framesPerRow: number = 31;
     const framesPerCycle: number = 60;
-    const animSpeedForward: number = 0.75;
+    const animSpeedForward: number = 0.01 * PHYSICS.TILE_SIZE;
     const animSpeedTurn: number = 10;
 
     const positionDiff = this.lastPosition.subtract(new Phaser.Math.Vector2(this.x, this.y));

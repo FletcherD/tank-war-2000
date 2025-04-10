@@ -173,7 +173,7 @@ export class ClientGameScene extends GameScene {
         
         // Create selection rectangle (initially invisible)
         this.selectionRect = this.add.rectangle(0, 0, 0, 0, 0xffff00, 0.3);
-        this.selectionRect.setStrokeStyle(2, 0xffff00);
+        this.selectionRect.setStrokeStyle(4, 0xffff00);
         this.selectionRect.setVisible(false);
         this.selectionRect.setDepth(100); // Make sure it's above everything else
         this.selectionRect.setOrigin(0, 0); // Set origin to top-left for easier positioning
@@ -497,13 +497,14 @@ export class ClientGameScene extends GameScene {
                         
                         // Create a progress indicator for this tile
                         const indicator = this.add.line(
-                            worldPos.x + 8, // Center of tile (assuming 32x32 tiles)
-                            worldPos.y + 8, 
+                            worldPos.x + (PHYSICS.TILE_SIZE / 2), // Center of tile 
+                            worldPos.y + (PHYSICS.TILE_SIZE / 2), 
                             0, 0,
-                            8, 8,
+                            PHYSICS.TILE_SIZE, PHYSICS.TILE_SIZE,
                             0xffffff, // Color
                             1.0
                         );
+                        indicator.setStrokeStyle(4, 0xffffff);
                         indicator.setDepth(110); // Ensure it's visible above other elements
                         
                         // Add to build queue
