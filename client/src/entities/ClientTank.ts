@@ -1,7 +1,7 @@
 import { Tank, InputData } from "../../../shared/objects/Tank";
 import { GameScene } from "../../../shared/scenes/Game";
 import { ClientGameScene } from "../scenes/ClientGameScene";
-import { VISUALS, PHYSICS, TEAM_COLORS } from "../../../shared/constants";
+import { VISUALS, PHYSICS, TEAM_COLORS, COLLISION_CATEGORIES } from "../../../shared/constants";
 import { GameUI } from "../UI";
 
 export class ClientTank extends Tank {
@@ -341,7 +341,7 @@ export class ClientTank extends Tank {
         
         // Reactivate physics body
         if (this.body && this.scene.matter) {
-          this.setCollisionCategory(this.scene.matter.world.nextCategory());
+          this.setCollisionCategory(COLLISION_CATEGORIES.PLAYER);
         }
         
         // Show respawn complete message only when transitioning from respawning to not respawning
@@ -355,7 +355,7 @@ export class ClientTank extends Tank {
       
       // Update physics body status
       if (this.body) {
-        this.setCollisionCategory(isRespawning ? 0 : this.scene.matter.world.nextCategory());
+        this.setCollisionCategory(isRespawning ? 0 : COLLISION_CATEGORIES.PLAYER);
       }
     }
   }

@@ -200,7 +200,6 @@ export class GameMap {
             }
         }
         
-        // Create Matter physics bodies for the tilemap
         this.createMatterBodiesForTilemap();
         
         // Create terrain tiles

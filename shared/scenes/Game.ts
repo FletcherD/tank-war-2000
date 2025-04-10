@@ -106,10 +106,6 @@ export class GameScene extends Phaser.Scene {
         this.currentTick++;
     }
 
-    /**
-     * Handles collision between tank and wall
-     * Prints debug information about the collision
-     */
     handleCollision(event: Phaser.Physics.Matter.Events.CollisionStartEvent) {
         // Get colliding pairs
         const pairs = event.pairs;
