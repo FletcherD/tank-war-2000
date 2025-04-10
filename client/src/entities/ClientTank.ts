@@ -60,7 +60,7 @@ export class ClientTank extends Tank {
     if (!isLocalPlayer) {
       const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
         color: "#ffffff",
-        fontSize: "14px",
+        fontSize: "28px",
         fontFamily: "'Courier Prime', monospace",
         stroke: "#000000",
         strokeThickness: 2,
@@ -69,7 +69,7 @@ export class ClientTank extends Tank {
       
       // Create name text but don't add it as a child to the tank container
       // This keeps it independent of the tank's rotation
-      this.nameText = scene.add.text(this.x, this.y - PHYSICS.TILE_SIZE, name, textStyle);
+      this.nameText = scene.add.text(this.x, this.y + PHYSICS.TILE_SIZE, name, textStyle);
       this.nameText.setOrigin(0.5, 1);
     }
   }
