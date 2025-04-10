@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>tank war 2000</title>
     <!-- Google Font: Courier Prime -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,8 +46,24 @@
     </style>
       <script>
         window.addEventListener('load', function() {
-          setTimeout(function() { window.scrollTo(0, 1); }, 100);
+          // Initial hide with a slight delay to ensure page is fully loaded
+          setTimeout(function() { 
+            window.scrollTo(0, 1);
+            // Try again after a longer delay (iOS sometimes needs this)
+            setTimeout(function() { window.scrollTo(0, 1); }, 500);
+          }, 100);
+          
+          // Handle orientation changes
           window.addEventListener('orientationchange', function() {
+            setTimeout(function() { 
+              window.scrollTo(0, 1); 
+              // Try again after a longer delay
+              setTimeout(function() { window.scrollTo(0, 1); }, 500);
+            }, 100);
+          });
+          
+          // Handle resize events (some browsers need this)
+          window.addEventListener('resize', function() {
             setTimeout(function() { window.scrollTo(0, 1); }, 100);
           });
         });
