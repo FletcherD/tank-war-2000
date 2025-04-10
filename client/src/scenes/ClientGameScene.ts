@@ -512,8 +512,8 @@ export class ClientGameScene extends GameScene {
                             tileType: response.tileType,
                             progress: 0,
                             indicator: indicator,
-                            worldX: worldPos.x + 16,
-                            worldY: worldPos.y + 16
+                            worldX: worldPos.x + PHYSICS.TILE_SIZE,
+                            worldY: worldPos.y + PHYSICS.TILE_SIZE
                         });
                     }
                     
@@ -1041,8 +1041,8 @@ export class ClientGameScene extends GameScene {
         // Convert tile coordinates to world coordinates for distance calculation
         const worldPos = this.gameMap.groundLayer.tileToWorldXY(minX, minY);
         // Use center of 2x2 area for distance calculation
-        const centerX = worldPos.x + 16; 
-        const centerY = worldPos.y + 16;
+        const centerX = worldPos.x + PHYSICS.TILE_SIZE; 
+        const centerY = worldPos.y + PHYSICS.TILE_SIZE;
         
         // Calculate distance from player to selection
         const distance = Phaser.Math.Distance.Between(

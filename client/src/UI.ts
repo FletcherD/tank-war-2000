@@ -905,7 +905,7 @@ export class GameUI {
         const padding = 10; // Padding from selection
         
         // Position above the selection if possible, otherwise below
-        let menuX = screenX - menuWidth / 2 - 16;
+        let menuX = screenX - menuWidth / 2 - PHYSICS.TILE_SIZE;
         let menuY = screenY - menuHeight - padding - 32;
         
         // Keep menu on screen
@@ -925,8 +925,8 @@ export class GameUI {
           const minX = Math.min(...this.gameScene.selectedTiles.map(t => t.x));
           const minY = Math.min(...this.gameScene.selectedTiles.map(t => t.y));
           const worldPos = this.gameScene.gameMap.groundLayer.tileToWorldXY(minX, minY);
-          const centerX = worldPos.x + 16; // Center of the 2x2 area
-          const centerY = worldPos.y + 16;
+          const centerX = worldPos.x + PHYSICS.TILE_SIZE; // Center of the 2x2 area
+          const centerY = worldPos.y + PHYSICS.TILE_SIZE;
           
           // Calculate distance
           const distance = Phaser.Math.Distance.Between(

@@ -1,5 +1,9 @@
+export const TILE_SIZE = 32;
+
 // Game Physics & Movement Constants
 export const PHYSICS = {
+  TILE_SIZE: TILE_SIZE,
+
   // Tank movement
   TANK_MAX_SPEED: 1.15, // meters/timestep
   TANK_ROTATION_SPEED: 0.0025, // radians/timestep
@@ -8,26 +12,26 @@ export const PHYSICS = {
   TANK_MAX_AMMO: 20,
   TANK_AMMO_PER_SHOT: 1,
   TANK_FIRE_COOLDOWN: 500, // milliseconds
-  TANK_HITBOX_RADIUS: 14, // pixels
+  TANK_HITBOX_RADIUS: TILE_SIZE * 0.8, // pixels
   TANK_MAX_WOOD: 25, // maximum wood a tank can carry
 
   // Bullets
   BULLET_SPEED: 6.25, // units/timestep
-  BULLET_RANGE: 256, // pixels (max travel distance)
+  BULLET_RANGE: TILE_SIZE * 16, // pixels (max travel distance)
   BULLET_HITBOX_RADIUS: 1, // pixels
   BULLET_BOUNCE: 1, // bounce factor
 
   // Pillbox
-  PILLBOX_DETECTION_RANGE: 256+16, // pixels
+  PILLBOX_DETECTION_RANGE: TILE_SIZE * 17, // pixels
   PILLBOX_FIRE_COOLDOWN: 500, // milliseconds
   PILLBOX_HEALTH: 7,
-  PILLBOX_HITBOX_RADIUS: 16, // pixels
+  PILLBOX_HITBOX_RADIUS: TILE_SIZE, // pixels
 
   // Station
-  STATION_CAPTURE_RANGE: 32, // pixels
+  STATION_CAPTURE_RANGE: TILE_SIZE * 2, // pixels
   STATION_REFILL_RATE: 5, // ammo per second
 
-  BUILD_MAX_DISTANCE: 96,
+  BUILD_MAX_DISTANCE: TILE_SIZE * 6,
   
   // Building and resources
   BUILD_TIME_PER_TILE: 500, // milliseconds per tile
@@ -58,7 +62,7 @@ export const TEAM_COLORS = {
 export const VISUALS = {
   GRASS_COLOR: 0x007d3e,
   WATER_COLOR: 0x00b8d7,
-  FIRING_OFFSET: 16.0, // distance from center to spawn bullets
+  FIRING_OFFSET: TILE_SIZE, // distance from center to spawn bullets
 };
 
 // Damage Values

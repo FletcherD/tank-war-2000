@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { PHYSICS } from "../../../shared/constants";
 
 export class SceneSelector extends Phaser.Scene {
 
@@ -25,8 +26,8 @@ export class SceneSelector extends Phaser.Scene {
         this.load.image('station1', './assets/station1.png');
         
         // Load tileset image, tileset data, and tilemap
-        this.load.image('tileset', './assets/tiles/tileset32.png');
-        this.load.json('tilesetData', './assets/tiles/tileset.json');
+        this.load.image('tileset', './assets/tiles/tileset'+PHYSICS.TILE_SIZE+'.png');
+        this.load.json('tilesetData', './assets/tiles/tileset'+PHYSICS.TILE_SIZE+'.json');
     }
 
     create() {
