@@ -38,13 +38,13 @@ window.addEventListener('resize', () => {
     if (game.scale) {
         const scaleFactor = window.devicePixelRatio;
         game.scale.resize(window.innerWidth * scaleFactor, window.innerHeight * scaleFactor);
-        game.scale.setZoom(1/2);
+        game.scale.setZoom(1/window.devicePixelRatio);
     }
 });
 
 const scaleFactor = window.devicePixelRatio;
 game.scale.resize(window.innerWidth * scaleFactor, window.innerHeight * scaleFactor);
-game.scale.setZoom(1/2);
+game.scale.setZoom(1/window.devicePixelRatio);
 /**
  * Create FPS selector
  */
