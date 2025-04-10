@@ -67,6 +67,12 @@ export class GameUI {
       console.error('Game canvas not found');
       return;
     }
+    
+    // Prevent context menu (long press) on the entire document
+    document.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+      return false;
+    }, false);
 
     // Create a UI container that overlays exactly on the canvas
     this.uiContainer = document.createElement('div');
@@ -415,6 +421,7 @@ export class GameUI {
     
     // Handle the case where the finger moves out of the forward button
     document.addEventListener('touchmove', (event) => {
+      event.preventDefault(); // Prevent browser search popup
       if (!isMovingForward) return;
       
       // Check if any touch is still on the forward button
@@ -440,7 +447,7 @@ export class GameUI {
         this.forwardButton.style.backgroundColor = `rgba(0, 255, 0, ${buttonOpacity})`;
         this.forwardButton.style.transform = 'scale(1)';
       }
-    });
+    }, { passive: false });
     
     // Set up fire button events
     let isFiring = false;
@@ -478,6 +485,7 @@ export class GameUI {
     
     // Handle the case where the finger moves out of the fire button
     document.addEventListener('touchmove', (event) => {
+      event.preventDefault(); // Prevent browser search popup
       if (!isFiring) return;
       
       // Check if any touch is still on the fire button
@@ -503,7 +511,7 @@ export class GameUI {
         this.fireButton.style.backgroundColor = `rgba(255, 0, 0, ${buttonOpacity})`;
         this.fireButton.style.transform = 'scale(1)';
       }
-    });
+    }, { passive: false });
   }
 
   /**
