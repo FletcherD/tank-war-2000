@@ -33,18 +33,21 @@ const config: Phaser.Types.Core.GameConfig = {
 
 const game = new Phaser.Game(config);
 
+let scaleFactor = 1.5;//window.devicePixelRatio;
+
+function resize() {
+    if (game.scale) {
+        game.scale.resize(window.innerWidth * scaleFactor, window.innerHeight * scaleFactor);
+        game.scale.setZoom(scaleFactor);
+    }
+}
+
 // Handle window resize to update UI
 window.addEventListener('resize', () => {
-    if (game.scale) {
-        const scaleFactor = window.devicePixelRatio;
-        game.scale.resize(window.innerWidth * scaleFactor, window.innerHeight * scaleFactor);
-        game.scale.setZoom(1/window.devicePixelRatio);
-    }
+    resize();
 });
 
-const scaleFactor = window.devicePixelRatio;
-game.scale.resize(window.innerWidth * scaleFactor, window.innerHeight * scaleFactor);
-game.scale.setZoom(1/window.devicePixelRatio);
+resize();
 /**
  * Create FPS selector
  */

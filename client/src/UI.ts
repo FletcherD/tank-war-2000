@@ -578,7 +578,7 @@ export class GameUI {
     this.healthBarElement.style.width = `${(health / maxHealth) * 100}%`;
     
     // Update health text
-    this.healthTextElement.textContent = `Health:\u00A0${health}%`;
+    this.healthTextElement.textContent = `Health:\u00A0${health}/${maxHealth}`;
   }
   
   /**

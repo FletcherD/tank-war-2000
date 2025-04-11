@@ -64,8 +64,7 @@ export class ServerPillbox extends Pillbox {
         // Reset the body completely
         this.setBody(null);
         
-        // Create a smaller hitbox for the pickup
-        this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS / 2);
+        this.setCircle(PHYSICS.PILLBOX_HITBOX_RADIUS);
         
         // Change from static to dynamic for pickup physics
         this.setStatic(false);
