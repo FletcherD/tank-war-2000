@@ -343,9 +343,7 @@ export class GameUI {
     });
     
     // Dead zone for turning calculations
-    const DEAD_ZONE_CENTER = 0.3;
-    const DEAD_ZONE_ANGLUAR = 0.1;
-    const CONTROL_SLOPE = 2.0;
+    const DEAD_ZONE_CENTER = 0.6;
     
     // Add event listeners for joystick movements - now uses turnRate
     this.joystickManager.on('move', (evt, data) => {
