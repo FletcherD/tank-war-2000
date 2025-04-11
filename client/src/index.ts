@@ -27,18 +27,17 @@ const config: Phaser.Types.Core.GameConfig = {
     scale: {
         mode: Phaser.Scale.NONE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        zoom: window.devicePixelRatio
     }
 };
 
 const game = new Phaser.Game(config);
 
-let scaleFactor = 1.5;//window.devicePixelRatio;
+let scaleFactor = window.devicePixelRatio;
 
 function resize() {
     if (game.scale) {
         game.scale.resize(window.innerWidth * scaleFactor, window.innerHeight * scaleFactor);
-        game.scale.setZoom(scaleFactor);
+        game.scale.setZoom(1/scaleFactor);
     }
 }
 
