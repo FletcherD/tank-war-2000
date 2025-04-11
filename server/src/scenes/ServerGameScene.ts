@@ -405,7 +405,7 @@ export class ServerGameScene extends GameScene {
           );
           
           // If close enough, collect the pillbox
-          if (distance < (tank.width + pillbox.width) / 2) {
+          if (distance < PHYSICS.PILLBOX_HITBOX_RADIUS) {
             tank.pickupPillbox(pillbox);
           }
         }
