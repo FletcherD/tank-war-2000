@@ -2,6 +2,8 @@
 
 A real-time multiplayer 2D tank combat game built with Phaser and Colyseus. Players team up to fight for control of the map by capturing stations, building defenses, and working together to defeat the enemy team.
 
+Play it now at https://fletcherd.github.io/tank-war-2000/
+
 ## Game Features
 
 ### Core Gameplay
